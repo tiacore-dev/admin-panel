@@ -1,0 +1,16 @@
+.center-spin {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.main-container {
+  margin: 1%;
+  margin-top: 0;
+}
+
+.ant-table table {
+  line-height: 1; /* Увеличиваем высоту строк */
+}
+
+/* Или для конкретной таблицы */

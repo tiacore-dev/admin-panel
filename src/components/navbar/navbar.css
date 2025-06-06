@@ -1,0 +1,246 @@
+/* navbar.css */
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 0 0 #f0f0f0;
+  padding: 0 16px;
+  transition: background-color 0.3s ease;
+  height: 64px;
+}
+
+.navbar-container.settings-open {
+  background-color: #f5f5f5;
+}
+
+.navbar-menu {
+  border-bottom: none;
+  flex: 1;
+  background-color: transparent;
+}
+
+.settings-menu {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: none;
+  background-color: transparent;
+  animation: fadeIn 0.3s;
+}
+
+.buttons-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Мобильные стили */
+.mobile-menu-button {
+  display: none;
+  margin-right: 8px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .navbar-menu,
+  .settings-menu,
+  .animated-settings-btn {
+    display: none;
+  }
+
+  .mobile-menu-button {
+    display: block;
+  }
+
+  .buttons-container {
+    gap: 4px;
+  }
+
+  .animated-btn {
+    width: 32px !important;
+  }
+
+  .company-selector {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Анимации и остальные стили остаются без изменений */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.rotate-icon {
+  transition: transform 0.3s ease;
+}
+
+.rotate-icon-anticlockwise {
+  transform: rotate(-90deg);
+}
+
+.rotate-icon-clockwise {
+  transform: rotate(0deg);
+}
+
+.animated-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  color: white;
+}
+
+.animated-btn .sign {
+  width: 100%;
+  transition: 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.animated-btn .sign svg {
+  width: 12px;
+  height: 12px;
+}
+
+.animated-btn .sign svg path {
+  fill: white;
+}
+
+.animated-btn .text {
+  position: absolute;
+  right: 0;
+  width: 0;
+  opacity: 0;
+  color: white;
+  font-size: 14px;
+  transition: 0.3s ease;
+}
+
+.animated-btn:hover {
+  width: 80px;
+}
+
+.animated-btn:hover .sign {
+  width: 20px;
+  padding-left: 6px;
+}
+
+.animated-btn:hover .text {
+  opacity: 1;
+  width: calc(100% - 24px);
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.animated-btn:active {
+  transform: translateY(1px);
+}
+
+.animated-settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: transparent;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.88);
+  padding: 0;
+}
+
+.animated-settings-btn .sign {
+  width: 100%;
+  transition: 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.animated-settings-btn .sign svg {
+  width: 12px;
+  height: 12px;
+}
+
+.animated-settings-btn .text {
+  position: absolute;
+  right: 0;
+  width: 0;
+  opacity: 0;
+  color: rgba(0, 0, 0, 0.88);
+  font-size: 14px;
+  transition: 0.3s ease;
+}
+
+.animated-settings-btn:hover {
+  width: 110px;
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.animated-settings-btn:hover .sign {
+  width: 20px;
+  padding-left: 6px;
+}
+
+.animated-settings-btn:hover .text {
+  opacity: 1;
+  width: calc(100% - 24px);
+}
+
+.animated-settings-btn:active {
+  transform: translateY(1px);
+}
+
+.navbar-logo {
+  font-size: 18px;
+  font-weight: bold;
+  color: #000000;
+  margin-right: 24px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.navbar-logo:hover {
+  color: #0f00df;
+}
+
+/* Для мобильной версии */
+.mobile-logo-container {
+  display: flex;
+  align-items: center;
+  margin-right: auto;
+}
+
+.mobile-logo {
+  font-size: 16px;
+  font-weight: bold;
+  color: #000000;
+  margin-left: 16px;
+  cursor: pointer;
+}
