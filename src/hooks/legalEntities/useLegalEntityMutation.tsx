@@ -4,14 +4,14 @@ import {
   createLegalEntityINN,
   updateLegalEntity,
   deleteLegalEntity,
-  ILegalEntityCreate,
-  ILegalEntityINNCreate,
-  ILegalEntityEdit,
-  ILegalEntity,
+  type ILegalEntityCreate,
+  type ILegalEntityINNCreate,
+  type ILegalEntityEdit,
+  type ILegalEntity,
 } from "../../api/legalEntitiesApi";
 import { useCompany } from "../../context/companyContext";
 import { toast } from "react-hot-toast";
-import { AxiosError } from "axios";
+import type { AxiosError } from "axios";
 
 export const useCreateLegalEntity = () => {
   const queryClient = useQueryClient();
@@ -21,6 +21,10 @@ export const useCreateLegalEntity = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["legalEntities", selectedCompanyId],
+      });
+      // Добавляем инвалидацию для entityCompanyRelations
+      queryClient.invalidateQueries({
+        queryKey: ["entityCompanyRelations"],
       });
       toast.success("Успешно создано");
     },
@@ -38,6 +42,10 @@ export const useCreateLegalEntityByINN = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["legalEntities", selectedCompanyId],
+      });
+      // Добавляем инвалидацию для entityCompanyRelations
+      queryClient.invalidateQueries({
+        queryKey: ["entityCompanyRelations"],
       });
       toast.success("Успешно создано по ИНН");
     },

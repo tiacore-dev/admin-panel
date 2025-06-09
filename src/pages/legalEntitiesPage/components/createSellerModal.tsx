@@ -1,11 +1,11 @@
-// src/pages/legalEntitiesSellersPage/components/createSellerModal.tsx
+// src/pages/companyDetailsPage/components/createSellerModal.tsx
 import React, { useState, useEffect } from "react";
-import { Modal, Steps, Form, Input, Select, Button, message, Spin } from "antd";
+import { Modal, Steps, Form, Input, Button, message, Spin, Select } from "antd";
 import { useLegalEntityByInnKppQuery } from "../../../hooks/legalEntities/useLegalEntityQuery";
 import { useLegalEntityDetailsQuery } from "../../../hooks/legalEntities/useLegalEntityQuery";
-import { useCreateLegalEntityByINN } from "../../../hooks/legalEntities/useLegalEntityMutation";
 import { useCreateLegalEntity } from "../../../hooks/legalEntities/useLegalEntityMutation";
-import { useCompaniesForSelection } from "../../../hooks/companies/useCompanyQuery";
+import { useCreateEntityCompanyRelation } from "../../../hooks/entityCompanyRelations/useEntityCompanyRelationMutations";
+import { useCompanyQuery } from "../../../hooks/companies/useCompanyQuery";
 
 const { Step } = Steps;
 const { Option } = Select;
@@ -14,20 +14,16 @@ interface CreateSellerModalProps {
   visible: boolean;
   onCancel: () => void;
   onSuccess: () => void;
+  companyId?: string; // Делаем необязательным
+  showCompanySelect?: boolean; // Флаг для отображения выбора компании
 }
-
-// Варианты для селектора НДС
-const vatRateOptions = [
-  { value: 0, label: "НДС не облагается" },
-  { value: 5, label: "5%" },
-  { value: 7, label: "7%" },
-  { value: 20, label: "20%" },
-];
 
 export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
   visible,
   onCancel,
   onSuccess,
+  companyId,
+  showCompanySelect = false,
 }) => {
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
@@ -35,10 +31,11 @@ export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
   const [kpp, setKpp] = useState("");
   const [legalEntityId, setLegalEntityId] = useState("");
   const [isExistingEntity, setIsExistingEntity] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<string | undefined>(
+    companyId
+  );
 
-  const { data: companyData } = useCompaniesForSelection();
-  const companies = companyData?.companies || [];
-
+  const { data: companiesData } = useCompanyQuery();
   const {
     data: innKppData,
     isFetching: isFetchingInnKpp,
@@ -49,10 +46,9 @@ export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
   const { data: entityDetails, isFetching: isFetchingDetails } =
     useLegalEntityDetailsQuery(legalEntityId, { enabled: !!legalEntityId });
 
-  const { mutate: createByInn, isPending: isCreatingByInn } =
-    useCreateLegalEntityByINN();
   const { mutate: createEntity, isPending: isCreating } =
     useCreateLegalEntity();
+  const { mutate: createRelation } = useCreateEntityCompanyRelation();
 
   useEffect(() => {
     if (innKppData) {
@@ -68,7 +64,7 @@ export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
         address: entityDetails.address,
         ogrn: entityDetails.ogrn,
         opf: entityDetails.opf,
-        vat_rate: entityDetails.vat_rate,
+        vat_rate: entityDetails.vat_rate?.toString(),
         signer: entityDetails.signer,
       });
     }
@@ -93,25 +89,25 @@ export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const company_id = values.company_id;
+
+      if (!selectedCompany) {
+        message.error("Пожалуйста, выберите компанию");
+        return;
+      }
 
       if (isExistingEntity) {
-        createByInn(
+        createRelation(
           {
-            inn,
-            kpp: kpp || undefined,
-            company_id,
+            legal_entity_id: legalEntityId,
+            company_id: selectedCompany,
             relation_type: "seller",
-            // opf: values.opf,
-            // vat_rate: values.vat_rate,
-            // signer: values.signer,
           },
           {
             onSuccess: () => {
-              message.success("Организация успешно создана");
               onSuccess();
               handleCancel();
             },
+            onError: () => {},
           }
         );
       } else {
@@ -120,24 +116,20 @@ export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
             ...values,
             inn,
             kpp: kpp || undefined,
-            company_id,
+            company_id: selectedCompany,
             relation_type: "seller",
-            opf: values.opf,
-            vat_rate: values.vat_rate,
-            signer: values.signer,
+            vat_rate: values.vat_rate ? parseInt(values.vat_rate) : undefined,
           },
           {
-            onSuccess: () => {
-              message.success("Организация успешно создана");
+            onSuccess: (data) => {
               onSuccess();
               handleCancel();
             },
+            onError: (error) => {},
           }
         );
       }
-    } catch (error) {
-      message.error("Ошибка при создании организации");
-    }
+    } catch (error) {}
   };
 
   const handleCancel = () => {
@@ -167,6 +159,26 @@ export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
       <Form form={form} layout="vertical">
         {currentStep === 0 && (
           <>
+            {showCompanySelect && (
+              <Form.Item
+                name="company_id"
+                label="Компания"
+                rules={[{ required: true, message: "Выберите компанию" }]}
+              >
+                <Select
+                  placeholder="Выберите компанию"
+                  onChange={(value) => setSelectedCompany(value)}
+                  value={selectedCompany}
+                >
+                  {companiesData?.companies.map((company) => (
+                    <Option key={company.company_id} value={company.company_id}>
+                      {company.company_name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+
             <Form.Item
               name="inn"
               label="ИНН"
@@ -247,24 +259,27 @@ export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
                 placeholder="Введите адрес"
                 disabled={isExistingEntity}
                 rows={2}
+                minLength={5}
               />
             </Form.Item>
 
-            {!isExistingEntity && (
-              <Form.Item
-                name="ogrn"
-                label="ОГРН"
-                rules={[
-                  { required: true, message: "Пожалуйста, введите ОГРН" },
-                  {
-                    pattern: /^[0-9]{13}$/,
-                    message: "ОГРН должен содержать 13 цифр",
-                  },
-                ]}
-              >
-                <Input placeholder="Введите ОГРН" maxLength={13} />
-              </Form.Item>
-            )}
+            <Form.Item
+              name="ogrn"
+              label="ОГРН"
+              rules={[
+                { required: true, message: "Пожалуйста, введите ОГРН" },
+                {
+                  pattern: /^[0-9]{13}$/,
+                  message: "ОГРН должен содержать 13 цифр",
+                },
+              ]}
+            >
+              <Input
+                placeholder="Введите ОГРН"
+                maxLength={13}
+                disabled={isExistingEntity}
+              />
+            </Form.Item>
 
             <Form.Item
               name="opf"
@@ -281,15 +296,20 @@ export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
               name="vat_rate"
               label="Ставка НДС"
               rules={[
-                { required: true, message: "Пожалуйста, выберите ставку НДС" },
+                {
+                  required: true,
+                  message: "Пожалуйста, выберите ставку НДС",
+                },
               ]}
             >
-              <Select placeholder="Выберите ставку НДС">
-                {vatRateOptions.map((option) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
+              <Select
+                placeholder="Выберите ставку НДС"
+                disabled={isExistingEntity}
+              >
+                <Option value="0">НДС не облагается</Option>
+                <Option value="5">5%</Option>
+                <Option value="7">7%</Option>
+                <Option value="20">20%</Option>
               </Select>
             </Form.Item>
 
@@ -297,26 +317,16 @@ export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
               name="signer"
               label="Подписант"
               rules={[
-                { required: true, message: "Пожалуйста, введите подписанта" },
+                {
+                  required: true,
+                  message: "Пожалуйста, введите подписанта",
+                },
               ]}
             >
-              <Input placeholder="Введите ФИО подписанта" />
-            </Form.Item>
-
-            <Form.Item
-              name="company_id"
-              label="Компания"
-              rules={[
-                { required: true, message: "Пожалуйста, выберите компанию" },
-              ]}
-            >
-              <Select placeholder="Выберите компанию">
-                {companies.map((company) => (
-                  <Option key={company.company_id} value={company.company_id}>
-                    {company.company_name}
-                  </Option>
-                ))}
-              </Select>
+              <Input
+                placeholder="Введите ФИО подписанта"
+                disabled={isExistingEntity}
+              />
             </Form.Item>
 
             <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -324,9 +334,9 @@ export const CreateSellerModal: React.FC<CreateSellerModalProps> = ({
               <Button
                 type="primary"
                 onClick={handleSubmit}
-                loading={isCreating || isCreatingByInn}
+                loading={isCreating}
               >
-                Создать
+                {isExistingEntity ? "Добавить" : "Создать"}
               </Button>
             </div>
           </>

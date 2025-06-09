@@ -1,7 +1,7 @@
 // src/pages/legalEntitiesSellersPage/components/LegalEntitiesSellersTable.tsx
 import React from "react";
 import type { TableColumnsType } from "antd";
-import { Button, Input, Table, Typography } from "antd";
+import { Button, Input, Table, Typography, Select } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
@@ -12,8 +12,12 @@ import {
   setPageSize,
   setShortName,
   setInn,
-  setKpp,
+  setOgrn,
+  setAddress,
+  setVatRate,
 } from "../../../redux/slices/legalEntitySellersSlice";
+
+const { Option } = Select;
 
 interface LegalEntitiesSellersTableProps {
   data: {
@@ -28,9 +32,8 @@ export const LegalEntitiesSellersTable: React.FC<
 > = ({ data = { total: 0, entities: [] }, loading }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { short_name, inn, kpp, page, page_size } = useSelector(
-    (state: RootState) => state.legalEntitiesSellers
-  );
+  const { short_name, inn, ogrn, address, vat_rate, page, page_size } =
+    useSelector((state: RootState) => state.legalEntitiesSellers);
 
   const columns: TableColumnsType<ILegalEntity> = [
     {
@@ -90,32 +93,47 @@ export const LegalEntitiesSellersTable: React.FC<
       title: "КПП",
       dataIndex: "kpp",
       key: "kpp",
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder="Поиск по КПП"
-            value={kpp}
-            onChange={(e) => dispatch(setKpp(e.target.value))}
-            style={{ width: 200 }}
-            allowClear
-          />
-        </div>
-      ),
-      filteredValue: kpp ? [kpp] : null,
       render: (text: string) => text || "-",
     },
     {
       title: "ОГРН",
       dataIndex: "ogrn",
       key: "ogrn",
+      filterIcon: (filtered) => (
+        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+      ),
+      filterDropdown: () => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Поиск по ОГРН"
+            value={ogrn}
+            onChange={(e) => dispatch(setOgrn(e.target.value))}
+            style={{ width: 200 }}
+            allowClear
+          />
+        </div>
+      ),
+      filteredValue: ogrn ? [ogrn] : null,
     },
     {
       title: "Адрес",
       dataIndex: "address",
       key: "address",
+      filterIcon: (filtered) => (
+        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+      ),
+      filterDropdown: () => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Поиск по адресу"
+            value={address}
+            onChange={(e) => dispatch(setAddress(e.target.value))}
+            style={{ width: 200 }}
+            allowClear
+          />
+        </div>
+      ),
+      filteredValue: address ? [address] : null,
     },
     {
       title: "Ставка НДС",
@@ -123,10 +141,33 @@ export const LegalEntitiesSellersTable: React.FC<
       key: "vat_rate",
       render: (vatRate: number) =>
         vatRate === 0 ? "НДС не облагается" : `${vatRate}%`,
+      filterDropdown: () => (
+        <div style={{ padding: 8 }}>
+          <Select
+            placeholder="Выберите ставку НДС"
+            style={{ width: 200 }}
+            value={vat_rate}
+            onChange={(value) => dispatch(setVatRate(value))}
+            allowClear
+          >
+            <Option value="0">0% (не облагается)</Option>
+            <Option value="5">5%</Option>
+            <Option value="7">7%</Option>
+            <Option value="20">20%</Option>
+            <Option value="null">Не указано</Option>
+          </Select>
+        </div>
+      ),
+      filteredValue: vat_rate !== null ? [vat_rate] : null,
+      onFilter: (value, record) => {
+        if (value === "null") {
+          return record.vat_rate === null || record.vat_rate === undefined;
+        }
+        return String(record.vat_rate) === value;
+      },
     },
   ];
 
-  // Фильтрация данных
   const filteredData = data.entities.filter((entity) => {
     const matchesShortName = short_name
       ? entity.short_name.toLowerCase().includes(short_name.toLowerCase())
@@ -134,11 +175,26 @@ export const LegalEntitiesSellersTable: React.FC<
     const matchesInn = inn
       ? entity.inn.toLowerCase().includes(inn.toLowerCase())
       : true;
-    // const matchesKpp = kpp
-    //   ? (entity.kpp || "").includes(kpp)
-    //   : true;
+    const matchesOgrn = ogrn
+      ? entity.ogrn.toLowerCase().includes(ogrn.toLowerCase())
+      : true;
+    const matchesAddress = address
+      ? entity.address.toLowerCase().includes(address.toLowerCase())
+      : true;
+    const matchesVatRate =
+      vat_rate !== null
+        ? String(entity.vat_rate) === vat_rate ||
+          (vat_rate === "null" &&
+            (entity.vat_rate === null || entity.vat_rate === undefined))
+        : true;
 
-    return matchesShortName && matchesInn;
+    return (
+      matchesShortName &&
+      matchesInn &&
+      matchesOgrn &&
+      matchesAddress &&
+      matchesVatRate
+    );
   });
 
   return (

@@ -14,12 +14,9 @@ export const UsersPage: React.FC = () => {
   const dispatch = useDispatch();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const {
-    email,
-    full_name,
-    position,
-    // page, page_size
-  } = useSelector((state: RootState) => state.users);
+  const { email, full_name, position, is_verified } = useSelector(
+    (state: RootState) => state.users
+  );
 
   useEffect(() => {
     dispatch(
@@ -31,8 +28,6 @@ export const UsersPage: React.FC = () => {
   }, [dispatch]);
 
   const { data: users_data, isLoading, isError } = useUserQueryAll();
-
-  // const { data: userRolesResponse } = useUserRoles();
 
   const handleResetFilters = () => {
     dispatch(resetState());
@@ -57,7 +52,9 @@ export const UsersPage: React.FC = () => {
                   <Button
                     onClick={handleResetFilters}
                     icon={<ClearOutlined />}
-                    disabled={!email && !full_name && !position}
+                    disabled={
+                      !email && !full_name && !position && is_verified === null
+                    }
                   >
                     Сбросить фильтры
                   </Button>

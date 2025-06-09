@@ -75,14 +75,15 @@ export const LegalEntitiesBuyersPage: React.FC = () => {
             </div>
           )}
           {isError && <BackButton />}
-
-          <CreateBuyerModal
-            visible={modalVisible}
-            onCancel={() => setModalVisible(false)}
-            onSuccess={handleSuccess}
-          />
         </>
       )}
+
+      <CreateBuyerModal
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        onSuccess={handleSuccess}
+        showCompanySelect={true} // Включаем выбор компании
+      />
     </div>
   );
 };

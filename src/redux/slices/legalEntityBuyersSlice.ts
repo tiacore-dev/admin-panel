@@ -6,6 +6,9 @@ interface LegalEntitiesBuyersState {
   short_name: string;
   inn: string;
   kpp: string;
+  ogrn: string;
+  address: string;
+  // vat_rate: string | null;
   page: number;
   page_size: number;
 }
@@ -14,6 +17,9 @@ const initialState: LegalEntitiesBuyersState = {
   short_name: "",
   inn: "",
   kpp: "",
+  ogrn: "",
+  address: "",
+  // vat_rate: null,
   page: 1,
   page_size: 10,
 };
@@ -37,8 +43,12 @@ export const legalEntitiesBuyersSlice = createSlice({
       state.inn = action.payload;
       state.page = 1;
     },
-    setKpp: (state, action: PayloadAction<string>) => {
-      state.kpp = action.payload;
+    setOgrn: (state, action: PayloadAction<string>) => {
+      state.ogrn = action.payload;
+      state.page = 1;
+    },
+    setAddress: (state, action: PayloadAction<string>) => {
+      state.address = action.payload;
       state.page = 1;
     },
     resetState: () => initialState,
@@ -50,7 +60,8 @@ export const {
   setPageSize,
   setShortName,
   setInn,
-  setKpp,
+  setOgrn,
+  setAddress,
   resetState,
 } = legalEntitiesBuyersSlice.actions;
 

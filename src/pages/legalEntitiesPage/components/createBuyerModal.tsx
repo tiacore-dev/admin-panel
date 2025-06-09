@@ -1,11 +1,11 @@
-// src/pages/legalEntitiesBuyersPage/components/createBuyerModal.tsx
+// src/pages/companyDetailsPage/components/createBuyerModal.tsx
 import React, { useState, useEffect } from "react";
-import { Modal, Steps, Form, Input, Select, Button, message, Spin } from "antd";
+import { Modal, Steps, Form, Input, Button, message, Spin, Select } from "antd";
 import { useLegalEntityByInnKppQuery } from "../../../hooks/legalEntities/useLegalEntityQuery";
 import { useLegalEntityDetailsQuery } from "../../../hooks/legalEntities/useLegalEntityQuery";
-import { useCreateLegalEntityByINN } from "../../../hooks/legalEntities/useLegalEntityMutation";
 import { useCreateLegalEntity } from "../../../hooks/legalEntities/useLegalEntityMutation";
-import { useCompaniesForSelection } from "../../../hooks/companies/useCompanyQuery";
+import { useCreateEntityCompanyRelation } from "../../../hooks/entityCompanyRelations/useEntityCompanyRelationMutations";
+import { useCompanyQuery } from "../../../hooks/companies/useCompanyQuery";
 
 const { Step } = Steps;
 const { Option } = Select;
@@ -14,12 +14,16 @@ interface CreateBuyerModalProps {
   visible: boolean;
   onCancel: () => void;
   onSuccess: () => void;
+  companyId?: string; // Делаем необязательным
+  showCompanySelect?: boolean; // Флаг для отображения выбора компании
 }
 
 export const CreateBuyerModal: React.FC<CreateBuyerModalProps> = ({
   visible,
   onCancel,
   onSuccess,
+  companyId,
+  showCompanySelect = false,
 }) => {
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
@@ -27,10 +31,11 @@ export const CreateBuyerModal: React.FC<CreateBuyerModalProps> = ({
   const [kpp, setKpp] = useState("");
   const [legalEntityId, setLegalEntityId] = useState("");
   const [isExistingEntity, setIsExistingEntity] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<string | undefined>(
+    companyId
+  );
 
-  const { data: companyData } = useCompaniesForSelection();
-  const companies = companyData?.companies || [];
-
+  const { data: companiesData } = useCompanyQuery();
   const {
     data: innKppData,
     isFetching: isFetchingInnKpp,
@@ -41,10 +46,9 @@ export const CreateBuyerModal: React.FC<CreateBuyerModalProps> = ({
   const { data: entityDetails, isFetching: isFetchingDetails } =
     useLegalEntityDetailsQuery(legalEntityId, { enabled: !!legalEntityId });
 
-  const { mutate: createByInn, isPending: isCreatingByInn } =
-    useCreateLegalEntityByINN();
   const { mutate: createEntity, isPending: isCreating } =
     useCreateLegalEntity();
+  const { mutate: createRelation } = useCreateEntityCompanyRelation();
 
   useEffect(() => {
     if (innKppData) {
@@ -70,9 +74,7 @@ export const CreateBuyerModal: React.FC<CreateBuyerModalProps> = ({
         await fetchByInnKpp();
         setCurrentStep(1);
       }
-    } catch (error) {
-      message.error("Пожалуйста, заполните обязательные поля");
-    }
+    } catch (error) {}
   };
 
   const handlePrev = () => {
@@ -82,22 +84,25 @@ export const CreateBuyerModal: React.FC<CreateBuyerModalProps> = ({
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const company_id = values.company_id;
+
+      if (!selectedCompany) {
+        message.error("Пожалуйста, выберите компанию");
+        return;
+      }
 
       if (isExistingEntity) {
-        createByInn(
+        createRelation(
           {
-            inn,
-            kpp: kpp || undefined,
-            company_id,
+            legal_entity_id: legalEntityId,
+            company_id: selectedCompany,
             relation_type: "buyer",
           },
           {
             onSuccess: () => {
-              message.success("Контрагент успешно создан");
               onSuccess();
               handleCancel();
             },
+            onError: () => {},
           }
         );
       } else {
@@ -106,21 +111,19 @@ export const CreateBuyerModal: React.FC<CreateBuyerModalProps> = ({
             ...values,
             inn,
             kpp: kpp || undefined,
-            company_id,
+            company_id: selectedCompany,
             relation_type: "buyer",
           },
           {
-            onSuccess: () => {
-              message.success("Контрагент успешно создан");
+            onSuccess: (data) => {
               onSuccess();
               handleCancel();
             },
+            onError: () => {},
           }
         );
       }
-    } catch (error) {
-      message.error("Ошибка при создании контрагента");
-    }
+    } catch (error) {}
   };
 
   const handleCancel = () => {
@@ -150,6 +153,26 @@ export const CreateBuyerModal: React.FC<CreateBuyerModalProps> = ({
       <Form form={form} layout="vertical">
         {currentStep === 0 && (
           <>
+            {showCompanySelect && (
+              <Form.Item
+                name="company_id"
+                label="Компания"
+                rules={[{ required: true, message: "Выберите компанию" }]}
+              >
+                <Select
+                  placeholder="Выберите компанию"
+                  onChange={(value) => setSelectedCompany(value)}
+                  value={selectedCompany}
+                >
+                  {companiesData?.companies.map((company) => (
+                    <Option key={company.company_id} value={company.company_id}>
+                      {company.company_name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+
             <Form.Item
               name="inn"
               label="ИНН"
@@ -230,6 +253,7 @@ export const CreateBuyerModal: React.FC<CreateBuyerModalProps> = ({
                 placeholder="Введите адрес"
                 disabled={isExistingEntity}
                 rows={2}
+                maxLength={5}
               />
             </Form.Item>
 
@@ -249,30 +273,14 @@ export const CreateBuyerModal: React.FC<CreateBuyerModalProps> = ({
               </Form.Item>
             )}
 
-            <Form.Item
-              name="company_id"
-              label="Компания"
-              rules={[
-                { required: true, message: "Пожалуйста, выберите компанию" },
-              ]}
-            >
-              <Select placeholder="Выберите компанию">
-                {companies.map((company) => (
-                  <Option key={company.company_id} value={company.company_id}>
-                    {company.company_name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <Button onClick={handlePrev}>Назад</Button>
               <Button
                 type="primary"
                 onClick={handleSubmit}
-                loading={isCreating || isCreatingByInn}
+                loading={isCreating}
               >
-                Создать
+                {isExistingEntity ? "Добавить" : "Создать"}
               </Button>
             </div>
           </>

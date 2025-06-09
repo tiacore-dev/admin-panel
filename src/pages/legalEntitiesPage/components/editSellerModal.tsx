@@ -105,7 +105,7 @@ export const EditSellerModal: React.FC<EditSellerModalProps> = ({
           label="Адрес"
           rules={[{ required: true, message: "Поле обязательно" }]}
         >
-          <Input.TextArea />
+          <Input.TextArea maxLength={5} />
         </Form.Item>
         <Form.Item name="signer" label="Подписант">
           <Input />

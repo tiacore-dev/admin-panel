@@ -14,8 +14,8 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { UserCompanyRelationsTable } from "../../components/userCompanyRelations/userCompanyRelationsTable";
 import { usePermissions } from "../../context/permissionsContext";
 import { EntityCompanyRelationsTable } from "../../components/entityCompanyRelations";
-import { CreateSellerModal } from "./components/createSellerModal";
-import { CreateBuyerModal } from "./components/createBuyerModal";
+import { CreateSellerModal } from "../legalEntitiesPage/components/createSellerModal";
+import { CreateBuyerModal } from "../legalEntitiesPage/components/createBuyerModal";
 
 export const CompanyDetailsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -121,7 +121,6 @@ export const CompanyDetailsPage: React.FC = () => {
                     </Typography.Title>
                     {hasPermission("create_entity_company_relation") && (
                       <Button
-                        // type="primary"
                         icon={<PlusOutlined />}
                         onClick={() => setShowSellerModal(true)}
                       >
@@ -144,7 +143,6 @@ export const CompanyDetailsPage: React.FC = () => {
                     </Typography.Title>
                     {hasPermission("create_entity_company_relation") && (
                       <Button
-                        // type="primary"
                         icon={<PlusOutlined />}
                         onClick={() => setShowBuyerModal(true)}
                       >
@@ -180,6 +178,12 @@ export const CompanyDetailsPage: React.FC = () => {
               )}
 
               {showBuyerModal && (
+                // <CreateBuyerModal
+                //   visible={showBuyerModal}
+                //   onCancel={() => setShowBuyerModal(false)}
+                //   onSuccess={handleBuyerSuccess}
+                //   companyId={company_id!}
+                // />
                 <CreateBuyerModal
                   visible={showBuyerModal}
                   onCancel={() => setShowBuyerModal(false)}

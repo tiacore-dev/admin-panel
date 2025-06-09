@@ -5,7 +5,10 @@ import { RootState } from "../store";
 interface LegalEntitiesSellersState {
   short_name: string;
   inn: string;
-  kpp: string;
+  // kpp: string;
+  ogrn: string;
+  address: string;
+  vat_rate: string | null;
   page: number;
   page_size: number;
 }
@@ -13,7 +16,10 @@ interface LegalEntitiesSellersState {
 const initialState: LegalEntitiesSellersState = {
   short_name: "",
   inn: "",
-  kpp: "",
+  // kpp: "",
+  ogrn: "",
+  address: "",
+  vat_rate: null,
   page: 1,
   page_size: 10,
 };
@@ -37,8 +43,16 @@ export const legalEntitiesSellersSlice = createSlice({
       state.inn = action.payload;
       state.page = 1;
     },
-    setKpp: (state, action: PayloadAction<string>) => {
-      state.kpp = action.payload;
+    setOgrn: (state, action: PayloadAction<string>) => {
+      state.ogrn = action.payload;
+      state.page = 1;
+    },
+    setAddress: (state, action: PayloadAction<string>) => {
+      state.address = action.payload;
+      state.page = 1;
+    },
+    setVatRate: (state, action: PayloadAction<string | null>) => {
+      state.vat_rate = action.payload;
       state.page = 1;
     },
     resetState: () => initialState,
@@ -50,7 +64,10 @@ export const {
   setPageSize,
   setShortName,
   setInn,
-  setKpp,
+  // setKpp,
+  setAddress,
+  setOgrn,
+  setVatRate,
   resetState,
 } = legalEntitiesSellersSlice.actions;
 

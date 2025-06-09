@@ -1,4 +1,3 @@
-// useEntityCompanyRelationMutations.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createEntityCompanyRelation,
@@ -7,11 +6,9 @@ import {
 } from "../../api/entityCompanyRelationsApi";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
-import { useCompany } from "../../context/companyContext";
 
 export const useEntityCompanyRelationMutations = () => {
   const queryClient = useQueryClient();
-  const { selectedCompanyId } = useCompany();
 
   const createMutation = useMutation<
     IEntityCompanyRelationCreate,
@@ -21,10 +18,7 @@ export const useEntityCompanyRelationMutations = () => {
     mutationFn: createEntityCompanyRelation,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [undefined, selectedCompanyId, "seller"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [undefined, selectedCompanyId, "buyer"],
+        queryKey: ["entityCompanyRelations"],
       });
       toast.success("Успешно создано");
     },
@@ -35,12 +29,9 @@ export const useEntityCompanyRelationMutations = () => {
 
   const deleteMutation = useMutation<void, AxiosError, string>({
     mutationFn: deleteEntityCompanyRelation,
-    onSuccess: (_, relation_id) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [undefined, selectedCompanyId, "seller"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [undefined, selectedCompanyId, "buyer"],
+        queryKey: ["entityCompanyRelations"],
       });
       toast.success("Успешно удалено");
     },
@@ -55,9 +46,9 @@ export const useEntityCompanyRelationMutations = () => {
   };
 };
 
+// Добавляем отдельный хук для создания связи
 export const useCreateEntityCompanyRelation = () => {
   const queryClient = useQueryClient();
-  const { selectedCompanyId } = useCompany();
 
   return useMutation<
     IEntityCompanyRelationCreate,
@@ -67,10 +58,7 @@ export const useCreateEntityCompanyRelation = () => {
     mutationFn: createEntityCompanyRelation,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [undefined, selectedCompanyId, "seller"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [undefined, selectedCompanyId, "buyer"],
+        queryKey: ["entityCompanyRelations"],
       });
       toast.success("Успешно создано");
     },

@@ -598,10 +598,10 @@ export const RolePermissionsDetailsPage: React.FC = () => {
                         )
                       }
                     >
-                      {selectedRestrictions[permission.permission_id]
+                      {/* {selectedRestrictions[permission.permission_id]
                         ?.length === allRestrictions?.restrictions.length
                         ? "Снять все ограничения"
-                        : "Выбрать все ограничения"}
+                        : "Выбрать все ограничения"} */}
                     </Button>
                   </div>
                 )}

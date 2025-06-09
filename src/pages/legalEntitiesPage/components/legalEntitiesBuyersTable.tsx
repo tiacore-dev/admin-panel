@@ -12,7 +12,9 @@ import {
   setPageSize,
   setShortName,
   setInn,
-  setKpp,
+  // setKpp,
+  setOgrn,
+  setAddress,
 } from "../../../redux/slices/legalEntityBuyersSlice";
 
 interface LegalEntitiesBuyersTableProps {
@@ -28,7 +30,7 @@ export const LegalEntitiesBuyersTable: React.FC<
 > = ({ data = { total: 0, entities: [] }, loading }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { short_name, inn, kpp, page, page_size } = useSelector(
+  const { short_name, inn, ogrn, address, page, page_size } = useSelector(
     (state: RootState) => state.legalEntitiesBuyers
   );
 
@@ -90,39 +92,50 @@ export const LegalEntitiesBuyersTable: React.FC<
       title: "КПП",
       dataIndex: "kpp",
       key: "kpp",
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
-      //   sorter: (a: ILegalEntity, b: ILegalEntity) =>
-      //     (a.kpp || "").localeCompare(b.kpp || ""),
-      //   sortDirections: ["ascend", "descend"],
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder="Поиск по КПП"
-            value={kpp}
-            onChange={(e) => dispatch(setKpp(e.target.value))}
-            style={{ width: 200 }}
-            allowClear
-          />
-        </div>
-      ),
-      filteredValue: kpp ? [kpp] : null,
       render: (text: string) => text || "-",
     },
     {
       title: "ОГРН",
       dataIndex: "ogrn",
       key: "ogrn",
+      filterIcon: (filtered) => (
+        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+      ),
+      filterDropdown: () => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Поиск по ОГРН"
+            value={ogrn}
+            onChange={(e) => dispatch(setOgrn(e.target.value))}
+            style={{ width: 200 }}
+            allowClear
+          />
+        </div>
+      ),
+      filteredValue: ogrn ? [ogrn] : null,
     },
     {
       title: "Адрес",
       dataIndex: "address",
       key: "address",
+      filterIcon: (filtered) => (
+        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+      ),
+      filterDropdown: () => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Поиск по адресу"
+            value={address}
+            onChange={(e) => dispatch(setAddress(e.target.value))}
+            style={{ width: 200 }}
+            allowClear
+          />
+        </div>
+      ),
+      filteredValue: address ? [address] : null,
     },
   ];
 
-  // Фильтрация данных
   const filteredData = data.entities.filter((entity) => {
     const matchesShortName = short_name
       ? entity.short_name.toLowerCase().includes(short_name.toLowerCase())
@@ -130,11 +143,14 @@ export const LegalEntitiesBuyersTable: React.FC<
     const matchesInn = inn
       ? entity.inn.toLowerCase().includes(inn.toLowerCase())
       : true;
-    // const matchesKpp = kpp
-    //   ? (entity.kpp || "").includes(kpp)
-    //   : true;
+    const matchesOgrn = ogrn
+      ? entity.ogrn.toLowerCase().includes(ogrn.toLowerCase())
+      : true;
+    const matchesAddress = address
+      ? entity.address.toLowerCase().includes(address.toLowerCase())
+      : true;
 
-    return matchesShortName && matchesInn;
+    return matchesShortName && matchesInn && matchesOgrn && matchesAddress;
   });
 
   return (

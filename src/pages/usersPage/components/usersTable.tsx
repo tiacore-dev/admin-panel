@@ -1,14 +1,13 @@
 import { IUser } from "../../../api/usersApi";
 import React from "react";
 import type { TableColumnsType } from "antd";
-import { Button, Input, Table, Tag, Typography } from "antd";
+import { Button, Input, Table, Tag, Typography, Radio, Space } from "antd";
 import {
-  // usersSelector,
   setFullName,
   setPage,
   setPageSize,
-  // setPosition,
   setEmail,
+  setIsVerified,
 } from "../../../redux/slices/usersSlice";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,13 +28,23 @@ export const UsersTable: React.FC<UsersTableProps> = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const {
-    email,
-    full_name,
-    //  position,
-    page,
-    page_size,
-  } = useSelector((state: RootState) => state.users);
+  const { email, full_name, page, page_size, is_verified } = useSelector(
+    (state: RootState) => state.users
+  );
+
+  // Фильтрация данных
+  const filteredData = data.users.filter((user) => {
+    const matchesEmail = email
+      ? user.email.toLowerCase().includes(email.toLowerCase())
+      : true;
+    const matchesFullName = full_name
+      ? user.full_name.toLowerCase().includes(full_name.toLowerCase())
+      : true;
+    const matchesStatus =
+      is_verified !== null ? user.is_verified === is_verified : true;
+
+    return matchesEmail && matchesFullName && matchesStatus;
+  });
 
   const columns: TableColumnsType<IUser> = [
     {
@@ -66,7 +75,6 @@ export const UsersTable: React.FC<UsersTableProps> = ({
           />
         </div>
       ),
-      filteredValue: full_name ? [full_name] : null,
     },
     {
       title: "Email",
@@ -88,7 +96,6 @@ export const UsersTable: React.FC<UsersTableProps> = ({
           />
         </div>
       ),
-      filteredValue: email ? [email] : null,
     },
     {
       title: "Статус",
@@ -99,55 +106,46 @@ export const UsersTable: React.FC<UsersTableProps> = ({
           {isVerified ? "Верифицирован" : "Не верифицирован"}
         </Tag>
       ),
-      filters: [
-        { text: "Верифицированные", value: true },
-        { text: "Не верифицированные", value: false },
-      ],
-      onFilter: (value, record) => record.is_verified === value,
+      filterDropdown: () => (
+        <div style={{ padding: 8 }}>
+          <Radio.Group
+            value={is_verified}
+            onChange={(e) => dispatch(setIsVerified(e.target.value))}
+          >
+            <Space direction="vertical">
+              <Radio value={null}>Все статусы</Radio>
+              <Radio value={true}>Верифицированные</Radio>
+              <Radio value={false}>Не верифицированные</Radio>
+            </Space>
+          </Radio.Group>
+        </div>
+      ),
+      filterIcon: (filtered) => (
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <SearchOutlined
+            style={{
+              color: filtered ? "#1890ff" : undefined,
+              marginRight: 4,
+            }}
+          />
+          {filtered && (
+            <span style={{ color: "#1890ff" }}>
+              {is_verified === true
+                ? "Верифицированные"
+                : is_verified === false
+                ? "Не верифицированные"
+                : "Все статусы"}
+            </span>
+          )}
+        </div>
+      ),
     },
-    // {
-    //   title: "Позиция",
-    //   dataIndex: "position",
-    //   key: "position",
-    //   filterIcon: (filtered) => (
-    //     <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-    //   ),
-    //   sorter: (a: IUser, b: IUser) => a.position.localeCompare(b.position),
-    //   sortDirections: ["ascend", "descend"],
-    //   filterDropdown: () => (
-    //     <div style={{ padding: 8 }}>
-    //       <Input
-    //         placeholder="Поиск позиции"
-    //         value={position}
-    //         onChange={(e) => dispatch(setPosition(e.target.value))}
-    //         style={{ width: 200 }}
-    //         allowClear
-    //       />
-    //     </div>
-    //   ),
-    //   filteredValue: position ? [position] : null,
-    // },
   ];
-
-  // Фильтрация данных
-  const filteredData = data.users.filter((user) => {
-    const matchesEmail = email
-      ? user.email.toLowerCase().includes(email.toLowerCase())
-      : true;
-    const matchesFullName = full_name
-      ? user.full_name.toLowerCase().includes(full_name.toLowerCase())
-      : true;
-    // const matchesPosition = position
-    //   ? user.position.toLowerCase().includes(position.toLowerCase())
-    //   : true;
-
-    return matchesEmail && matchesFullName;
-  });
 
   return (
     <Table
       columns={columns}
-      dataSource={filteredData} // Передаем все отфильтрованные данные
+      dataSource={filteredData}
       rowKey="user_id"
       loading={loading}
       pagination={{

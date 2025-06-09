@@ -7,6 +7,7 @@ interface UsersState {
   position: string;
   page: number;
   page_size: number;
+  is_verified: boolean | null; // Добавили поле для статуса
 }
 
 const initialState: UsersState = {
@@ -15,6 +16,7 @@ const initialState: UsersState = {
   position: "",
   page: 1,
   page_size: 10,
+  is_verified: null, // Изначально фильтр не применен
 };
 
 export const usersSlice = createSlice({
@@ -40,7 +42,11 @@ export const usersSlice = createSlice({
       state.position = action.payload;
       state.page = 1;
     },
-    resetState: () => initialState, // Добавляем действие для сброса состояния
+    setIsVerified: (state, action: PayloadAction<boolean | null>) => {
+      state.is_verified = action.payload;
+      state.page = 1;
+    },
+    resetState: () => initialState,
   },
 });
 
@@ -50,6 +56,7 @@ export const {
   setEmail,
   setFullName,
   setPosition,
+  setIsVerified,
   resetState,
 } = usersSlice.actions;
 

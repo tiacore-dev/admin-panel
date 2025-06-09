@@ -1,6 +1,6 @@
-// EntityCompanyRelationsTable.tsx
-import React, { useState } from "react";
-import { Table, Typography, Space, Button, Spin, Dropdown, Tag } from "antd";
+import type React from "react";
+import { useState } from "react";
+import { Table, Typography, Button, Spin, Dropdown } from "antd";
 import { useEntityCompanyQuery } from "../hooks/entityCompanyRelations/useEntityCompanyRelationsQuery";
 import { useLegalEntityQuery } from "../hooks/legalEntities/useLegalEntityQuery";
 import { Link } from "react-router-dom";
@@ -12,6 +12,7 @@ import {
 import { useEntityCompanyRelationMutations } from "../hooks/entityCompanyRelations/useEntityCompanyRelationMutations";
 import { ConfirmDeleteModal } from "./modals/confirmDeleteModal";
 import { usePermissions } from "../context/permissionsContext";
+import type { ILegalEntity } from "../api/legalEntitiesApi";
 
 interface EntityCompanyRelationsTableProps {
   companyId: string;
@@ -21,21 +22,28 @@ interface EntityCompanyRelationsTableProps {
 
 export const EntityCompanyRelationsTable: React.FC<
   EntityCompanyRelationsTableProps
-> = ({ companyId, relationType, title }) => {
+> = ({ companyId, relationType }) => {
   const {
     data: relationsData,
     isLoading,
     isError,
-    refetch,
+    refetch: refetchRelations,
   } = useEntityCompanyQuery(undefined, companyId, relationType);
   const { hasPermission } = usePermissions();
   const { data: legalEntitiesData } = useLegalEntityQuery();
   const { mutate: deleteMutation } = useEntityCompanyRelationMutations();
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedRelationId, setSelectedRelationId] = useState<string | null>(
     null
   );
+  const [searchParams] = useState({
+    short_name: "",
+    inn: "",
+    ogrn: "",
+    address: "",
+    page: 1,
+    page_size: 10,
+  });
 
   if (isError)
     return (
@@ -49,6 +57,11 @@ export const EntityCompanyRelationsTable: React.FC<
     ])
   );
 
+  const legalEntities =
+    (relationsData?.relations
+      ?.map((relation) => legalEntitiesMap.get(relation.legal_entity_id))
+      .filter((entity) => entity !== undefined) as ILegalEntity[]) || [];
+
   const handleDelete = (relationId: string) => {
     setSelectedRelationId(relationId);
     setShowDeleteConfirm(true);
@@ -59,7 +72,7 @@ export const EntityCompanyRelationsTable: React.FC<
       deleteMutation(selectedRelationId, {
         onSuccess: () => {
           setShowDeleteConfirm(false);
-          refetch(); // Обновляем данные таблицы после удаления
+          refetchRelations();
         },
       });
     }
@@ -72,7 +85,7 @@ export const EntityCompanyRelationsTable: React.FC<
       items.push({
         key: "delete",
         icon: <DeleteOutlined />,
-        label: "Удалить",
+        label: "Удалить из компании",
         danger: true,
         onClick: () => handleDelete(relationId),
       });
@@ -84,40 +97,64 @@ export const EntityCompanyRelationsTable: React.FC<
   const columns = [
     {
       title: relationType === "seller" ? "Организация" : "Контрагент",
-      key: "legal_entity",
-      render: (record: any) => {
-        const legalEntity = legalEntitiesMap.get(record.legal_entity_id);
-        return (
-          <Space>
-            <Link
-              to={
-                relationType === "seller"
-                  ? `/legal-entities/sellers/${record.legal_entity_id}`
-                  : `/legal-entities/buyers/${record.legal_entity_id}`
-              }
-            >
-              <ExportOutlined />
-            </Link>
-            {legalEntity?.short_name || record.legal_entity_id}
-          </Space>
-        );
-      },
+      dataIndex: "short_name",
+      key: "short_name",
+      render: (text: string, record: ILegalEntity) => (
+        <>
+          {" "}
+          <Link
+            to={`/legal-entities/${relationType}s/${record.legal_entity_id}`}
+          >
+            <ExportOutlined />
+          </Link>{" "}
+          {text}
+        </>
+      ),
     },
-    // {
-    //   title: "Тип связи",
-    //   key: "relation_type",
-    //   render: (record: any) => (
-    //     <Tag color={record.relation_type === "seller" ? "green" : "blue"}>
-    //       {record.relation_type === "seller" ? "Продавец" : "Покупатель"}
-    //     </Tag>
-    //   ),
-    // },
+    {
+      title: "ИНН",
+      dataIndex: "inn",
+      key: "inn",
+    },
+    {
+      title: "КПП",
+      dataIndex: "kpp",
+      key: "kpp",
+      render: (text: string) => text || "-",
+    },
+    {
+      title: "ОГРН",
+      dataIndex: "ogrn",
+      key: "ogrn",
+    },
+    {
+      title: "Адрес",
+      dataIndex: "address",
+      key: "address",
+    },
+    ...(relationType === "seller"
+      ? [
+          {
+            title: "Ставка НДС",
+            dataIndex: "vat_rate",
+            key: "vat_rate",
+            render: (vatRate: number) =>
+              vatRate === 0 ? "НДС не облагается" : `${vatRate}%`,
+          },
+        ]
+      : []),
     {
       title: "",
       key: "actions",
       width: 48,
-      render: (record: any) => {
-        const menuItems = getMenuItems(record.entity_company_relation_id);
+      render: (record: ILegalEntity) => {
+        const relation = relationsData?.relations.find(
+          (r) => r.legal_entity_id === record.legal_entity_id
+        );
+
+        if (!relation) return null;
+
+        const menuItems = getMenuItems(relation.entity_company_relation_id);
         if (menuItems.length === 0) return null;
 
         return (
@@ -135,13 +172,21 @@ export const EntityCompanyRelationsTable: React.FC<
 
   return (
     <div style={{ marginBottom: 24 }}>
-      {/* <Typography.Title level={4}>{title}</Typography.Title> */}
       <Spin spinning={isLoading}>
         <Table
           columns={columns}
-          dataSource={relationsData?.relations || []}
-          rowKey="entity_company_relation_id"
-          pagination={false}
+          dataSource={legalEntities}
+          rowKey="legal_entity_id"
+          pagination={{
+            current: searchParams.page,
+            pageSize: searchParams.page_size,
+            total: legalEntities.length,
+            showSizeChanger: true,
+            pageSizeOptions: ["10", "20", "50", "100"],
+            showTotal: (total) => (
+              <Typography.Text>Всего: {total}</Typography.Text>
+            ),
+          }}
         />
       </Spin>
 
@@ -149,7 +194,7 @@ export const EntityCompanyRelationsTable: React.FC<
         <ConfirmDeleteModal
           onConfirm={confirmDelete}
           onCancel={() => setShowDeleteConfirm(false)}
-          isDeleteLoading={false} // Можно добавить состояние загрузки из мутации, если нужно
+          isDeleteLoading={false}
         />
       )}
     </div>

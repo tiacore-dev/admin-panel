@@ -13,7 +13,7 @@ import { CreateSellerModal } from "./components/createSellerModal";
 
 export const LegalEntitiesSellersPage: React.FC = () => {
   const dispatch = useDispatch();
-  const { short_name, inn, kpp } = useSelector(
+  const { short_name, inn } = useSelector(
     (state: RootState) => state.legalEntitiesSellers
   );
   const [modalVisible, setModalVisible] = useState(false);
@@ -62,7 +62,7 @@ export const LegalEntitiesSellersPage: React.FC = () => {
                   <Button
                     onClick={handleResetFilters}
                     icon={<ClearOutlined />}
-                    disabled={!short_name && !inn && !kpp}
+                    disabled={!short_name && !inn}
                   >
                     Сбросить фильтры
                   </Button>
@@ -75,14 +75,15 @@ export const LegalEntitiesSellersPage: React.FC = () => {
             </div>
           )}
           {isError && <BackButton />}
-
-          <CreateSellerModal
-            visible={modalVisible}
-            onCancel={() => setModalVisible(false)}
-            onSuccess={handleSuccess}
-          />
         </>
       )}
+
+      <CreateSellerModal
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        onSuccess={handleSuccess}
+        showCompanySelect={true} // Включаем выбор компании
+      />
     </div>
   );
 };
