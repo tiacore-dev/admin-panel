@@ -17,8 +17,8 @@ import { UsersPage } from "./pages/usersPage/usersPage";
 import { UserDetailsPage } from "./pages/usersPage/userDetailsPage";
 import { CompaniesPage } from "./pages/companiesPage/companiesPage";
 import { CompanyDetailsPage } from "./pages/companiesPage/companyDetailsPage";
-import { LegalEntitiesPage } from "./pages/legalEntitiesPage/legalEntitiesPage";
-import { LegalEntityDetailsPage } from "./pages/legalEntitiesPage/legalEntityDetailsPage";
+// import { LegalEntitiesPage } from "./pages/legalEntitiesPage/legalEntitiesPage";
+// import { LegalEntityDetailsPage } from "./pages/legalEntitiesPage/legalEntityDetailsPage";
 import { RolePermissionsPage } from "./pages/rolePermissionsPage/rolePermissionsPage";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
@@ -34,6 +34,10 @@ import { AccountPage } from "./pages/accountPage/accountPage";
 import { AcceptInvitePage } from "./pages/invitePages/acceptInvitePage";
 import { themeConfig } from "./theme/themeConfig";
 import { InviteRegistrationPage } from "./pages/invitePages/inviteRegistrationPage";
+import { LegalEntitiesBuyersPage } from "./pages/legalEntitiesPage/legalEntitiesBuyersPage";
+import { BuyerDetailsPage } from "./pages/legalEntitiesPage/buyerDetailsPage";
+import { LegalEntitiesSellersPage } from "./pages/legalEntitiesPage/legalEntitiesSellersPage";
+import { SellerDetailsPage } from "./pages/legalEntitiesPage/sellerDetailsPage";
 dayjs.extend(updateLocale);
 dayjs.extend(weekday);
 dayjs.extend(weekOfYear);
@@ -72,12 +76,20 @@ const App: React.FC = () => {
                       element={<CompanyDetailsPage />}
                     />
                     <Route
-                      path="/legal_entities"
-                      element={<LegalEntitiesPage />}
+                      path="/legal-entities/buyers"
+                      element={<LegalEntitiesBuyersPage />}
                     />
                     <Route
-                      path="/legal_entities/:legal_entity_id"
-                      element={<LegalEntityDetailsPage />}
+                      path="/legal-entities/buyers/:legal_entity_id"
+                      element={<BuyerDetailsPage />}
+                    />
+                    <Route
+                      path="/legal-entities/sellers"
+                      element={<LegalEntitiesSellersPage />}
+                    />
+                    <Route
+                      path="/legal-entities/sellers/:legal_entity_id"
+                      element={<SellerDetailsPage />}
                     />
                     <Route
                       path="/role_permissions_relations"

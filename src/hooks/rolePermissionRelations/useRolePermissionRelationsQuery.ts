@@ -10,7 +10,7 @@ export interface IRolePermissionsResponse {
 }
 
 export interface IRolePermissionsQueryParams {
-  role?: string;
+  role_id?: string;
   page?: number;
   page_size?: number;
 }

@@ -31,56 +31,56 @@ export const fetchPermissions = async () => {
 };
 
 // Функция для создания нового
-export const createPermission = async (newPermission: {
-  permission_id: string;
-  permission_name: string;
-  comment?: string;
-}): Promise<IPermission> => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
-  const accessToken = localStorage.getItem("access_token");
-  const response = await axiosInstance.post(
-    `${url}/api/permissions/add`,
-    newPermission,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  return response.data;
-};
+// export const createPermission = async (newPermission: {
+//   permission_id: string;
+//   permission_name: string;
+//   comment?: string;
+// }): Promise<IPermission> => {
+//   const url = process.env.REACT_APP_AUTH_API_URL;
+//   const accessToken = localStorage.getItem("access_token");
+//   const response = await axiosInstance.post(
+//     `${url}/api/permissions/add`,
+//     newPermission,
+//     {
+//       headers: {
+//         Authorization: `Bearer ${accessToken}`,
+//         "Content-Type": "application/json",
+//       },
+//     }
+//   );
+//   return response.data;
+// };
 
-//изменить данные
-export const updatePermission = async (
-  permission_id: string,
-  updatedData: any
-) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
-  const accessToken = localStorage.getItem("access_token");
-  const response = await axiosInstance.patch(
-    `${url}/api/permissions/${permission_id}`,
-    updatedData,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  return response.data;
-};
+// //изменить данные
+// export const updatePermission = async (
+//   permission_id: string,
+//   updatedData: any
+// ) => {
+//   const url = process.env.REACT_APP_AUTH_API_URL;
+//   const accessToken = localStorage.getItem("access_token");
+//   const response = await axiosInstance.patch(
+//     `${url}/api/permissions/${permission_id}`,
+//     updatedData,
+//     {
+//       headers: {
+//         Authorization: `Bearer ${accessToken}`,
+//         "Content-Type": "application/json",
+//       },
+//     }
+//   );
+//   return response.data;
+// };
 
-//удалить данные
+// //удалить данные
 
-export const deletePermission = async (permission_id: string) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
-  const accessToken = localStorage.getItem("access_token");
+// export const deletePermission = async (permission_id: string) => {
+//   const url = process.env.REACT_APP_AUTH_API_URL;
+//   const accessToken = localStorage.getItem("access_token");
 
-  await axiosInstance.delete(`${url}/api/permissions/${permission_id}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-  });
-};
+//   await axiosInstance.delete(`${url}/api/permissions/${permission_id}`, {
+//     headers: {
+//       Authorization: `Bearer ${accessToken}`,
+//       "Content-Type": "application/json",
+//     },
+//   });
+// };

@@ -3,70 +3,64 @@ import { axiosInstance } from "../axiosConfig";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 
-export interface ILegalEntity {
-  legal_entity_id: string;
-  legal_entity_name: string;
-  inn: string;
-  kpp?: string;
-  vat_rate?: number;
-  address: string;
-  entity_type?: string;
-  signer?: string;
-  company: string | null;
+export interface ILegalEntityCreate {
+  full_name?: string;
+  short_name: string; //[3, 100] characters
+  inn: string; //[10, 12] characters
+  kpp?: string; // Expand all( string | null)
+  opf?: string; // Expand all( string | null)
+  ogrn: string; //13 characters
+  vat_rate?: number; // Expand all(integer | null)
+  address: string; //[5, 255] characters
+  entity_type_id?: string; // Expand all( string | null)
+  signer?: string; // Expand all( string | null)
+  company_id: string; // Expand all stringuuid4
+  relation_type: string; // Expand all string
 }
 
-// Функция для получения списка пользователей с параметрами
-export const fetchLegalEntities = async (selectedCompanyId?: string | null) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
-  const accessToken = localStorage.getItem("access_token");
-  const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
-  // const selectedCompanyId = localStorage.getItem("selectedCompanyId");
+export interface ILegalEntityINNCreate {
+  inn: string; //[10, 12] characters
+  kpp?: string; // Expand all(string | null)
+  company_id: string; // Expand allstringuuid4
+  relation_type: string; // Expand allstring
+}
+export interface ILegalEntityEdit {
+  full_name?: string;
+  short_name: string; //[3, 100] characters
+  inn: string; //[10, 12] characters
+  kpp?: string; // Expand all( string | null)
+  opf?: string; // Expand all( string | null)
+  ogrn: string; //13 characters
+  vat_rate?: number; // Expand all(integer | null) (0/5/7/20)
+  address: string; //[5, 255] characters
+  entity_type_id?: string; // Expand all( string | null)
+  signer?: string; // Expand all( string | null)
+}
+export interface ILegalEntity {
+  legal_entity_id: string;
+  full_name?: string;
+  short_name: string; //[3, 100] characters
+  inn: string; //[10, 12] characters
+  kpp?: string; // Expand all( string | null)
+  opf?: string; // Expand all( string | null)
+  ogrn: string; //13 characters
+  vat_rate?: number; // Expand all(integer | null) (0/5/7/20)
+  address: string; //[5, 255] characters
+  entity_type_id?: string; // Expand all( string | null)
+  signer?: string; // Expand all( string | null)
+}
+export interface ILegalEntityINN {
+  legal_entity_id: string;
+  legal_entity_name?: string;
+}
 
-  const params: any = { page: 1, page_size: 100 };
-  if (!isSuperadmin && selectedCompanyId) {
-    params.company = selectedCompanyId;
-  }
-
-  const response = await axiosInstance.get(`${url}/api/legal-entities/all`, {
-    params,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-  });
-  return response.data;
-};
-
-export const fetchLegalEntitiesFiltred = async (company_id: string) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
-  const accessToken = localStorage.getItem("access_token");
-  const params: any = { company: company_id, page: 1, page_size: 100 };
-  const response = await axiosInstance.get(`${url}/api/legal-entities/all`, {
-    params,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-  });
-  return response.data;
-};
-
-// Функция для создания нового
-interface ICreateLegalEntity {
-  legal_entity_name: string;
-  inn: string;
-  kpp?: string;
-  vat_rate: number;
-  address: string;
-  entity_type?: string;
-  signer?: string;
-  // company: string;
-  relation_type: "buyer" | "seller";
-  // description?: string | null;
+export interface ILegalEtitiesResponse {
+  total: number;
+  entities: ILegalEntity[];
 }
 
 export const createLegalEntity = async (
-  newLegalEntity: ICreateLegalEntity
+  newLegalEntity: ILegalEntityCreate
 ): Promise<ILegalEntity> => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");
@@ -76,7 +70,6 @@ export const createLegalEntity = async (
   if (!isSuperadmin && selectedCompanyId) {
     params.company = selectedCompanyId;
   }
-
   const response = await axiosInstance.post(
     `${url}/api/legal-entities/add`,
     newLegalEntity,
@@ -90,56 +83,35 @@ export const createLegalEntity = async (
   );
   return response.data;
 };
-
-//получение инфопмации
-export const fetchLegalEntityDetails = async (legal_entity_id: string) => {
+// /api/legal-entities/add-by-inn
+export const createLegalEntityINN = async (
+  newLegalEntity: ILegalEntityINNCreate
+): Promise<ILegalEntity> => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
-
   const params: any = {};
   if (!isSuperadmin && selectedCompanyId) {
     params.company = selectedCompanyId;
   }
-
-  try {
-    const response = await axiosInstance.get(
-      `${url}/api/legal-entities/${legal_entity_id}`,
-      {
-        params,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    const axiosError = error as AxiosError;
-    if (axiosError.response) {
-      toast.error("Ошибка при загрузке страницы");
-    } else {
-      toast.error("Неизвестная ошибка");
+  const response = await axiosInstance.post(
+    `${url}/api/legal-entities/add-by-inn`,
+    newLegalEntity,
+    {
+      params,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
     }
-    throw error;
-  }
+  );
+  return response.data;
 };
-
-//изменить данные
-interface IUpdateLegalEntity {
-  legal_entity_name: string;
-  inn: string;
-  kpp?: string;
-  vat_rate?: number;
-  address: string;
-  entity_type?: string;
-  signer?: string;
-}
-
+// /api/legal-entities/{legal_entity_id}
 export const updateLegalEntity = async (
   legal_entity_id: string,
-  updatedData: IUpdateLegalEntity
+  updatedData: ILegalEntityEdit
 ) => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");
@@ -163,20 +135,16 @@ export const updateLegalEntity = async (
   );
   return response.data;
 };
-
-//удалить данные
-
+// /api/legal-entities/{legal_entity_id}
 export const deleteLegalEntity = async (legal_entity_id: string) => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
-
   const params: any = {};
   if (!isSuperadmin && selectedCompanyId) {
     params.company = selectedCompanyId;
   }
-
   await axiosInstance.delete(`${url}/api/legal-entities/${legal_entity_id}`, {
     params,
     headers: {
@@ -185,36 +153,76 @@ export const deleteLegalEntity = async (legal_entity_id: string) => {
     },
   });
 };
-
-export interface IInnKppResponse {
-  legal_entity_id: string;
-}
-
-export const fetchLegalEntityByInnKpp = async (
-  inn: string,
-  kpp: string | null = null
-): Promise<IInnKppResponse> => {
+// /api/legal-entities/{legal_entity_id}
+export const fetchLegalEntityDetails = async (legal_entity_id: string) => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
-
-  const params: {
-    inn: string;
-    kpp?: string;
-    company?: string;
-  } = { inn };
-
-  if (kpp) {
-    params.kpp = kpp;
-  }
-
+  const params: any = {};
   if (!isSuperadmin && selectedCompanyId) {
     params.company = selectedCompanyId;
   }
+  try {
+    const response = await axiosInstance.get(
+      `${url}/api/legal-entities/${legal_entity_id}`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    if (axiosError.response) {
+      // toast.error("Ошибка при загрузке страницы");
+    } else {
+      toast.error("Неизвестная ошибка");
+    }
+    throw error;
+  }
+};
+// /api/legal-entities/all
+export const fetchLegalEntities = async (
+  selectedCompanyId?: string | null
+  // company_id?: string
+) => {
+  const url = process.env.REACT_APP_AUTH_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
+  // const selectedCompanyId = localStorage.getItem("selectedCompanyId");
+  const params: any = { page: 1, page_size: 100 };
+  if (!isSuperadmin && selectedCompanyId) {
+    params.company = selectedCompanyId;
+  }
+  // if (company_id) {
+  //   params.company_id = company_id;
+  // }
+  const response = await axiosInstance.get(`${url}/api/legal-entities/all`, {
+    params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+// /api/legal-entities/get-buyers
 
+export const fetchBuyers = async (selectedCompanyId?: string | null) => {
+  const url = process.env.REACT_APP_AUTH_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
+  // const selectedCompanyId = localStorage.getItem("selectedCompanyId");
+  const params: any = { page: 1, page_size: 100 };
+  if (!isSuperadmin && selectedCompanyId) {
+    params.company = selectedCompanyId;
+  }
   const response = await axiosInstance.get(
-    `${url}/api/legal-entities/inn-kpp`,
+    `${url}/api/legal-entities/get-buyers`,
     {
       params,
       headers: {
@@ -223,21 +231,18 @@ export const fetchLegalEntityByInnKpp = async (
       },
     }
   );
-
   return response.data;
 };
-
+// /api/legal-entities/get-sellers
 export const fetchSellers = async (selectedCompanyId?: string | null) => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   // const selectedCompanyId = localStorage.getItem("selectedCompanyId");
-
   const params: any = { page: 1, page_size: 100 };
   // if (!isSuperadmin && selectedCompanyId) {
   params.company = selectedCompanyId;
   // }
-
   const response = await axiosInstance.get(
     `${url}/api/legal-entities/get-sellers`,
     {
@@ -250,20 +255,52 @@ export const fetchSellers = async (selectedCompanyId?: string | null) => {
   );
   return response.data;
 };
-
-export const fetchBuyers = async (selectedCompanyId?: string | null) => {
+// /api/legal-entities/get-by-company
+export const fetchLegalEntitiesByCompany = async (
+  selectedCompanyId?: string | null,
+  company_id?: string
+) => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   // const selectedCompanyId = localStorage.getItem("selectedCompanyId");
-
   const params: any = { page: 1, page_size: 100 };
   if (!isSuperadmin && selectedCompanyId) {
     params.company = selectedCompanyId;
   }
-
+  if (company_id) {
+    params.company_id = company_id;
+  }
   const response = await axiosInstance.get(
-    `${url}/api/legal-entities/get-buyers`,
+    `${url}/api/legal-entities/get-by-company`,
+    {
+      params,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return response.data;
+};
+// /api/legal-entities/inn-kpp
+export const fetchLegalEntityByInnKpp = async (
+  inn: string,
+  kpp?: string
+): Promise<ILegalEntityINN> => {
+  const url = process.env.REACT_APP_AUTH_API_URL;
+  const accessToken = localStorage.getItem("access_token");
+  // const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
+  // const selectedCompanyId = localStorage.getItem("selectedCompanyId");
+  const params: {
+    inn: string;
+    kpp?: string;
+  } = { inn };
+  if (kpp) {
+    params.kpp = kpp;
+  }
+  const response = await axiosInstance.get(
+    `${url}/api/legal-entities/inn-kpp`,
     {
       params,
       headers: {

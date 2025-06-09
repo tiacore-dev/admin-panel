@@ -5,12 +5,13 @@ export interface IRolePermission {
   role_permission_id: string;
   role_id: string;
   permission_id: string;
+  restriction_id?: string;
   application_id?: string;
 }
 
 // Функция для получения списка с параметрами
 export const fetchRolePermissions = async (params?: {
-  role?: string;
+  role_id?: string;
   page?: number;
   page_size?: number;
 }) => {
@@ -20,7 +21,7 @@ export const fetchRolePermissions = async (params?: {
   const queryParams = {
     page: params?.page || 1,
     page_size: params?.page_size || 100,
-    ...(params?.role && { role: params.role }), // Добавляем legal_entity только если он передан
+    ...(params?.role_id && { role_id: params.role_id }), // Добавляем legal_entity только если он передан
   };
 
   const response = await axiosInstance.get(
@@ -41,6 +42,7 @@ export const fetchRolePermissions = async (params?: {
 export const createRolePermission = async (newRolePermission: {
   role_id: string;
   permission_id: string;
+  restriction_id?: string;
   application_id?: string;
 }): Promise<IRolePermission> => {
   const url = process.env.REACT_APP_AUTH_API_URL;

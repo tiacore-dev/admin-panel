@@ -35,22 +35,19 @@ export const Navbar: React.FC = () => {
 
   const mainItems = [
     { label: "Главная", key: "/home" },
-    { label: "Контрагенты", key: "/legal_entities" },
+    { label: "Контрагенты", key: "/legal-entities/buyers" },
+    { label: "Организации", key: "/legal-entities/sellers" },
     { label: "Компании", key: "/companies" },
-    // { label: "Договоры", key: "/contracts" },
-    // { label: "Счета", key: "/bills" },
-    // { label: "Акты", key: "/acts" },
   ];
 
   const settingsItems = [
-    // { label: "Услуги", key: "/services" },
-    // { label: "Шаблоны", key: "/templates" },
-    ...(isSuperadmin
-      ? [
-          { label: "Пользователи", key: "/users" },
-          { label: "Управление доступом", key: "/role_permissions_relations" },
-        ]
-      : []),
+    ...// (isSuperadmin
+    //   ?
+    [
+      { label: "Пользователи", key: "/users" },
+      { label: "Управление доступом", key: "/role_permissions_relations" },
+    ],
+    // : []),
   ];
 
   // Пункты меню для обычного пользователя (аккаунт и выход)

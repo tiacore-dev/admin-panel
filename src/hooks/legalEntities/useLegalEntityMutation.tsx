@@ -1,89 +1,97 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createLegalEntity,
+  createLegalEntityINN,
   updateLegalEntity,
   deleteLegalEntity,
+  ILegalEntityCreate,
+  ILegalEntityINNCreate,
+  ILegalEntityEdit,
+  ILegalEntity,
 } from "../../api/legalEntitiesApi";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useCompany } from "../../context/companyContext";
+import { toast } from "react-hot-toast";
 import { AxiosError } from "axios";
-import { Button } from "antd";
 
-export const useLegalEntityMutations = (
-  legal_entity_id: string,
-  legal_entity_name: string,
-  inn: string,
-  vat_rate: number | null,
-  address: string,
-  signer: string | null,
-  company: string,
-  kpp: string | null,
-  entity_type?: string,
-  // description?: string,
-  setIsEditing?: (val: boolean) => void
-) => {
+export const useCreateLegalEntity = () => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-
-  const createMutation = useMutation({
+  const { selectedCompanyId } = useCompany();
+  return useMutation<ILegalEntity, AxiosError, ILegalEntityCreate>({
     mutationFn: createLegalEntity,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["legalEntitiesSellers"] });
-      queryClient.invalidateQueries({ queryKey: ["legalEntitiesBuyers"] });
-      toast.success(
-        <div>
-          Контрагент успешно добавлен{" "}
-          <Button
-            type="link"
-            onClick={() => navigate(`/legal_entities/${data.legal_entity_id}`)}
-          >
-            Подробнее
-          </Button>
-        </div>
-      );
-    },
-    onError: (error: AxiosError) => {
-      toast.error("Ошибка при добавлении контрагента");
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (editedData: any) =>
-      legal_entity_id
-        ? updateLegalEntity(legal_entity_id, editedData)
-        : Promise.reject(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["legalEntities"] });
       queryClient.invalidateQueries({
-        queryKey: ["legalEntitiesForSelection"],
+        queryKey: ["legalEntities", selectedCompanyId],
       });
-      if (legal_entity_id) {
-        queryClient.invalidateQueries({
-          queryKey: ["legalEntityDetails", legal_entity_id],
-        });
-      }
-      setIsEditing && setIsEditing(false);
-      toast.success("Информация обновлена");
+      toast.success("Успешно создано");
     },
-    onError: () => {
-      toast.error("Ошибка при обновлении данных");
+    onError: (error) => {
+      toast.error(`Ошибка при создании: ${error.message}`);
     },
   });
+};
 
-  const deleteMutation = useMutation({
-    mutationFn: () =>
-      legal_entity_id ? deleteLegalEntity(legal_entity_id) : Promise.reject(),
+export const useCreateLegalEntityByINN = () => {
+  const queryClient = useQueryClient();
+  const { selectedCompanyId } = useCompany();
+  return useMutation<ILegalEntity, AxiosError, ILegalEntityINNCreate>({
+    mutationFn: createLegalEntityINN,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["legalEntities"] });
       queryClient.invalidateQueries({
-        queryKey: ["legalEntitiesForSelection"],
+        queryKey: ["legalEntities", selectedCompanyId],
+      });
+      toast.success("Успешно создано по ИНН");
+    },
+    onError: (error) => {
+      toast.error(`Ошибка при создании: ${error.message}`);
+    },
+  });
+};
+
+export const useUpdateLegalEntity = () => {
+  const queryClient = useQueryClient();
+  const { selectedCompanyId } = useCompany();
+  return useMutation<
+    ILegalEntity,
+    AxiosError,
+    { legal_entity_id: string; updatedData: ILegalEntityEdit }
+  >({
+    mutationFn: ({ legal_entity_id, updatedData }) =>
+      updateLegalEntity(legal_entity_id, updatedData),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["legalEntities", selectedCompanyId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [
+          "legalEntityDetails",
+          variables.legal_entity_id,
+          selectedCompanyId,
+        ],
+      });
+      toast.success("Успешно изменено");
+    },
+    onError: (error) => {
+      toast.error(`Ошибка при редактировании: ${error.message}`);
+    },
+  });
+};
+
+export const useDeleteLegalEntity = () => {
+  const queryClient = useQueryClient();
+  const { selectedCompanyId } = useCompany();
+  return useMutation<void, AxiosError, string>({
+    mutationFn: deleteLegalEntity,
+    onSuccess: (_, legal_entity_id) => {
+      queryClient.invalidateQueries({
+        queryKey: ["legalEntities", selectedCompanyId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["legalEntityDetails", legal_entity_id, selectedCompanyId],
       });
       toast.success("Успешно удалено");
     },
-    onError: () => {
-      toast.error("Ошибка при удалении");
+    onError: (error) => {
+      toast.error(`Ошибка при удалении: ${error.message}`);
     },
   });
-
-  return { createMutation, updateMutation, deleteMutation };
 };

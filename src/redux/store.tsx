@@ -1,16 +1,17 @@
-// src/redux/store.ts
 import { configureStore } from "@reduxjs/toolkit";
 import { usersReducer } from "./slices/usersSlice";
 import { companiesReducer } from "./slices/companiesSlice";
-import { legalEntitiesReducer } from "./slices/legalEntitiesSlice";
 import breadcrumbsReducer from "./slices/breadcrumbsSlice";
+import { legalEntitiesBuyersReducer } from "./slices/legalEntityBuyersSlice";
+import { legalEntitiesSellersReducer } from "./slices/legalEntitySellersSlice";
 
 export const store = configureStore({
   reducer: {
     users: usersReducer,
     companies: companiesReducer,
-    legalEntities: legalEntitiesReducer,
+    legalEntitiesBuyers: legalEntitiesBuyersReducer,
     breadcrumbs: breadcrumbsReducer,
+    legalEntitiesSellers: legalEntitiesSellersReducer,
   },
 });
 

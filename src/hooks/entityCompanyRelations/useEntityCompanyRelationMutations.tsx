@@ -1,63 +1,81 @@
-// src/hooks/useServiceMutations.tsx
+// useEntityCompanyRelationMutations.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createEntityCompanyRelation } from "../../api/entityCompanyRelationsApi";
+import {
+  createEntityCompanyRelation,
+  deleteEntityCompanyRelation,
+  IEntityCompanyRelationCreate,
+} from "../../api/entityCompanyRelationsApi";
 import toast from "react-hot-toast";
-// import { useNavigate } from "react-router-dom";
-import { AxiosError } from "axios"; // Импортируем AxiosError для обработки ошибок
-// import { Button } from "antd";
+import { AxiosError } from "axios";
+import { useCompany } from "../../context/companyContext";
 
-export const useEntityCompanyRelationsMutations = (
-  entity_company_relation_id: string,
-  legal_entity_id: string,
-  company_id: string,
-  relation_type: string,
-  setIsEditing?: (val: boolean) => void
-) => {
+export const useEntityCompanyRelationMutations = () => {
   const queryClient = useQueryClient();
-  // const navigate = useNavigate();
+  const { selectedCompanyId } = useCompany();
 
-  const createMutation = useMutation({
+  const createMutation = useMutation<
+    IEntityCompanyRelationCreate,
+    AxiosError,
+    IEntityCompanyRelationCreate
+  >({
     mutationFn: createEntityCompanyRelation,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["entity_company_relation"] });
-      queryClient.invalidateQueries({ queryKey: ["legalEntitiesSellers"] });
-      queryClient.invalidateQueries({ queryKey: ["legalEntitiesBuyers"] });
-      toast.success(<div>Успешно добавлено </div>);
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [undefined, selectedCompanyId, "seller"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [undefined, selectedCompanyId, "buyer"],
+      });
+      toast.success("Успешно создано");
     },
-    onError: (error: AxiosError) => {
-      toast.error("Ошибка при добавлении");
+    onError: (error) => {
+      toast.error(`Ошибка при создании: ${error.message}`);
     },
   });
-  //   const updateMutation = useMutation({
-  //     mutationFn: (editedData: any) =>
-  //       user_id ? updateUser(user_id, editedData) : Promise.reject(),
-  //     onSuccess: () => {
-  //       if (user_id) {
-  //         queryClient.invalidateQueries({
-  //           queryKey: ["userDetails", user_id],
-  //         });
-  //       }
-  //       setIsEditing && setIsEditing(false);
-  //       toast.success("Информация обновлена");
-  //     },
-  //     onError: () => {
-  //       toast.error("Ошибка при обновлении данных");
-  //     },
-  //   });
 
-  //   const deleteMutation = useMutation({
-  //     mutationFn: () => (user_id ? deleteUser(user_id) : Promise.reject()),
-  //     onSuccess: () => {
-  //       toast.success("Успешно удалено");
-  //       navigate(-1);
-  //     },
-  //     onError: () => {
-  //       toast.error("Ошибка при удалении");
-  //     },
-  //   });
+  const deleteMutation = useMutation<void, AxiosError, string>({
+    mutationFn: deleteEntityCompanyRelation,
+    onSuccess: (_, relation_id) => {
+      queryClient.invalidateQueries({
+        queryKey: [undefined, selectedCompanyId, "seller"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [undefined, selectedCompanyId, "buyer"],
+      });
+      toast.success("Успешно удалено");
+    },
+    onError: (error) => {
+      toast.error(`Ошибка при удалении: ${error.message}`);
+    },
+  });
 
   return {
-    createMutation,
-    // , updateMutation, deleteMutation
+    mutate: deleteMutation.mutate,
+    createRelation: createMutation.mutate,
   };
+};
+
+export const useCreateEntityCompanyRelation = () => {
+  const queryClient = useQueryClient();
+  const { selectedCompanyId } = useCompany();
+
+  return useMutation<
+    IEntityCompanyRelationCreate,
+    AxiosError,
+    IEntityCompanyRelationCreate
+  >({
+    mutationFn: createEntityCompanyRelation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [undefined, selectedCompanyId, "seller"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [undefined, selectedCompanyId, "buyer"],
+      });
+      toast.success("Успешно создано");
+    },
+    onError: (error) => {
+      toast.error(`Ошибка при создании: ${error.message}`);
+    },
+  });
 };

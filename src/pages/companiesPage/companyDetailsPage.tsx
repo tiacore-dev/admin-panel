@@ -1,3 +1,4 @@
+// companyDetailsPage.tsx
 import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
@@ -11,10 +12,10 @@ import { CompanyCard } from "./components/companyDetailsCard";
 import { CompanyFormModal } from "./components/companyFormModal";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { UserCompanyRelationsTable } from "../../components/userCompanyRelations/userCompanyRelationsTable";
-import { LegalEntitiesTable } from "../legalEntitiesPage/components/legalEntitiesTable";
-import { useLegalEntitiesSellers } from "../../hooks/legalEntities/useLegalEntityQuery";
-import { LegalEntityFormModal } from "../legalEntitiesPage/components/legalEntityFormModal";
 import { usePermissions } from "../../context/permissionsContext";
+import { EntityCompanyRelationsTable } from "../../components/entityCompanyRelations";
+import { CreateSellerModal } from "./components/createSellerModal";
+import { CreateBuyerModal } from "./components/createBuyerModal";
 
 export const CompanyDetailsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -22,8 +23,9 @@ export const CompanyDetailsPage: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { company_id } = useParams<{ company_id: string }>();
   const [showEditModal, setShowEditModal] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const { hasPermission } = usePermissions(); // Добавьте этот хук
+  const [showSellerModal, setShowSellerModal] = useState(false);
+  const [showBuyerModal, setShowBuyerModal] = useState(false);
+  const { hasPermission } = usePermissions();
 
   const {
     data: companyDetails,
@@ -31,8 +33,6 @@ export const CompanyDetailsPage: React.FC = () => {
     isError,
     refetch,
   } = useCompanyDetailsQuery(company_id!);
-
-  const { data: legalEntitiesData } = useLegalEntitiesSellers(company_id);
 
   const { deleteMutation } = useCompanyMutations(
     company_id || "",
@@ -69,6 +69,16 @@ export const CompanyDetailsPage: React.FC = () => {
     refetch();
   }, [refetch]);
 
+  const handleSellerSuccess = useCallback(() => {
+    setShowSellerModal(false);
+    refetch();
+  }, [refetch]);
+
+  const handleBuyerSuccess = useCallback(() => {
+    setShowBuyerModal(false);
+    refetch();
+  }, [refetch]);
+
   return (
     <div>
       {isLoading ? (
@@ -102,43 +112,54 @@ export const CompanyDetailsPage: React.FC = () => {
                 </Space>
                 <CompanyCard data={companyDetails} loading={isLoading} />
                 <UserCompanyRelationsTable companyId={company_id} />
-                <div>
-                  <div
-                    style={{ display: "flex", marginTop: 16, marginBottom: 16 }}
-                  >
-                    <Typography.Title level={4} style={{ marginRight: 16 }}>
+
+                {/* Таблица организаций (sellers) */}
+                <div style={{ marginBottom: 24, marginTop: 16 }}>
+                  <Space style={{ marginBottom: 16 }}>
+                    <Typography.Title level={4} style={{ margin: 0 }}>
                       Организации
                     </Typography.Title>
+                    {hasPermission("create_entity_company_relation") && (
+                      <Button
+                        // type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => setShowSellerModal(true)}
+                      >
+                        Добавить организацию
+                      </Button>
+                    )}
+                  </Space>
+                  <EntityCompanyRelationsTable
+                    companyId={company_id!}
+                    relationType="seller"
+                    title="Организации"
+                  />
+                </div>
 
-                    {hasPermission("add_legal_entity") &&
-                      hasPermission("add_legal_entity_company_relation") && (
-                        <Button
-                          onClick={() => {
-                            setIsModalVisible(true);
-                          }}
-                          icon={<PlusOutlined />}
-                        >
-                          Добавить
-                        </Button>
-                      )}
-                  </div>
-
-                  <LegalEntitiesTable
-                    data={legalEntitiesData || { total: 0, entities: [] }}
-                    loading={isLoading}
-                    isSellers={true}
-                    customNavigate={(id) =>
-                      navigate(`/legal_entities/${id}`, {
-                        state: {
-                          from: "company",
-                          companyId: company_id,
-                          companyName: companyDetails.company_name,
-                        },
-                      })
-                    }
+                {/* Таблица контрагентов (buyers) */}
+                <div style={{ marginBottom: 24 }}>
+                  <Space style={{ marginBottom: 16 }}>
+                    <Typography.Title level={4} style={{ margin: 0 }}>
+                      Контрагенты
+                    </Typography.Title>
+                    {hasPermission("create_entity_company_relation") && (
+                      <Button
+                        // type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => setShowBuyerModal(true)}
+                      >
+                        Добавить контрагента
+                      </Button>
+                    )}
+                  </Space>
+                  <EntityCompanyRelationsTable
+                    companyId={company_id!}
+                    relationType="buyer"
+                    title="Контрагенты"
                   />
                 </div>
               </div>
+
               {showEditModal && (
                 <CompanyFormModal
                   visible={showEditModal}
@@ -148,6 +169,25 @@ export const CompanyDetailsPage: React.FC = () => {
                   initialData={companyDetails}
                 />
               )}
+
+              {showSellerModal && (
+                <CreateSellerModal
+                  visible={showSellerModal}
+                  onCancel={() => setShowSellerModal(false)}
+                  onSuccess={handleSellerSuccess}
+                  companyId={company_id!}
+                />
+              )}
+
+              {showBuyerModal && (
+                <CreateBuyerModal
+                  visible={showBuyerModal}
+                  onCancel={() => setShowBuyerModal(false)}
+                  onSuccess={handleBuyerSuccess}
+                  companyId={company_id!}
+                />
+              )}
+
               {showDeleteConfirm && (
                 <ConfirmDeleteModal
                   onConfirm={handleDelete}
@@ -155,12 +195,6 @@ export const CompanyDetailsPage: React.FC = () => {
                   isDeleteLoading={deleteMutation.isPending}
                 />
               )}
-              <LegalEntityFormModal
-                visible={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
-                mode="create"
-                defaultRelationType="seller"
-              />
             </>
           )}
           {isError && <BackButton />}
