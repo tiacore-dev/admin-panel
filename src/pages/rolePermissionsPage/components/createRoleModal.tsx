@@ -42,7 +42,7 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
 
   return (
     <Modal
-      title="Создание новой роли"
+      title="Создание новой роли (не работает)"
       open={visible}
       onOk={handleOk}
       onCancel={onCancel}
