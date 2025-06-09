@@ -49,7 +49,9 @@ export const LegalEntitiesBuyersTable: React.FC<
         <Button
           type="link"
           onClick={() =>
-            navigate(`/legal-entities/buyers/${record.legal_entity_id}`)
+            navigate(`/legal-entities/buyers/${record.legal_entity_id}`, {
+              state: { fromList: true },
+            })
           }
         >
           {text}

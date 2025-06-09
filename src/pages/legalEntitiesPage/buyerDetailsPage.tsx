@@ -1,6 +1,6 @@
 // src/pages/legalEntityDetailsPage/LegalEntityDetailsPage.tsx
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { BackButton } from "../../components/buttons/backButton";
@@ -30,16 +30,40 @@ export const BuyerDetailsPage: React.FC = () => {
 
   const deleteMutation = useDeleteLegalEntity();
   const updateMutation = useUpdateLegalEntity();
+  const location = useLocation();
+  const { state: locationState } = location;
 
   React.useEffect(() => {
-    dispatch(
-      setBreadcrumbs([
-        { label: "Главная страница", to: "/home" },
-        { label: "Контрагенты", to: "/legal-entities/buyers" },
-        { label: "Детали контрагента", to: "" },
-      ])
-    );
-  }, [dispatch]);
+    if (locationState?.fromCompany) {
+      // Хлебные крошки для перехода из компании
+      dispatch(
+        setBreadcrumbs([
+          { label: "Главная страница", to: "/home" },
+          { label: "Компании", to: "/companies" },
+          {
+            label: locationState.companyName || "Компания",
+            to: `/companies/${locationState.companyId}`,
+          },
+          {
+            label: legalEntity?.short_name || "Детали",
+            to: `/legal-entities/buyers/${legal_entity_id}`,
+          },
+        ])
+      );
+    } else {
+      // Хлебные крошки для перехода из списка
+      dispatch(
+        setBreadcrumbs([
+          { label: "Главная страница", to: "/home" },
+          { label: "Контрагенты", to: "/legal-entities/buyers" },
+          {
+            label: legalEntity?.short_name || "Детали",
+            to: `/legal-entities/buyers/${legal_entity_id}`,
+          },
+        ])
+      );
+    }
+  }, [dispatch, legalEntity, legal_entity_id, locationState]);
 
   const handleDelete = () => {
     if (!legal_entity_id) return;

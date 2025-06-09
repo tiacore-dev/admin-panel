@@ -18,11 +18,12 @@ interface EntityCompanyRelationsTableProps {
   companyId: string;
   relationType: "seller" | "buyer";
   title: string;
+  companyName?: string; // Добавляем новое свойство
 }
 
 export const EntityCompanyRelationsTable: React.FC<
   EntityCompanyRelationsTableProps
-> = ({ companyId, relationType }) => {
+> = ({ companyId, relationType, companyName }) => {
   const {
     data: relationsData,
     isLoading,
@@ -101,9 +102,13 @@ export const EntityCompanyRelationsTable: React.FC<
       key: "short_name",
       render: (text: string, record: ILegalEntity) => (
         <>
-          {" "}
           <Link
             to={`/legal-entities/${relationType}s/${record.legal_entity_id}`}
+            state={{
+              fromCompany: true,
+              companyId: companyId,
+              companyName: companyName,
+            }}
           >
             <ExportOutlined />
           </Link>{" "}

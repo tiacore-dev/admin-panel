@@ -1,5 +1,5 @@
 //companyUseQuery.ts
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import {
   fetchCompanies,
   fetchCompanyDetails,
@@ -25,12 +25,16 @@ export const useCompanyQuery = () => {
   });
 };
 
-export const useCompanyDetailsQuery = (company_id: string) => {
+export const useCompanyDetailsQuery = (
+  company_id: string,
+  options?: { enabled?: boolean }
+) => {
   const { selectedCompanyId } = useCompany();
-  return useQuery({
+  return useQuery<ICompany>({
     queryKey: ["companyDetails", company_id, selectedCompanyId],
     queryFn: () => fetchCompanyDetails(company_id),
     retry: false,
+    ...options, // Распространяем переданные options
   });
 };
 

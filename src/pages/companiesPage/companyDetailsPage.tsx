@@ -132,6 +132,7 @@ export const CompanyDetailsPage: React.FC = () => {
                     companyId={company_id!}
                     relationType="seller"
                     title="Организации"
+                    companyName={companyDetails?.company_name} // Передаем название компании
                   />
                 </div>
 
@@ -154,6 +155,7 @@ export const CompanyDetailsPage: React.FC = () => {
                     companyId={company_id!}
                     relationType="buyer"
                     title="Контрагенты"
+                    companyName={companyDetails?.company_name} // Передаем название компании
                   />
                 </div>
               </div>
@@ -178,12 +180,6 @@ export const CompanyDetailsPage: React.FC = () => {
               )}
 
               {showBuyerModal && (
-                // <CreateBuyerModal
-                //   visible={showBuyerModal}
-                //   onCancel={() => setShowBuyerModal(false)}
-                //   onSuccess={handleBuyerSuccess}
-                //   companyId={company_id!}
-                // />
                 <CreateBuyerModal
                   visible={showBuyerModal}
                   onCancel={() => setShowBuyerModal(false)}

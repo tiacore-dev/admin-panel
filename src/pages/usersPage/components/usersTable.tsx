@@ -59,7 +59,11 @@ export const UsersTable: React.FC<UsersTableProps> = ({
       render: (text: string, record: IUser) => (
         <Button
           type="link"
-          onClick={() => navigate(`/users/${record.user_id}`)}
+          onClick={() =>
+            navigate(`/users/${record.user_id}`, {
+              state: { from: "usersPage" },
+            })
+          }
         >
           {text}
         </Button>

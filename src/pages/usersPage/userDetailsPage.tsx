@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useUserDetailsQuery } from "../../hooks/users/useUserQuery";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { Button, Space, Spin } from "antd";
@@ -11,14 +11,21 @@ import { UserDetailsCard } from "./components/userDetails";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { UserFormModal } from "./components/userFormModal";
 import { UserCompanyRelationsTable } from "../../components/userCompanyRelations/userCompanyRelationsTable";
+import { useCompanyDetailsQuery } from "../../hooks/companies/useCompanyQuery";
 
 export const UserDetailsPage: React.FC = () => {
   const { user_id } = useParams<{ user_id: string }>();
+  const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-
+  const { data: companyDetails } = useCompanyDetailsQuery(
+    location.state?.companyId || "",
+    {
+      enabled: !!location.state?.companyId, // Запрос выполняется только если companyId существует
+    }
+  );
   const {
     data: userDetails,
     isLoading,
@@ -27,15 +34,37 @@ export const UserDetailsPage: React.FC = () => {
 
   useEffect(() => {
     if (userDetails) {
-      dispatch(
-        setBreadcrumbs([
-          { label: "Главная страница", to: "/home" },
-          { label: "Пользователи", to: "/users" },
-          { label: userDetails.full_name, to: `/users/${user_id}` },
-        ])
-      );
+      if (
+        location.state?.from === "companyDetails" &&
+        location.state?.companyId
+      ) {
+        // Хлебные крошки для перехода со страницы компании
+        dispatch(
+          setBreadcrumbs([
+            { label: "Главная страница", to: "/home" },
+            { label: "Компании", to: "/companies" },
+            {
+              label: companyDetails?.company_name || "Компания",
+              to: `/companies/${location.state.companyId}`,
+            },
+            {
+              label: userDetails.full_name,
+              to: `/users/${user_id}`,
+            },
+          ])
+        );
+      } else {
+        // Стандартные хлебные крошки для перехода со страницы пользователей
+        dispatch(
+          setBreadcrumbs([
+            { label: "Главная страница", to: "/home" },
+            { label: "Пользователи", to: "/users" },
+            { label: userDetails.full_name, to: `/users/${user_id}` },
+          ])
+        );
+      }
     }
-  }, [dispatch, userDetails, user_id]);
+  }, [dispatch, userDetails, user_id, location.state, companyDetails]);
 
   const { deleteMutation } = useUserMutations(
     user_id || "",

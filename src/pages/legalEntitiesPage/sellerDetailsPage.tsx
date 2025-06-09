@@ -1,6 +1,6 @@
 // src/pages/legalEntityDetailsPage/LegalEntityDetailsPage.tsx
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { BackButton } from "../../components/buttons/backButton";
@@ -34,16 +34,40 @@ export const SellerDetailsPage: React.FC = () => {
 
   const deleteMutation = useDeleteLegalEntity();
   const updateMutation = useUpdateLegalEntity();
+  const location = useLocation();
+  const { state: locationState } = location;
 
   React.useEffect(() => {
-    dispatch(
-      setBreadcrumbs([
-        { label: "Главная страница", to: "/home" },
-        { label: "Оганизации", to: "/legal-entities/sellers" },
-        { label: "Детали оганизации", to: "" },
-      ])
-    );
-  }, [dispatch]);
+    if (locationState?.fromCompany) {
+      // Хлебные крошки для перехода из компании
+      dispatch(
+        setBreadcrumbs([
+          { label: "Главная страница", to: "/home" },
+          { label: "Компании", to: "/companies" },
+          {
+            label: locationState.companyName || "Компания",
+            to: `/companies/${locationState.companyId}`,
+          },
+          {
+            label: legalEntity?.short_name || "Детали",
+            to: `/legal-entities/sellers/${legal_entity_id}`,
+          },
+        ])
+      );
+    } else {
+      // Хлебные крошки для перехода из списка
+      dispatch(
+        setBreadcrumbs([
+          { label: "Главная страница", to: "/home" },
+          { label: "Организации", to: "/legal-entities/sellers" },
+          {
+            label: legalEntity?.short_name || "Детали",
+            to: `/legal-entities/sellers/${legal_entity_id}`,
+          },
+        ])
+      );
+    }
+  }, [dispatch, legalEntity, legal_entity_id, locationState]);
 
   const handleDelete = () => {
     if (!legal_entity_id) return;
