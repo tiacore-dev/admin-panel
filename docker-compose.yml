@@ -8,9 +8,9 @@ services:
       - "${PORT}:80"  # Вы можете оставить это, чтобы тестировать приложение отдельно, но Nginx будет использовать внутреннюю связь
     restart: always
     networks:
-      - admin_network
+      - auth_network
 
 
 networks:
-  admin_network:
+  auth_network:
     external: true
