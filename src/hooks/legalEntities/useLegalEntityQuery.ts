@@ -10,16 +10,14 @@ import {
   fetchLegalEntitiesByCompany,
   ILegalEntityINN,
 } from "../../api/legalEntitiesApi";
-import { useCompany } from "../../context/companyContext";
 
 // const fetchLegalEntityDetails = async (legal_entity_id: string)
 export const useLegalEntityDetailsQuery = (
   legal_entity_id: string,
   options?: { enabled?: boolean }
 ) => {
-  const { selectedCompanyId } = useCompany();
   return useQuery<ILegalEntity>({
-    queryKey: ["legalEntityDetails", legal_entity_id, selectedCompanyId],
+    queryKey: ["legalEntityDetails", legal_entity_id],
     queryFn: () => {
       if (!legal_entity_id) {
         return Promise.resolve(null);
@@ -33,37 +31,33 @@ export const useLegalEntityDetailsQuery = (
 };
 // export const fetchLegalEntities = async (  selectedCompanyId?: string | null)
 export const useLegalEntityQuery = () => {
-  const { selectedCompanyId } = useCompany();
   return useQuery<ILegalEtitiesResponse>({
-    queryKey: ["legalEntities", selectedCompanyId],
-    queryFn: () => fetchLegalEntities(selectedCompanyId),
+    queryKey: ["legalEntities"],
+    queryFn: () => fetchLegalEntities(),
     retry: false,
   });
 };
 // export const fetchBuyers = async (selectedCompanyId?: string | null)
 export const useLegalEntitiesBuyers = () => {
-  const { selectedCompanyId } = useCompany();
   return useQuery<ILegalEtitiesResponse>({
-    queryKey: ["legalEntitiesBuyers", selectedCompanyId],
-    queryFn: () => fetchBuyers(selectedCompanyId),
+    queryKey: ["legalEntitiesBuyers"],
+    queryFn: () => fetchBuyers(),
     retry: false,
   });
 };
 // export const fetchSellers = async (selectedCompanyId?: string | null)
 export const useLegalEntitiesSellers = () => {
-  const { selectedCompanyId } = useCompany();
   return useQuery<ILegalEtitiesResponse>({
-    queryKey: ["legalEntitiesSellers", selectedCompanyId],
-    queryFn: () => fetchSellers(selectedCompanyId),
+    queryKey: ["legalEntitiesSellers"],
+    queryFn: () => fetchSellers(),
     retry: false,
   });
 };
 // export const fetchLegalEntitiesByCompany = async (selectedCompanyId?: string | null, company_id?: string)
 export const useLegalEntitiesByCompany = (company_id?: string) => {
-  const { selectedCompanyId } = useCompany();
   return useQuery<ILegalEtitiesResponse>({
-    queryKey: ["legalEntitiesByCompany", selectedCompanyId, company_id],
-    queryFn: () => fetchLegalEntitiesByCompany(selectedCompanyId, company_id),
+    queryKey: ["legalEntitiesByCompany", company_id],
+    queryFn: () => fetchLegalEntitiesByCompany(company_id),
     retry: false,
   });
 };

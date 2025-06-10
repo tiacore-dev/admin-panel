@@ -6,7 +6,6 @@ import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { BackButton } from "../../components/buttons/backButton";
 import { Spin, Descriptions, Typography, Button, Space } from "antd";
 import { useLegalEntityDetailsQuery } from "../../hooks/legalEntities/useLegalEntityQuery";
-import { useCompany } from "../../context/companyContext";
 import { useDeleteLegalEntity } from "../../hooks/legalEntities/useLegalEntityMutation";
 import { useUpdateLegalEntity } from "../../hooks/legalEntities/useLegalEntityMutation";
 import { ConfirmDeleteModal } from "../../components/modals/confirmDeleteModal";
@@ -19,7 +18,6 @@ export const SellerDetailsPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { legal_entity_id } = useParams<{ legal_entity_id: string }>();
-  const { selectedCompanyId } = useCompany();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
 

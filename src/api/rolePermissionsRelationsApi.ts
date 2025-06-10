@@ -43,10 +43,8 @@ export const createRolePermission = async (newRolePermission: {
   role_id: string;
   permission_id: string;
   restriction_id?: string;
-  application_id?: string;
 }): Promise<IRolePermission> => {
   const url = process.env.REACT_APP_AUTH_API_URL;
-  newRolePermission.application_id = process.env.REACT_APP_ID;
   const accessToken = localStorage.getItem("access_token");
   const response = await axiosInstance.post(
     `${url}/api/role-permission-relations/add`,

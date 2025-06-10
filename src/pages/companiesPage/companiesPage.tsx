@@ -7,7 +7,6 @@ import { CompanyFormModal } from "./components/companyFormModal";
 import { CompaniesTable } from "./components/companiesTable";
 import { useDispatch, useSelector } from "react-redux";
 import { PlusOutlined, ClearOutlined } from "@ant-design/icons";
-import { usePermissions } from "../../context/permissionsContext";
 
 import {
   // companiesSelector,
@@ -22,7 +21,6 @@ export const CompaniesPage: React.FC = () => {
     search,
     //  page, page_size
   } = useSelector((state: RootState) => state.companies);
-  const { hasPermission } = usePermissions(); // Добавьте этот хук
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
   useEffect(() => {
     dispatch(
@@ -49,14 +47,12 @@ export const CompaniesPage: React.FC = () => {
             <div>
               <div className="main-container">
                 <Space style={{ marginBottom: 16 }}>
-                  {(hasPermission("add_company") || !selectedCompanyId) && (
-                    <Button
-                      onClick={() => setIsModalVisible(true)}
-                      icon={<PlusOutlined />}
-                    >
-                      Добавить компанию
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => setIsModalVisible(true)}
+                    icon={<PlusOutlined />}
+                  >
+                    Добавить компанию
+                  </Button>
 
                   <Button
                     onClick={handleResetFilters}

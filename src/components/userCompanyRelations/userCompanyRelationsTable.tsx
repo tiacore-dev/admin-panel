@@ -22,7 +22,6 @@ import { ConfirmDeleteModal } from "../modals/confirmDeleteModal";
 import { RelationFormModal } from "./userCompanyRelationFormModal";
 import { useRolesQuery } from "../../hooks/role/useRoleQuery";
 import { InviteFormModal } from "../../pages/invitePages/inviteFormModal";
-import { usePermissions } from "../../context/permissionsContext";
 
 const { Text } = Typography;
 
@@ -44,8 +43,6 @@ export const UserCompanyRelationsTable = ({
   // Получаем список всех компаний
   const { data: companiesData, isLoading: companiesLoading } =
     useCompanyQuery();
-
-  const { hasPermission } = usePermissions(); // Добавьте этот хук
 
   const { data: usersData, isLoading: usersLoading } = useUserQueryAll();
 
@@ -120,23 +117,19 @@ export const UserCompanyRelationsTable = ({
   const getMenuItems = (relation: IUserCompanyRelation) => {
     const items = [];
 
-    if (hasPermission("edit_user_company_relation")) {
-      items.push({
-        key: "edit",
-        icon: <EditOutlined />,
-        label: "Редактировать",
-        onClick: () => handleEdit(relation),
-      });
-    }
-    if (hasPermission("delete_user_company_relation")) {
-      items.push({
-        key: "delete",
-        icon: <DeleteOutlined />,
-        label: "Удалить",
-        danger: true,
-        onClick: () => handleDelete(relation),
-      });
-    }
+    items.push({
+      key: "edit",
+      icon: <EditOutlined />,
+      label: "Редактировать",
+      onClick: () => handleEdit(relation),
+    });
+    items.push({
+      key: "delete",
+      icon: <DeleteOutlined />,
+      label: "Удалить",
+      danger: true,
+      onClick: () => handleDelete(relation),
+    });
 
     return items;
   };
@@ -208,7 +201,7 @@ export const UserCompanyRelationsTable = ({
   const showInviteButton = () => {
     if (fromAccount) return false;
     if (userId) return false;
-    return hasPermission("add_user_company_relation");
+    return true;
   };
 
   const showAddButton = () => {

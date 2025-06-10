@@ -12,7 +12,6 @@ import { CompanyCard } from "./components/companyDetailsCard";
 import { CompanyFormModal } from "./components/companyFormModal";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { UserCompanyRelationsTable } from "../../components/userCompanyRelations/userCompanyRelationsTable";
-import { usePermissions } from "../../context/permissionsContext";
 import { EntityCompanyRelationsTable } from "../../components/entityCompanyRelations";
 import { CreateSellerModal } from "../legalEntitiesPage/components/createSellerModal";
 import { CreateBuyerModal } from "../legalEntitiesPage/components/createBuyerModal";
@@ -25,7 +24,6 @@ export const CompanyDetailsPage: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSellerModal, setShowSellerModal] = useState(false);
   const [showBuyerModal, setShowBuyerModal] = useState(false);
-  const { hasPermission } = usePermissions();
 
   const {
     data: companyDetails,
@@ -89,26 +87,22 @@ export const CompanyDetailsPage: React.FC = () => {
             <>
               <div className="main-container">
                 <Space style={{ marginBottom: 16 }}>
-                  {hasPermission("edit_company") && (
-                    <Button
-                      onClick={() => {
-                        setShowEditModal(true);
-                      }}
-                      icon={<EditOutlined />}
-                    >
-                      Редактировать
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => {
+                      setShowEditModal(true);
+                    }}
+                    icon={<EditOutlined />}
+                  >
+                    Редактировать
+                  </Button>
 
-                  {hasPermission("delete_company") && (
-                    <Button
-                      danger
-                      onClick={() => setShowDeleteConfirm(true)}
-                      icon={<DeleteOutlined />}
-                    >
-                      Удалить
-                    </Button>
-                  )}
+                  <Button
+                    danger
+                    onClick={() => setShowDeleteConfirm(true)}
+                    icon={<DeleteOutlined />}
+                  >
+                    Удалить
+                  </Button>
                 </Space>
                 <CompanyCard data={companyDetails} loading={isLoading} />
                 <UserCompanyRelationsTable companyId={company_id} />
@@ -119,14 +113,12 @@ export const CompanyDetailsPage: React.FC = () => {
                     <Typography.Title level={4} style={{ margin: 0 }}>
                       Организации
                     </Typography.Title>
-                    {hasPermission("create_entity_company_relation") && (
-                      <Button
-                        icon={<PlusOutlined />}
-                        onClick={() => setShowSellerModal(true)}
-                      >
-                        Добавить организацию
-                      </Button>
-                    )}
+                    <Button
+                      icon={<PlusOutlined />}
+                      onClick={() => setShowSellerModal(true)}
+                    >
+                      Добавить организацию
+                    </Button>
                   </Space>
                   <EntityCompanyRelationsTable
                     companyId={company_id!}
@@ -142,14 +134,12 @@ export const CompanyDetailsPage: React.FC = () => {
                     <Typography.Title level={4} style={{ margin: 0 }}>
                       Контрагенты
                     </Typography.Title>
-                    {hasPermission("create_entity_company_relation") && (
-                      <Button
-                        icon={<PlusOutlined />}
-                        onClick={() => setShowBuyerModal(true)}
-                      >
-                        Добавить контрагента
-                      </Button>
-                    )}
+                    <Button
+                      icon={<PlusOutlined />}
+                      onClick={() => setShowBuyerModal(true)}
+                    >
+                      Добавить контрагента
+                    </Button>
                   </Space>
                   <EntityCompanyRelationsTable
                     companyId={company_id!}

@@ -8,6 +8,7 @@ export interface IUser {
   email: string;
   full_name: string;
   company_id?: string;
+  password?: string;
   is_verified?: boolean; // Добавляем необязательное поле
 }
 

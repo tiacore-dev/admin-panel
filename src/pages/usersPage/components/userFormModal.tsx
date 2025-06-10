@@ -22,7 +22,7 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
-
+  const [isPasswordChanged, setIsPasswordChanged] = useState(false);
   // Получаем список компаний для выбора
   const { data: companiesData } = useCompaniesForSelection();
   const companies = companiesData?.companies || [];
@@ -31,15 +31,21 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
     useUserMutations(
       initialData?.user_id || "",
       initialData?.email || "",
-      initialData?.full_name || ""
+      initialData?.full_name || "",
+      initialData?.password || ""
     );
-
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (mode === "edit") {
+      setIsPasswordChanged(!!e.target.value);
+    }
+  };
   useEffect(() => {
     if (visible) {
       if (initialData && mode === "edit") {
         form.setFieldsValue({
           email: initialData.email,
           full_name: initialData.full_name,
+          password: initialData.password,
           company_id: initialData.company_id,
           is_verified: initialData.is_verified || false,
         });
@@ -128,17 +134,27 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
           name="email"
           rules={[
             {
-              required: true,
+              required: mode !== "edit",
               message: "Пожалуйста, введите email пользователя",
             },
             {
-              type: "email",
-              message: "Введите корректный email адрес",
+              validator: (_, value) => {
+                if (!value) return Promise.resolve();
+                if (
+                  value === "admin" ||
+                  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+                ) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  new Error('Введите корректный email адрес или "admin"')
+                );
+              },
             },
             { min: 3, message: "Минимум 3 символа" },
           ]}
         >
-          <Input placeholder="Введите email пользователя" />
+          <Input placeholder="Введите email пользователя или 'admin'" />
         </Form.Item>
 
         <Form.Item
@@ -152,7 +168,14 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
             { min: 6, message: "Минимум 6 символов" },
           ]}
         >
-          <Input.Password placeholder="Введите пароль" />
+          <Input.Password
+            placeholder={
+              mode === "edit"
+                ? "Оставьте пустым, чтобы не изменять"
+                : "Введите пароль"
+            }
+            onChange={handlePasswordChange}
+          />
         </Form.Item>
 
         <Form.Item
@@ -160,7 +183,10 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
           name="confirmPassword"
           dependencies={["password"]}
           rules={[
-            { required: true, message: "Пожалуйста, подтвердите пароль" },
+            {
+              required: mode !== "edit" || isPasswordChanged,
+              message: "Пожалуйста, подтвердите пароль",
+            },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue("password") === value) {
@@ -177,7 +203,10 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
           label="Ф.И.О."
           name="full_name"
           rules={[
-            { required: true, message: "Пожалуйста, введите Ф.И.О." },
+            {
+              required: mode !== "edit",
+              message: "Пожалуйста, введите Ф.И.О.",
+            },
             { min: 3, message: "Минимум 3 символа" },
           ]}
         >

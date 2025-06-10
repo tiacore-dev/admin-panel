@@ -3,7 +3,6 @@ import {
   fetchUserCompanyRelations,
   IUserCompanyRelation,
 } from "../../api/userCompanyRelationsApi";
-import { useCompany } from "../../context/companyContext";
 
 export interface IUserCompanyRelationsQueryParams {
   user_id?: string;
@@ -19,14 +18,11 @@ export const useUserRelationsQuery = (
   userId?: string,
   options?: UseQueryOptions<IUserCompanyRelationsResponse>
 ) => {
-  const { selectedCompanyId } = useCompany();
-
   return useQuery<IUserCompanyRelationsResponse>({
-    queryKey: ["userRelations", userId, selectedCompanyId],
+    queryKey: ["userRelations", userId],
     queryFn: () =>
       fetchUserCompanyRelations({
         user_id: userId,
-        company_id: selectedCompanyId || undefined,
       }),
     enabled: !!userId,
     ...options,
@@ -37,12 +33,9 @@ export const useCompanyRelationsQuery = (
   companyId?: string,
   options?: UseQueryOptions<IUserCompanyRelationsResponse>
 ) => {
-  const { selectedCompanyId } = useCompany();
-
   return useQuery<IUserCompanyRelationsResponse>({
-    queryKey: ["companyRelations", companyId, selectedCompanyId],
-    queryFn: () =>
-      fetchUserCompanyRelations({ company_id: companyId }, selectedCompanyId),
+    queryKey: ["companyRelations", companyId],
+    queryFn: () => fetchUserCompanyRelations({ company_id: companyId }),
     enabled: !!companyId,
     ...options,
   });

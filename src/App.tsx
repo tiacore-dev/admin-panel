@@ -28,8 +28,6 @@ import "antd/dist/reset.css";
 import weekday from "dayjs/plugin/weekday";
 import weekOfYear from "dayjs/plugin/weekOfYear";
 import { RolePermissionsDetailsPage } from "./pages/rolePermissionsPage/rolePermissionsDetailsPage";
-import { CompanyProvider } from "./context/companyContext";
-import { PermissionsProvider } from "./context/permissionsContext";
 import { AccountPage } from "./pages/accountPage/accountPage";
 import { AcceptInvitePage } from "./pages/invitePages/acceptInvitePage";
 import { themeConfig } from "./theme/themeConfig";
@@ -52,59 +50,52 @@ const App: React.FC = () => {
     <ConfigProvider locale={ruRU}>
       <ConfigProvider theme={themeConfig}>
         <QueryClientProvider client={queryClient}>
-          <CompanyProvider>
-            <PermissionsProvider>
-              {" "}
-              {/* Обернули все приложение в CompanyProvider */}
-              <Router>
-                <Toaster position="bottom-right" />
-                <Routes>
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/accept-invite" element={<AcceptInvitePage />} />
-                  <Route path="/invite" element={<InviteRegistrationPage />} />
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/home" element={<HomePage />} />
-                    <Route path="/account" element={<AccountPage />} />
-                    <Route path="/users" element={<UsersPage />} />
-                    <Route
-                      path="/users/:user_id"
-                      element={<UserDetailsPage />}
-                    />
-                    <Route path="/companies" element={<CompaniesPage />} />
-                    <Route
-                      path="/companies/:company_id"
-                      element={<CompanyDetailsPage />}
-                    />
-                    <Route
-                      path="/legal-entities/buyers"
-                      element={<LegalEntitiesBuyersPage />}
-                    />
-                    <Route
-                      path="/legal-entities/buyers/:legal_entity_id"
-                      element={<BuyerDetailsPage />}
-                    />
-                    <Route
-                      path="/legal-entities/sellers"
-                      element={<LegalEntitiesSellersPage />}
-                    />
-                    <Route
-                      path="/legal-entities/sellers/:legal_entity_id"
-                      element={<SellerDetailsPage />}
-                    />
-                    <Route
-                      path="/role_permissions_relations"
-                      element={<RolePermissionsPage />}
-                    />
-                    <Route
-                      path="/role_permissions_relations/:role_id"
-                      element={<RolePermissionsDetailsPage />}
-                    />
-                  </Route>
-                  <Route path="*" element={<Navigate to="/login" />} />
-                </Routes>
-              </Router>
-            </PermissionsProvider>
-          </CompanyProvider>
+          {" "}
+          {/* Обернули все приложение в CompanyProvider */}
+          <Router>
+            <Toaster position="bottom-right" />
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/accept-invite" element={<AcceptInvitePage />} />
+              <Route path="/invite" element={<InviteRegistrationPage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/account" element={<AccountPage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/users/:user_id" element={<UserDetailsPage />} />
+                <Route path="/companies" element={<CompaniesPage />} />
+                <Route
+                  path="/companies/:company_id"
+                  element={<CompanyDetailsPage />}
+                />
+                <Route
+                  path="/legal-entities/buyers"
+                  element={<LegalEntitiesBuyersPage />}
+                />
+                <Route
+                  path="/legal-entities/buyers/:legal_entity_id"
+                  element={<BuyerDetailsPage />}
+                />
+                <Route
+                  path="/legal-entities/sellers"
+                  element={<LegalEntitiesSellersPage />}
+                />
+                <Route
+                  path="/legal-entities/sellers/:legal_entity_id"
+                  element={<SellerDetailsPage />}
+                />
+                <Route
+                  path="/role_permissions_relations"
+                  element={<RolePermissionsPage />}
+                />
+                <Route
+                  path="/role_permissions_relations/:role_id"
+                  element={<RolePermissionsDetailsPage />}
+                />
+              </Route>
+              {/* <Route path="*" element={<Navigate to="/login" />} /> */}
+            </Routes>
+          </Router>
         </QueryClientProvider>
       </ConfigProvider>
     </ConfigProvider>

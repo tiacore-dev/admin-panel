@@ -48,9 +48,7 @@ export const createRole = async (data: {
   application_id?: string;
 }): Promise<IRole> => {
   const url = process.env.REACT_APP_AUTH_API_URL;
-  const app_id = process.env.REACT_APP_ID;
   const accessToken = localStorage.getItem("access_token");
-  data.application_id = app_id;
   const response = await axiosInstance.post(`${url}/api/roles/add-many`, data, {
     headers: {
       Authorization: `Bearer ${accessToken}`,

@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import { Button, Typography, Spin, Space } from "antd";
 import "./loginPage.css";
 import { FloatingInput } from "../../components/floatingInput/floatingInput";
-import { UserFormModal } from "../usersPage/components/userFormModal";
+// import { UserFormModal } from "../usersPage/components/userFormModal";
 import {
   useLoginMutation,
   useVerifyEmailMutation,
@@ -40,7 +40,7 @@ export const LoginPage: React.FC = () => {
   const emailValue = watch("email");
   // const navigate = useNavigate();
   const location = useLocation();
-  const [isRegisterModalVisible, setIsRegisterModalVisible] = useState(false);
+  // const [isRegisterModalVisible, setIsRegisterModalVisible] = useState(false);
   const [showResendLink, setShowResendLink] = useState(false);
 
   const resendVerificationMutation = useResendVerificationMutation();
@@ -160,25 +160,25 @@ export const LoginPage: React.FC = () => {
               {loginMutation.isPending ? <Spin size="small" /> : "Войти"}
             </Button>
 
-            <Button
+            {/* <Button
               type="link"
               onClick={() => setIsRegisterModalVisible(true)}
               block
             >
               Зарегистрироваться
-            </Button>
+            </Button> */}
           </Space>
         </form>
       </div>
 
-      <UserFormModal
+      {/* <UserFormModal
         visible={isRegisterModalVisible}
         onCancel={() => setIsRegisterModalVisible(false)}
         onSuccess={() => {
           setIsRegisterModalVisible(false);
         }}
         mode="registration"
-      />
+      /> */}
     </div>
   );
 };
