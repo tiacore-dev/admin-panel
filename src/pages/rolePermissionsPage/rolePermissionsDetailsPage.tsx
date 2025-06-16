@@ -2,7 +2,16 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
-import { Button, Spin, List, Space, Checkbox, Typography } from "antd";
+import {
+  Button,
+  Spin,
+  List,
+  Space,
+  Checkbox,
+  Typography,
+  Input,
+  Modal,
+} from "antd";
 import { BackButton } from "../../components/buttons/backButton";
 import { useRoleDetailsQuery } from "../../hooks/role/useRoleQuery";
 import { useParams, useNavigate } from "react-router-dom";
@@ -13,7 +22,7 @@ import { ConfirmDeleteModal } from "../../components/modals/confirmDeleteModal";
 import { useRoleMutations } from "../../hooks/role/useRoleMutations";
 import { useRolePermissionRelationsMutations } from "../../hooks/rolePermissionRelations/useRolePermissionRelationsMutations";
 import toast from "react-hot-toast";
-import { UpOutlined } from "@ant-design/icons";
+import { UpOutlined, EditOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -23,6 +32,8 @@ export const RolePermissionsDetailsPage: React.FC = () => {
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newRoleName, setNewRoleName] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [selectedRestrictions, setSelectedRestrictions] = useState<
     Record<string, string[]>
@@ -54,7 +65,7 @@ export const RolePermissionsDetailsPage: React.FC = () => {
     isError: isErrorRolePermissions,
   } = useRolePermissionsQuery({ role_id: role_id });
 
-  const { deleteMutation } = useRoleMutations(
+  const { deleteMutation, renameMutation } = useRoleMutations(
     role_id || "",
     role?.role_name || ""
   );
@@ -93,6 +104,7 @@ export const RolePermissionsDetailsPage: React.FC = () => {
           },
         ])
       );
+      setNewRoleName(role.role_name);
     }
   }, [role, dispatch, role_id]);
 
@@ -129,9 +141,31 @@ export const RolePermissionsDetailsPage: React.FC = () => {
     setIsEditing(true);
   };
 
+  const handleRenameClick = () => {
+    setIsRenaming(true);
+  };
+
+  const handleConfirmRename = () => {
+    if (newRoleName.trim() === "") {
+      toast.error("Название роли не может быть пустым");
+      return;
+    }
+
+    renameMutation.mutate(newRoleName, {
+      onSuccess: () => {
+        setIsRenaming(false);
+        refetch();
+      },
+    });
+  };
+
+  const handleCancelRename = () => {
+    setIsRenaming(false);
+    setNewRoleName(role?.role_name || "");
+  };
+
   const handleCancelEdit = () => {
     setIsEditing(false);
-    // Восстанавливаем предыдущие значения
     if (assignedPermissions && allPermissions) {
       setSelectedPermissions(assignedPermissionIds);
 
@@ -192,8 +226,6 @@ export const RolePermissionsDetailsPage: React.FC = () => {
     });
   };
 
-  // Измененные функции handleSavePermissions и добавление новых вспомогательных функций
-
   const getAddedPermissions = () => {
     return selectedPermissions.filter(
       (permissionId) => !assignedPermissionIds.includes(permissionId)
@@ -223,7 +255,7 @@ export const RolePermissionsDetailsPage: React.FC = () => {
       assignedPermissions
         .filter((p) => p.permission_id === permissionId)
         .map((p) => p.restriction_id)
-        .filter((id): id is string => id !== undefined) || []; // Фильтруем undefined
+        .filter((id): id is string => id !== undefined) || [];
     const newRestrictions = selectedRestrictions[permissionId] || [];
     return currentRestrictions.filter(
       (restrictionId) => !newRestrictions.includes(restrictionId)
@@ -234,7 +266,6 @@ export const RolePermissionsDetailsPage: React.FC = () => {
     if (!role_id) return;
 
     try {
-      // Удаляем только те связи, которые были удалены
       const permissionsToRemove = getRemovedPermissions();
       await Promise.all(
         assignedPermissions
@@ -246,7 +277,6 @@ export const RolePermissionsDetailsPage: React.FC = () => {
           )
       );
 
-      // Добавляем только новые разрешения
       const permissionsToAdd = getAddedPermissions();
       await Promise.all(
         permissionsToAdd.map((permissionId) => {
@@ -271,7 +301,6 @@ export const RolePermissionsDetailsPage: React.FC = () => {
         })
       );
 
-      // Обновляем ограничения для существующих разрешений
       const existingPermissions = selectedPermissions.filter((permissionId) =>
         assignedPermissionIds.includes(permissionId)
       );
@@ -281,7 +310,6 @@ export const RolePermissionsDetailsPage: React.FC = () => {
           const addedRestrictions = getAddedRestrictions(permissionId);
           const removedRestrictions = getRemovedRestrictions(permissionId);
 
-          // Удаляем снятые ограничения
           await Promise.all(
             assignedPermissions
               .filter(
@@ -294,7 +322,6 @@ export const RolePermissionsDetailsPage: React.FC = () => {
               )
           );
 
-          // Добавляем новые ограничения
           if (addedRestrictions.length > 0) {
             await Promise.all(
               addedRestrictions.map((restrictionId) =>
@@ -342,14 +369,12 @@ export const RolePermissionsDetailsPage: React.FC = () => {
   ) => {
     setSelectedRestrictions((prev) => {
       const newRestrictions = { ...prev };
-
       if (checked) {
         newRestrictions[permissionId] =
           allRestrictions?.restrictions.map((r) => r.restriction_id) || [];
       } else {
         delete newRestrictions[permissionId];
       }
-
       return newRestrictions;
     });
   };
@@ -379,13 +404,15 @@ export const RolePermissionsDetailsPage: React.FC = () => {
           style={{
             display: "flex",
             alignItems: "center",
-            // justifyContent: "space-between",
           }}
         >
           <Title
             level={4}
             style={{
               marginRight: 16,
+              marginLeft: 16,
+              display: "flex",
+              alignItems: "center",
             }}
           >
             {role?.role_name}
@@ -393,6 +420,13 @@ export const RolePermissionsDetailsPage: React.FC = () => {
 
           {isEditing ? (
             <Space>
+              <Button
+                icon={<EditOutlined />}
+                onClick={handleRenameClick}
+                style={{ marginLeft: 8 }}
+              >
+                Переименовать
+              </Button>
               <Button
                 onClick={() => handleSelectAllPermissions(true)}
                 disabled={
@@ -430,8 +464,6 @@ export const RolePermissionsDetailsPage: React.FC = () => {
             </Space>
           )}
         </div>
-
-        {/* <Divider /> */}
 
         <List
           style={{ marginLeft: 24 }}
@@ -598,10 +630,10 @@ export const RolePermissionsDetailsPage: React.FC = () => {
                         )
                       }
                     >
-                      {/* {selectedRestrictions[permission.permission_id]
+                      {selectedRestrictions[permission.permission_id]
                         ?.length === allRestrictions?.restrictions.length
                         ? "Снять все ограничения"
-                        : "Выбрать все ограничения"} */}
+                        : "Выбрать все ограничения"}
                     </Button>
                   </div>
                 )}
@@ -617,6 +649,20 @@ export const RolePermissionsDetailsPage: React.FC = () => {
           isDeleteLoading={deleteMutation.isPending}
         />
       )}
+
+      <Modal
+        title="Переименовать роль"
+        open={isRenaming}
+        onOk={handleConfirmRename}
+        onCancel={handleCancelRename}
+        confirmLoading={renameMutation.isPending}
+      >
+        <Input
+          value={newRoleName}
+          onChange={(e) => setNewRoleName(e.target.value)}
+          placeholder="Введите новое название роли"
+        />
+      </Modal>
 
       {showScrollButton && (
         <Button

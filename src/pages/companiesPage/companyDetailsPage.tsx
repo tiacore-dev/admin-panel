@@ -108,7 +108,7 @@ export const CompanyDetailsPage: React.FC = () => {
                 <UserCompanyRelationsTable companyId={company_id} />
 
                 {/* Таблица организаций (sellers) */}
-                <div style={{ marginBottom: 24, marginTop: 16 }}>
+                {/* <div style={{ marginBottom: 24, marginTop: 16 }}>
                   <Space style={{ marginBottom: 16 }}>
                     <Typography.Title level={4} style={{ margin: 0 }}>
                       Организации
@@ -126,10 +126,10 @@ export const CompanyDetailsPage: React.FC = () => {
                     title="Организации"
                     companyName={companyDetails?.company_name} // Передаем название компании
                   />
-                </div>
+                </div> */}
 
                 {/* Таблица контрагентов (buyers) */}
-                <div style={{ marginBottom: 24 }}>
+                {/* <div style={{ marginBottom: 24 }}>
                   <Space style={{ marginBottom: 16 }}>
                     <Typography.Title level={4} style={{ margin: 0 }}>
                       Контрагенты
@@ -147,7 +147,7 @@ export const CompanyDetailsPage: React.FC = () => {
                     title="Контрагенты"
                     companyName={companyDetails?.company_name} // Передаем название компании
                   />
-                </div>
+                </div> */}
               </div>
 
               {showEditModal && (
@@ -160,7 +160,7 @@ export const CompanyDetailsPage: React.FC = () => {
                 />
               )}
 
-              {showSellerModal && (
+              {/* {showSellerModal && (
                 <CreateSellerModal
                   visible={showSellerModal}
                   onCancel={() => setShowSellerModal(false)}
@@ -176,7 +176,7 @@ export const CompanyDetailsPage: React.FC = () => {
                   onSuccess={handleBuyerSuccess}
                   companyId={company_id!}
                 />
-              )}
+              )} */}
 
               {showDeleteConfirm && (
                 <ConfirmDeleteModal

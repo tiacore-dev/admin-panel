@@ -28,8 +28,8 @@ export const Navbar: React.FC = () => {
 
   const mainItems = [
     // { label: "Главная", key: "/home" },
-    { label: "Контрагенты", key: "/legal-entities/buyers" },
-    { label: "Организации", key: "/legal-entities/sellers" },
+    // { label: "Контрагенты", key: "/legal-entities/buyers" },
+    // { label: "Организации", key: "/legal-entities/sellers" },
     { label: "Компании", key: "/companies" },
     { label: "Пользователи", key: "/users" },
     { label: "Управление доступом", key: "/role_permissions_relations" },

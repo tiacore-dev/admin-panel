@@ -58,13 +58,13 @@ export const createRole = async (data: {
   return response.data;
 };
 
-//изменить данные
-export const updateRole = async (role_id: string, updatedData: any) => {
+// //изменить данные
+export const renameRole = async (role_id: string, new_name: string) => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const response = await axiosInstance.patch(
     `${url}/api/roles/${role_id}`,
-    updatedData,
+    { role_name: new_name },
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
