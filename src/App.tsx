@@ -93,7 +93,7 @@ const App: React.FC = () => {
                   element={<RolePermissionsDetailsPage />}
                 />
               </Route>
-              {/* <Route path="*" element={<Navigate to="/login" />} /> */}
+              <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
           </Router>
         </QueryClientProvider>
