@@ -16,6 +16,7 @@ interface RelationFormModalProps {
   companyId?: string;
   companies?: Array<{ company_id: string; company_name: string }>;
   users?: IUser[];
+  applications?: Array<{ application_id: string; application_name: string }>;
 }
 
 export const RelationFormModal = ({
@@ -29,6 +30,7 @@ export const RelationFormModal = ({
   companyId,
   companies = [],
   users = [],
+  applications = [],
 }: RelationFormModalProps) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,6 +49,7 @@ export const RelationFormModal = ({
         user_id: initialData.user_id,
         company_id: initialData.company_id,
         role_id: initialData.role_id,
+        application_id: initialData.application_id,
       });
     } else {
       form.resetFields();
@@ -73,24 +76,17 @@ export const RelationFormModal = ({
           company_id,
         });
 
-        // if (existingRelations.total === 0) {
-        //   message.error(
-        //     userId
-        //       ? "Этот пользователь уже привязан к выбранной компании"
-        //       : "Эта компания уже привязана к выбранному пользователю"
-        //   );
-        //   return;
-        // }
-
         await createMutation.mutateAsync({
           user_id,
           role_id: values.role_id,
           company_id,
+          application_id: values.application_id,
         });
       } else if (mode === "edit" && initialData?.user_company_id) {
         await updateMutation.mutateAsync({
           role_id: values.role_id,
           user_company_id: initialData.user_company_id,
+          application_id: values.application_id,
         });
       }
 
@@ -130,6 +126,7 @@ export const RelationFormModal = ({
         layout="vertical"
         initialValues={{
           role_id: initialData?.role_id,
+          application_id: initialData?.application_id,
         }}
       >
         {mode === "create" && !userId && (
@@ -185,6 +182,25 @@ export const RelationFormModal = ({
             {roles.map((role) => (
               <Select.Option key={role.role_id} value={role.role_id}>
                 {role.role_name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="application_id"
+          label="Приложение"
+          rules={[
+            { required: true, message: "Пожалуйста, выберите приложение" },
+          ]}
+        >
+          <Select placeholder="Выберите приложение">
+            {applications.map((app) => (
+              <Select.Option
+                key={app.application_id}
+                value={app.application_id}
+              >
+                {app.application_name}
               </Select.Option>
             ))}
           </Select>

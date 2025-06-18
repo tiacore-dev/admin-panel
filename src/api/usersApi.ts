@@ -48,6 +48,7 @@ export const createUser = async (newUser: {
   full_name: string;
   position: string;
   company_id: string;
+  application_id: string;
 }): Promise<IUser> => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");

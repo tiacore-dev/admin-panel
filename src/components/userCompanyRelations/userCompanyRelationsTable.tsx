@@ -22,6 +22,7 @@ import { ConfirmDeleteModal } from "../modals/confirmDeleteModal";
 import { RelationFormModal } from "./userCompanyRelationFormModal";
 import { useRolesQuery } from "../../hooks/role/useRoleQuery";
 import { InviteFormModal } from "../../pages/invitePages/inviteFormModal";
+import { useAppsQuery } from "../../hooks/base/useBaseQuery";
 
 const { Text } = Typography;
 
@@ -36,26 +37,21 @@ export const UserCompanyRelationsTable = ({
   companyId,
   fromAccount,
 }: UserCompanyRelationsTableProps) => {
-  // Получаем список всех ролей
   const { data: rolesData, isLoading: rolesLoading } = useRolesQuery();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-
-  // Получаем список всех компаний
   const { data: companiesData, isLoading: companiesLoading } =
     useCompanyQuery();
-
   const { data: usersData, isLoading: usersLoading } = useUserQueryAll();
+  const { data: applicationsData, isLoading: applicationsLoading } =
+    useAppsQuery();
 
-  // Получаем данные отношений
   const userRelations = useUserRelationsQuery(userId);
   const companyRelations = useCompanyRelationsQuery(companyId);
 
-  // Выбираем нужные данные
   const { data, isLoading, isError } = userId
     ? userRelations
     : companyRelations;
 
-  // Состояния для модальных окон
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedRelation, setSelectedRelation] =
     useState<IUserCompanyRelation | null>(null);
@@ -64,7 +60,7 @@ export const UserCompanyRelationsTable = ({
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isInviteModalVisible, setIsInviteModalVisible] = useState(false);
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
-  // Мутации для удаления
+
   const { deleteMutation } = useUserCompanyRelationsMutations(
     "",
     "",
@@ -75,10 +71,8 @@ export const UserCompanyRelationsTable = ({
 
   const handleInvite = () => {
     if (companyId) {
-      // Если есть companyId (значит мы в контексте компании) - показываем InviteFormModal
       setIsInviteModalVisible(true);
     } else {
-      // Иначе показываем стандартный RelationFormModal
       setEditingRelation(null);
       setIsEditModalVisible(true);
     }
@@ -160,12 +154,18 @@ export const UserCompanyRelationsTable = ({
       render: (roleId: string) => <Tag color="blue">{getRoleName(roleId)}</Tag>,
     },
     {
+      title: "Приложение",
+      dataIndex: "application_id",
+      key: "application",
+      render: (appId: string) => getApplicationName(appId),
+    },
+    {
       title: "",
       key: "actions",
       width: 48,
       render: (_: any, record: IUserCompanyRelation) => {
         const menuItems = getMenuItems(record);
-        if (menuItems.length === 0) return null; // Не рендерим кнопку, если нет доступных действий
+        if (menuItems.length === 0) return null;
 
         return (
           <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
@@ -189,8 +189,19 @@ export const UserCompanyRelationsTable = ({
     return getCompanyNameById(companyId, companiesData?.companies) || companyId;
   };
 
+  const getApplicationName = (appId: string) => {
+    const app = applicationsData?.applications.find(
+      (a) => a.application_id === appId
+    );
+    return app ? app.application_name : appId;
+  };
+
   const isTotalLoading =
-    isLoading || rolesLoading || companiesLoading || usersLoading;
+    isLoading ||
+    rolesLoading ||
+    companiesLoading ||
+    usersLoading ||
+    applicationsLoading;
 
   const getHeaderTitle = () => {
     if (fromAccount) return "Компании";
@@ -209,10 +220,12 @@ export const UserCompanyRelationsTable = ({
     if (userId) return isSuperadmin;
     return isSuperadmin;
   };
+
   const handleCreate = () => {
-    setEditingRelation(null); // Сбрасываем редактируемое отношение
-    setIsCreateModalVisible(true); // Показываем модальное окно
+    setEditingRelation(null);
+    setIsCreateModalVisible(true);
   };
+
   return (
     <>
       {isTotalLoading ? (
@@ -246,7 +259,7 @@ export const UserCompanyRelationsTable = ({
           </div>
           <Table
             columns={columns}
-            dataSource={data?.relations || []} // Пустой массив, если relations нет
+            dataSource={data?.relations || []}
             rowKey="user_company_id"
             pagination={false}
           />
@@ -272,6 +285,7 @@ export const UserCompanyRelationsTable = ({
           companyId={companyId}
           companies={companiesData?.companies || []}
           users={usersData?.users || []}
+          applications={applicationsData?.applications || []}
         />
       )}
       {isInviteModalVisible && (
@@ -298,6 +312,7 @@ export const UserCompanyRelationsTable = ({
           companyId={companyId}
           companies={companiesData?.companies || []}
           users={usersData?.users || []}
+          applications={applicationsData?.applications || []}
         />
       )}
     </>

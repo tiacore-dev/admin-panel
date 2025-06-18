@@ -3,6 +3,7 @@ import { Modal, Form, Input, Button, Checkbox, Select } from "antd";
 import { useUserMutations } from "../../../hooks/users/useUserMutation";
 import { IUser } from "../../../api/usersApi";
 import { useCompaniesForSelection } from "../../../hooks/companies/useCompanyQuery";
+import { useAppsQuery } from "../../../hooks/base/useBaseQuery";
 
 interface UserCreateModalProps {
   visible: boolean;
@@ -23,9 +24,14 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const [isPasswordChanged, setIsPasswordChanged] = useState(false);
+
   // Получаем список компаний для выбора
   const { data: companiesData } = useCompaniesForSelection();
   const companies = companiesData?.companies || [];
+
+  // Получаем список приложений для выбора
+  const { data: appsData } = useAppsQuery();
+  const apps = appsData?.applications || [];
 
   const { createMutation, updateMutation, registrationMutation } =
     useUserMutations(
@@ -34,11 +40,13 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
       initialData?.full_name || "",
       initialData?.password || ""
     );
+
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (mode === "edit") {
       setIsPasswordChanged(!!e.target.value);
     }
   };
+
   useEffect(() => {
     if (visible) {
       if (initialData && mode === "edit") {
@@ -66,6 +74,7 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
         full_name: values.full_name,
         position: values.position,
         company_id: values.company_id,
+        application_id: values.application_id,
         ...(mode === "edit" &&
           isSuperadmin && {
             is_verified: values.is_verified || false,
@@ -213,25 +222,59 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
           <Input placeholder="Введите Ф.И.О." />
         </Form.Item>
 
+        {/* <Form.Item
+          label="Должность"
+          name="position"
+          rules={[
+            {
+              required: mode !== "edit",
+              message: "Пожалуйста, введите должность",
+            },
+          ]}
+        >
+          <Input placeholder="Введите должность" />
+        </Form.Item> */}
+
         {isSuperadmin && mode === "create" && (
-          <Form.Item
-            label="Компания"
-            name="company_id"
-            rules={[
-              { required: true, message: "Пожалуйста, выберите компанию" },
-            ]}
-          >
-            <Select placeholder="Выберите компанию">
-              {companies.map((company) => (
-                <Select.Option
-                  key={company.company_id}
-                  value={company.company_id}
-                >
-                  {company.company_name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+          <>
+            <Form.Item
+              label="Компания"
+              name="company_id"
+              rules={[
+                { required: true, message: "Пожалуйста, выберите компанию" },
+              ]}
+            >
+              <Select placeholder="Выберите компанию">
+                {companies.map((company) => (
+                  <Select.Option
+                    key={company.company_id}
+                    value={company.company_id}
+                  >
+                    {company.company_name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Приложение"
+              name="application_id"
+              rules={[
+                { required: true, message: "Пожалуйста, выберите приложение" },
+              ]}
+            >
+              <Select placeholder="Выберите приложение">
+                {apps.map((app) => (
+                  <Select.Option
+                    key={app.application_id}
+                    value={app.application_id}
+                  >
+                    {app.application_name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </>
         )}
 
         {isSuperadmin && mode === "edit" && (
