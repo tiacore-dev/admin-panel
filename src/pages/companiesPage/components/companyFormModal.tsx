@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Input, Button, Form } from "antd"; // Импортируем Form и Select
+import { Modal, Input, Button, Form, Select } from "antd";
 import { ICompany } from "../../../api/companiesApi";
 import { useCompanyMutations } from "../../../hooks/companies/useCompanyMutation";
+import { useAppsQuery } from "../../../hooks/base/useBaseQuery";
 
 interface CompanyFormModalProps {
   visible: boolean;
@@ -20,6 +21,7 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: appsData } = useAppsQuery();
 
   const { createMutation, updateMutation } = useCompanyMutations(
     initialData?.company_id || "",
@@ -33,6 +35,7 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({
         form.setFieldsValue({
           company_name: initialData.company_name,
           description: initialData.description,
+          application_id: initialData.application_id,
         });
       } else {
         form.resetFields();
@@ -63,7 +66,7 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({
 
   return (
     <Modal
-      title={mode === "create" ? "Добавить компаню" : "Редактировать компаню"}
+      title={mode === "create" ? "Добавить компанию" : "Редактировать компанию"}
       open={visible}
       onCancel={onCancel}
       footer={[
@@ -101,6 +104,22 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({
           rules={[{ min: 3, message: "Минимум 3 символа" }]}
         >
           <Input placeholder="Введите описание (необязательно)" />
+        </Form.Item>
+        <Form.Item
+          label="Приложение"
+          name="application_id"
+          rules={[
+            { required: true, message: "Пожалуйста, выберите приложение" },
+          ]}
+        >
+          <Select
+            placeholder="Выберите приложение"
+            loading={!appsData}
+            options={appsData?.applications.map((app) => ({
+              value: app.application_id,
+              label: app.application_name,
+            }))}
+          />
         </Form.Item>
       </Form>
     </Modal>

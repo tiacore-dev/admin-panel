@@ -6,9 +6,11 @@ import {
   setPage,
   setPageSize,
   setSearch,
+  setAppFilter,
 } from "../../../redux/slices/companiesSlice";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../../../redux/store";
+import { useAppsQuery } from "../../../hooks/base/useBaseQuery";
 
 interface CompaniesTableProps {
   data: {
@@ -23,31 +25,41 @@ export const CompaniesTable: React.FC<CompaniesTableProps> = ({
   loading,
 }) => {
   const dispatch = useDispatch();
-  const { search, page, page_size } = useSelector(
+  const { search, appFilter, page, page_size } = useSelector(
     (state: RootState) => state.companies
   );
   const navigate = useNavigate();
+  const { data: appsData } = useAppsQuery();
 
   // Фильтрация данных
   const filteredData = data.companies.filter((company) => {
-    if (!search) return true;
-    return company.company_name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch =
+      !search ||
+      company.company_name.toLowerCase().includes(search.toLowerCase());
+    const matchesAppFilter = !appFilter || company.application_id === appFilter;
+    return matchesSearch && matchesAppFilter;
   });
 
   const columns = getCompaniesTableColumns({
     navigate,
     search,
+    appFilter,
     onSearchChange: (value) => {
       dispatch(setSearch(value));
-      dispatch(setPage(1)); // Сбрасываем на первую страницу при новом поиске
+      dispatch(setPage(1));
     },
+    onAppFilterChange: (value) => {
+      dispatch(setAppFilter(value));
+      dispatch(setPage(1));
+    },
+    apps: appsData?.applications || [],
   });
 
   return (
     <div>
       <Table
         columns={columns}
-        dataSource={filteredData} // Передаем все отфильтрованные данные
+        dataSource={filteredData}
         rowKey="company_id"
         loading={loading}
         pagination={
