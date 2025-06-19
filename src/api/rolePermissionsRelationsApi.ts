@@ -20,7 +20,7 @@ export const fetchRolePermissions = async (params?: {
 
   const queryParams = {
     page: params?.page || 1,
-    page_size: params?.page_size || 100,
+    page_size: params?.page_size || 300,
     ...(params?.role_id && { role_id: params.role_id }), // Добавляем legal_entity только если он передан
   };
 
