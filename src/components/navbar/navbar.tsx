@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, Button, Dropdown, Drawer } from "antd";
+import { Menu, Button, Dropdown, Drawer, message } from "antd";
 import {
   LogoutOutlined,
   MenuOutlined,
   SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { useCompany } from "../../context/companyContext";
 import "./navbar.css";
 import { useCompanyQuery } from "../../hooks/companies/useCompanyQuery";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import { CompanyFormModal } from "../../pages/companiesPage/components/companyFormModal";
+import { logoutApi } from "../../api/authApi";
 
-const LOGO_TEXT = "ADMIN | Tiacore"; // Замените на ваш текст лого
+const LOGO_TEXT = "ADMIN | Tiacore";
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -23,51 +23,32 @@ export const Navbar: React.FC = () => {
   const [showSettings, setShowSettings] = useState(true);
   const [companyModalVisible, setCompanyModalVisible] = useState(false);
 
-  const {
-    selectedCompanyId,
-    setSelectedCompanyId,
-    availableCompanies,
-    isSuperadmin,
-  } = useCompany();
-
   const { data: companiesData } = useCompanyQuery();
   const companies = companiesData?.companies || [];
 
   const mainItems = [
-    { label: "Главная", key: "/home" },
-    { label: "Контрагенты", key: "/legal-entities/buyers" },
-    { label: "Организации", key: "/legal-entities/sellers" },
+    // { label: "Контрагенты", key: "/legal-entities/buyers" },
+    { label: "Юр. лица", key: "/legal-entities" },
     { label: "Компании", key: "/companies" },
+    { label: "Пользователи", key: "/users" },
+    { label: "Управление доступом", key: "/role_permissions_relations" },
   ];
 
-  const settingsItems = [
-    ...// (isSuperadmin
-    //   ?
-    [
-      { label: "Пользователи", key: "/users" },
-      { label: "Управление доступом", key: "/role_permissions_relations" },
-    ],
-    // : []),
-  ];
-
-  // Пункты меню для обычного пользователя (аккаунт и выход)
   const userMenuItems = [
     { label: "Аккаунт", key: "/account", icon: <UserOutlined /> },
-    { label: "Выйти", key: "logout", icon: <LogoutOutlined /> },
+    {
+      label: "Выйти",
+      key: "logout",
+      icon: <LogoutOutlined />,
+      danger: true,
+    },
   ];
 
-  // Объединяем все пункты меню для мобильной версии
-  const mobileMenuItems = [
-    ...mainItems,
-    ...settingsItems,
-    ...(!isSuperadmin ? userMenuItems : []),
-  ];
+  const mobileMenuItems = [...mainItems, ...userMenuItems];
 
   const getSelectedKeys = () => {
     const currentPath = location.pathname;
-    const allItems = isMobile
-      ? mobileMenuItems
-      : [...mainItems, ...(showSettings ? settingsItems : [])];
+    const allItems = isMobile ? mobileMenuItems : [...mainItems];
     const matchedItem = allItems.find((item) =>
       currentPath.startsWith(item.key)
     );
@@ -78,27 +59,23 @@ export const Navbar: React.FC = () => {
     setDrawerVisible(!drawerVisible);
   };
 
-  const companyMenuItems = availableCompanies.map((companyId) => {
-    const company = companies.find((c) => c.company_id === companyId);
-    return {
-      key: companyId,
-      label: company ? company.company_name : companyId,
-      onClick: () => setSelectedCompanyId(companyId),
-    };
-  });
+  const handleLogout = async () => {
+    try {
+      await logoutApi();
+      navigate("/login");
+    } catch (error) {
+      message.error("Ошибка при выходе из системы");
+    }
+  };
 
-  const selectedCompanyName =
-    companies.find((c) => c.company_id === selectedCompanyId)?.company_name ||
-    selectedCompanyId;
-
-  const handleUserMenuClick = ({ key }: { key: string }) => {
+  const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "logout") {
-      localStorage.clear();
-      window.location.href = "/login";
+      handleLogout();
     } else {
       navigate(key);
     }
   };
+
   return (
     <>
       {isMobile && (
@@ -115,39 +92,11 @@ export const Navbar: React.FC = () => {
               </div>
             </div>
             <div className="buttons-container">
-              {!isSuperadmin && (
-                <>
-                  {selectedCompanyId && (
-                    <Dropdown
-                      menu={{ items: companyMenuItems }}
-                      placement="bottomRight"
-                    >
-                      <Button className="company-selector">
-                        {selectedCompanyName}
-                      </Button>
-                    </Dropdown>
-                  )}
-                  {!selectedCompanyId && (
-                    <Button onClick={() => setCompanyModalVisible(true)}>
-                      Добавить компанию
-                    </Button>
-                  )}
-                </>
-              )}
-
-              {isSuperadmin && (
-                <button
-                  className="animated-btn"
-                  onClick={() => {
-                    localStorage.clear();
-                    window.location.href = "/login";
-                  }}
-                >
-                  <div className="sign">
-                    <LogoutOutlined />
-                  </div>
-                </button>
-              )}
+              <button className="animated-btn" onClick={handleLogout}>
+                <div className="sign">
+                  <LogoutOutlined />
+                </div>
+              </button>
             </div>
           </div>
 
@@ -164,8 +113,7 @@ export const Navbar: React.FC = () => {
               selectedKeys={getSelectedKeys()}
               onClick={({ key }) => {
                 if (key === "logout") {
-                  localStorage.clear();
-                  window.location.href = "/login";
+                  handleLogout();
                 } else {
                   navigate(key);
                 }
@@ -173,16 +121,14 @@ export const Navbar: React.FC = () => {
               }}
             />
           </Drawer>
-          {!isSuperadmin && (
-            <CompanyFormModal
-              visible={companyModalVisible}
-              onCancel={() => setCompanyModalVisible(false)}
-              onSuccess={() => {
-                setCompanyModalVisible(false);
-              }}
-              mode="create"
-            />
-          )}
+          <CompanyFormModal
+            visible={companyModalVisible}
+            onCancel={() => setCompanyModalVisible(false)}
+            onSuccess={() => {
+              setCompanyModalVisible(false);
+            }}
+            mode="create"
+          />
         </>
       )}
 
@@ -201,67 +147,25 @@ export const Navbar: React.FC = () => {
             onClick={({ key }) => navigate(key)}
           />
 
-          {showSettings && (
-            <Menu
-              className="settings-menu"
-              mode="horizontal"
-              items={settingsItems}
-              selectedKeys={getSelectedKeys()}
-              onClick={({ key }) => navigate(key)}
-            />
-          )}
           <div className="buttons-container">
-            {/* <button className="animated-settings-btn" onClick={toggleSettings}>
-              <div className="sign">
-                <div className="text">Настройки</div>
-                <SettingOutlined
-                  className={`rotate-icon ${
-                    showSettings
-                      ? "rotate-icon-anticlockwise"
-                      : "rotate-icon-clockwise"
-                  }`}
-                />
-              </div>
-            </button> */}
-            {!isSuperadmin && (
-              <>
-                {selectedCompanyId && (
-                  <Dropdown
-                    menu={{ items: companyMenuItems }}
-                    placement="bottomRight"
-                  >
-                    <Button className="company-selector">
-                      {selectedCompanyName}
-                    </Button>
-                  </Dropdown>
-                )}
-                {!selectedCompanyId && (
-                  <Button onClick={() => setCompanyModalVisible(true)}>
-                    Добавить компанию
-                  </Button>
-                )}
-              </>
-            )}
             <Dropdown
               menu={{
                 items: userMenuItems,
-                onClick: handleUserMenuClick,
+                onClick: handleMenuClick,
               }}
               placement="bottomRight"
             >
               <Button className="user-menu-button" icon={<UserOutlined />} />
             </Dropdown>
           </div>
-          {!isSuperadmin && (
-            <CompanyFormModal
-              visible={companyModalVisible}
-              onCancel={() => setCompanyModalVisible(false)}
-              onSuccess={() => {
-                setCompanyModalVisible(false);
-              }}
-              mode="create"
-            />
-          )}
+          <CompanyFormModal
+            visible={companyModalVisible}
+            onCancel={() => setCompanyModalVisible(false)}
+            onSuccess={() => {
+              setCompanyModalVisible(false);
+            }}
+            mode="create"
+          />
         </div>
       )}
     </>

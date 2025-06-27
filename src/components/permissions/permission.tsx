@@ -1,14 +1,11 @@
 // components/Permission.tsx
-import { usePermissions } from "../../context/permissionsContext";
 
 export const ShowIf: React.FC<{
   has: string | string[];
   children: React.ReactNode;
 }> = ({ has, children }) => {
-  const { hasPermission } = usePermissions();
-
   const requiredPermissions = Array.isArray(has) ? has : [has];
-  const hasAllPermissions = requiredPermissions.every(hasPermission);
+  const hasAllPermissions = requiredPermissions;
 
   return hasAllPermissions ? <>{children}</> : null;
 };
@@ -17,10 +14,8 @@ export const HideIf: React.FC<{
   has: string | string[];
   children: React.ReactNode;
 }> = ({ has, children }) => {
-  const { hasPermission } = usePermissions();
-
   const requiredPermissions = Array.isArray(has) ? has : [has];
-  const hasAnyPermission = requiredPermissions.some(hasPermission);
+  const hasAnyPermission = requiredPermissions;
 
   return hasAnyPermission ? null : <>{children}</>;
 };

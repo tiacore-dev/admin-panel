@@ -9,8 +9,8 @@ export const store = configureStore({
   reducer: {
     users: usersReducer,
     companies: companiesReducer,
-    legalEntitiesBuyers: legalEntitiesBuyersReducer,
     breadcrumbs: breadcrumbsReducer,
+    legalEntitiesBuyers: legalEntitiesBuyersReducer,
     legalEntitiesSellers: legalEntitiesSellersReducer,
   },
 });

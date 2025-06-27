@@ -19,7 +19,7 @@ export const fetchPermissions = async () => {
   const response = await axiosInstance.get(`${url}/api/permissions/all`, {
     params: {
       page: 1,
-      page_size: 100,
+      page_size: 300,
     },
     headers: {
       Authorization: `Bearer ${accessToken}`,

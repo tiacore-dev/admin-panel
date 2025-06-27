@@ -22,20 +22,12 @@ export const useUserCompanyRelationsMutations = (
       user_id: string;
       company_id: string;
       role_id: string;
+      application_id: string;
     }) => {
-      // Проверяем существующую связь
       const exists = await checkExistingRelation({
         user_id: newRelation.user_id,
         company_id: newRelation.company_id,
       });
-
-      // if (exists != 0) {
-      //   throw new Error(
-      //     user_id
-      //       ? "Этот пользователь уже привязан к выбранной компании"
-      //       : "Эта компания уже привязана к выбранному пользователю"
-      //   );
-      // }
 
       return createUserCompanyRelation(newRelation);
     },
@@ -50,7 +42,11 @@ export const useUserCompanyRelationsMutations = (
   });
 
   const updateMutation = useMutation({
-    mutationFn: (editedData: any) =>
+    mutationFn: (editedData: {
+      role_id: string;
+      user_company_id: string;
+      application_id: string;
+    }) =>
       user_company_id
         ? updateUserCompanyRelation(user_company_id, editedData)
         : Promise.reject(),

@@ -11,11 +11,20 @@ export const registrationUser = async (newUser: {
   position: string;
 }): Promise<IUser> => {
   const url = process.env.REACT_APP_AUTH_API_URL;
-  const response = await axiosInstance.post(`${url}/api/register`, newUser, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const application_id = process.env.REACT_APP_ID;
+  const requestData = {
+    ...newUser,
+    application_id: application_id,
+  };
+  const response = await axiosInstance.post(
+    `${url}/api/register`,
+    requestData,
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
   return response.data;
 };
 
@@ -26,8 +35,8 @@ export const inviteUser = async (data: {
   application_id?: string;
 }) => {
   const url = process.env.REACT_APP_AUTH_API_URL;
-  const app_id = process.env.REACT_APP_ID;
-  data.application_id = app_id;
+  // const app_id = process.env.REACT_APP_ID;
+  // data.application_id = app_id;
   const accessToken = localStorage.getItem("access_token");
 
   if (!url) throw new Error("REACT_APP_AUTH_API_URL is not defined");
@@ -75,11 +84,7 @@ export const refreshToken = async (): Promise<string | null> => {
 
     return response.data.access_token;
   } catch (error) {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("permissions");
-    localStorage.removeItem("is_superadmin");
-    localStorage.removeItem("selectedCompanyId");
+    localStorage.clear();
     return null;
   }
 };
@@ -143,4 +148,32 @@ export const registerWithToken = async (data: {
     }
   );
   return response.data;
+};
+
+// /api/auth/logout
+// export const logoutApi = async () => {
+export const logoutApi = async () => {
+  const url = process.env.REACT_APP_AUTH_API_URL;
+  if (!url) throw new Error("REACT_APP_AUTH_API_URL is not defined");
+
+  const userId = localStorage.getItem("user_id");
+  const accessToken = localStorage.getItem("access_token");
+
+  try {
+    const response = await axiosInstance.post(
+      `${url}/api/auth/logout`,
+      { user_id: userId }, // Явно передаем как JSON объект
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    localStorage.clear();
+    return response.data;
+  } catch (error) {
+    localStorage.clear(); // Все равно очищаем хранилище при ошибке
+    throw error;
+  }
 };

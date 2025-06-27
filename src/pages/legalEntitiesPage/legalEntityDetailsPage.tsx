@@ -6,20 +6,18 @@ import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { BackButton } from "../../components/buttons/backButton";
 import { Spin, Descriptions, Typography, Button, Space } from "antd";
 import { useLegalEntityDetailsQuery } from "../../hooks/legalEntities/useLegalEntityQuery";
-import { useCompany } from "../../context/companyContext";
 import { useDeleteLegalEntity } from "../../hooks/legalEntities/useLegalEntityMutation";
 import { useUpdateLegalEntity } from "../../hooks/legalEntities/useLegalEntityMutation";
 import { ConfirmDeleteModal } from "../../components/modals/confirmDeleteModal";
-import { EditSellerModal } from "./components/editSellerModal";
+import { EditLegalEntityModal } from "./components/editLegalEntityModal";
 import { ILegalEntityEdit } from "../../api/legalEntitiesApi";
 
 const { Title } = Typography;
 
-export const SellerDetailsPage: React.FC = () => {
+export const LegalEntityDetailsPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { legal_entity_id } = useParams<{ legal_entity_id: string }>();
-  const { selectedCompanyId } = useCompany();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
 
@@ -50,7 +48,7 @@ export const SellerDetailsPage: React.FC = () => {
           },
           {
             label: legalEntity?.short_name || "Детали",
-            to: `/legal-entities/sellers/${legal_entity_id}`,
+            to: `/legal-entities/${legal_entity_id}`,
           },
         ])
       );
@@ -59,10 +57,10 @@ export const SellerDetailsPage: React.FC = () => {
       dispatch(
         setBreadcrumbs([
           { label: "Главная страница", to: "/home" },
-          { label: "Организации", to: "/legal-entities/sellers" },
+          { label: "Юр. лица", to: "/legal-entities" },
           {
             label: legalEntity?.short_name || "Детали",
-            to: `/legal-entities/sellers/${legal_entity_id}`,
+            to: `/legal-entities/${legal_entity_id}`,
           },
         ])
       );
@@ -176,7 +174,7 @@ export const SellerDetailsPage: React.FC = () => {
         />
       )}
 
-      <EditSellerModal
+      <EditLegalEntityModal
         visible={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
         onSave={handleUpdate}

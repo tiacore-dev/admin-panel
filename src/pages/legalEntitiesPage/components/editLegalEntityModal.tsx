@@ -1,9 +1,11 @@
-// src/pages/legalEntityDetailsPage/components/EditBuyerModal.tsx
+// src/pages/legalEntityDetailsPage/components/editLegalEntityModal.tsx
 import React from "react";
-import { Modal, Form, Input, InputNumber, Button } from "antd";
+import { Modal, Form, Input, Select, Button } from "antd";
 import { ILegalEntityEdit } from "../../../api/legalEntitiesApi";
 
-interface EditBuyerModalProps {
+const { Option } = Select;
+
+interface EditLegalEntityModalProps {
   visible: boolean;
   onCancel: () => void;
   onSave: (values: ILegalEntityEdit) => void;
@@ -11,7 +13,15 @@ interface EditBuyerModalProps {
   isLoading: boolean;
 }
 
-export const EditBuyerModal: React.FC<EditBuyerModalProps> = ({
+// Варианты для селектора НДС
+const vatRateOptions = [
+  { value: 0, label: "НДС не облагается" },
+  { value: 5, label: "5%" },
+  { value: 7, label: "7%" },
+  { value: 20, label: "20%" },
+];
+
+export const EditLegalEntityModal: React.FC<EditLegalEntityModalProps> = ({
   visible,
   onCancel,
   onSave,
@@ -28,7 +38,7 @@ export const EditBuyerModal: React.FC<EditBuyerModalProps> = ({
 
   return (
     <Modal
-      title="Редактировать контрагента"
+      title="Редактировать"
       open={visible}
       onCancel={onCancel}
       footer={[
@@ -61,7 +71,7 @@ export const EditBuyerModal: React.FC<EditBuyerModalProps> = ({
         {/* <Form.Item name="full_name" label="Полное название">
           <Input />
         </Form.Item> */}
-        {/* <Form.Item
+        <Form.Item
           name="inn"
           label="ИНН"
           rules={[{ required: true, message: "Поле обязательно" }]}
@@ -77,23 +87,29 @@ export const EditBuyerModal: React.FC<EditBuyerModalProps> = ({
           rules={[{ required: true, message: "Поле обязательно" }]}
         >
           <Input />
-        </Form.Item> */}
-        {/* <Form.Item name="opf" label="ОПФ">
+        </Form.Item>
+        <Form.Item name="opf" label="ОПФ">
           <Input />
-        </Form.Item> */}
-        {/* <Form.Item name="vat_rate" label="Ставка НДС">
-          <InputNumber min={0} max={20} />
-        </Form.Item> */}
+        </Form.Item>
+        <Form.Item name="vat_rate" label="Ставка НДС">
+          <Select placeholder="Выберите ставку НДС">
+            {vatRateOptions.map((option) => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
         <Form.Item
           name="address"
           label="Адрес"
-          rules={[{ required: true, message: "Поле обязательно" }]}
+          rules={[{ message: "Поле обязательно" }]}
         >
-          <Input.TextArea maxLength={5} />
+          <Input.TextArea minLength={5} />
         </Form.Item>
-        {/* <Form.Item name="signer" label="Подписант">
+        <Form.Item name="signer" label="Подписант">
           <Input />
-        </Form.Item> */}
+        </Form.Item>
       </Form>
     </Modal>
   );

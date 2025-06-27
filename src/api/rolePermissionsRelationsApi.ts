@@ -20,7 +20,7 @@ export const fetchRolePermissions = async (params?: {
 
   const queryParams = {
     page: params?.page || 1,
-    page_size: params?.page_size || 100,
+    page_size: params?.page_size || 300,
     ...(params?.role_id && { role_id: params.role_id }), // Добавляем legal_entity только если он передан
   };
 
@@ -43,10 +43,8 @@ export const createRolePermission = async (newRolePermission: {
   role_id: string;
   permission_id: string;
   restriction_id?: string;
-  application_id?: string;
 }): Promise<IRolePermission> => {
   const url = process.env.REACT_APP_AUTH_API_URL;
-  newRolePermission.application_id = process.env.REACT_APP_ID;
   const accessToken = localStorage.getItem("access_token");
   const response = await axiosInstance.post(
     `${url}/api/role-permission-relations/add`,

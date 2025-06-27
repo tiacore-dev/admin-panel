@@ -24,6 +24,11 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
         <Title level={5}>Описание:</Title>
         <Text>{data.description || "-"}</Text>
       </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <Title level={5}>Приложение:</Title>
+        <Text>{data.application_id || "-"}</Text>
+      </div>
     </Card>
   );
 };

@@ -26,13 +26,13 @@ export interface ILegalEntityINNCreate {
 }
 export interface ILegalEntityEdit {
   full_name?: string;
-  short_name: string; //[3, 100] characters
-  inn: string; //[10, 12] characters
+  short_name?: string; //[3, 100] characters
+  inn?: string; //[10, 12] characters
   kpp?: string; // Expand all( string | null)
   opf?: string; // Expand all( string | null)
-  ogrn: string; //13 characters
+  ogrn?: string; //13 characters
   vat_rate?: number; // Expand all(integer | null) (0/5/7/20)
-  address: string; //[5, 255] characters
+  address?: string; //[5, 255] characters
   entity_type_id?: string; // Expand all( string | null)
   signer?: string; // Expand all( string | null)
 }
@@ -62,7 +62,7 @@ export interface ILegalEtitiesResponse {
 export const createLegalEntity = async (
   newLegalEntity: ILegalEntityCreate
 ): Promise<ILegalEntity> => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -87,7 +87,7 @@ export const createLegalEntity = async (
 export const createLegalEntityINN = async (
   newLegalEntity: ILegalEntityINNCreate
 ): Promise<ILegalEntity> => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -113,7 +113,7 @@ export const updateLegalEntity = async (
   legal_entity_id: string,
   updatedData: ILegalEntityEdit
 ) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -137,7 +137,7 @@ export const updateLegalEntity = async (
 };
 // /api/legal-entities/{legal_entity_id}
 export const deleteLegalEntity = async (legal_entity_id: string) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -155,7 +155,7 @@ export const deleteLegalEntity = async (legal_entity_id: string) => {
 };
 // /api/legal-entities/{legal_entity_id}
 export const fetchLegalEntityDetails = async (legal_entity_id: string) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -190,7 +190,7 @@ export const fetchLegalEntities = async (
   selectedCompanyId?: string | null
   // company_id?: string
 ) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   // const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -213,7 +213,7 @@ export const fetchLegalEntities = async (
 // /api/legal-entities/get-buyers
 
 export const fetchBuyers = async (selectedCompanyId?: string | null) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   // const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -235,7 +235,7 @@ export const fetchBuyers = async (selectedCompanyId?: string | null) => {
 };
 // /api/legal-entities/get-sellers
 export const fetchSellers = async (selectedCompanyId?: string | null) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   // const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -260,7 +260,7 @@ export const fetchLegalEntitiesByCompany = async (
   selectedCompanyId?: string | null,
   company_id?: string
 ) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   // const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -288,7 +288,7 @@ export const fetchLegalEntityByInnKpp = async (
   inn: string,
   kpp?: string
 ): Promise<ILegalEntityINN> => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   // const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   // const selectedCompanyId = localStorage.getItem("selectedCompanyId");

@@ -41,7 +41,6 @@ export const AccountPage: React.FC = () => {
         Редактировать
       </Button>
       <UserDetailsCard userDetails={userDetails} />
-      <UserCompanyRelationsTable userId={userId} fromAccount={true} />
       {showEditModal && (
         <UserFormModal
           visible={showEditModal}

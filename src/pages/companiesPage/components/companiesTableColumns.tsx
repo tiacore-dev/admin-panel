@@ -1,19 +1,26 @@
-import { Button, Input } from "antd";
+import { Button, Input, Select } from "antd";
 import { ColumnType } from "antd/es/table";
 import { ICompany } from "../../../api/companiesApi";
 import { NavigateFunction } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
+import { IApp } from "../../../api/baseApi";
 
 interface CompaniesTableColumnsProps {
   navigate: NavigateFunction;
   search: string;
+  appFilter: string;
   onSearchChange: (value: string) => void;
+  onAppFilterChange: (value: string) => void;
+  apps: IApp[];
 }
 
 export const getCompaniesTableColumns = ({
   navigate,
   search,
+  appFilter,
   onSearchChange,
+  onAppFilterChange,
+  apps,
 }: CompaniesTableColumnsProps): ColumnType<ICompany>[] => {
   return [
     {
@@ -52,6 +59,31 @@ export const getCompaniesTableColumns = ({
       dataIndex: "description",
       key: "description",
       render: (text: string) => text || "-",
+    },
+    {
+      title: "Приложение",
+      dataIndex: "application_id",
+      key: "application_id",
+      render: (application_id: string) => {
+        const app = apps.find((a) => a.application_id === application_id);
+        return app?.application_name || application_id;
+      },
+      filterDropdown: () => (
+        <div style={{ padding: 8 }}>
+          <Select
+            placeholder="Фильтр по приложению"
+            value={appFilter || undefined}
+            onChange={onAppFilterChange}
+            style={{ width: 200 }}
+            allowClear
+            options={apps.map((app) => ({
+              value: app.application_id,
+              label: app.application_name,
+            }))}
+          />
+        </div>
+      ),
+      filteredValue: appFilter ? [appFilter] : null,
     },
   ];
 };

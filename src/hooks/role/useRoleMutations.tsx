@@ -1,6 +1,6 @@
+// src/hooks/role/useRoleMutations.tsx
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createRole, updateRole, deleteRole } from "../../api/roleApi";
-
+import { createRole, deleteRole, renameRole } from "../../api/roleApi";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 
@@ -22,16 +22,15 @@ export const useRoleMutations = (
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: (editedData: any) =>
-      role_id ? updateRole(role_id, editedData) : Promise.reject(),
+  const renameMutation = useMutation({
+    mutationFn: (new_name: string) => renameRole(role_id, new_name),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["roles"] });
-      setIsEditing && setIsEditing(false);
-      toast.success("Информация обновлена");
+      queryClient.invalidateQueries({ queryKey: ["roleDetails", role_id] });
+      toast.success("Название роли успешно изменено");
     },
     onError: () => {
-      toast.error("Ошибка при обновлении данных");
+      toast.error("Ошибка при изменении названия роли");
     },
   });
 
@@ -46,5 +45,5 @@ export const useRoleMutations = (
     },
   });
 
-  return { createMutation, updateMutation, deleteMutation };
+  return { createMutation, renameMutation, deleteMutation };
 };

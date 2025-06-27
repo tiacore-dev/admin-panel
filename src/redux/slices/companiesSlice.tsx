@@ -3,6 +3,7 @@ import { RootState } from "../store";
 
 interface CompaniesState {
   search: string;
+  appFilter: string;
   page: number;
   page_size: number;
 }
@@ -11,6 +12,7 @@ const initialState: CompaniesState = {
   page: 1,
   page_size: 10,
   search: "",
+  appFilter: "",
 };
 
 export const companiesSlice = createSlice({
@@ -28,11 +30,15 @@ export const companiesSlice = createSlice({
       state.search = action.payload;
       state.page = 1;
     },
+    setAppFilter: (state, action: PayloadAction<string>) => {
+      state.appFilter = action.payload;
+      state.page = 1;
+    },
     resetState: () => initialState, // Добавляем действие для сброса состояния
   },
 });
 
-export const { setPage, setPageSize, setSearch, resetState } =
+export const { setPage, setPageSize, setSearch, setAppFilter, resetState } =
   companiesSlice.actions;
 
 export const companiesReducer = companiesSlice.reducer;

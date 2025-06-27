@@ -5,7 +5,6 @@ import {
   fetchCompanyDetails,
   ICompany,
 } from "../../api/companiesApi";
-import { useCompany } from "../../context/companyContext";
 
 export interface useCompanyQueryResponse {
   total: number;
@@ -17,11 +16,9 @@ export interface ICompaniesResponse {
 }
 
 export const useCompanyQuery = () => {
-  const { selectedCompanyId } = useCompany();
-
   return useQuery<useCompanyQueryResponse>({
-    queryKey: ["companies", selectedCompanyId],
-    queryFn: () => fetchCompanies(selectedCompanyId),
+    queryKey: ["companies"],
+    queryFn: () => fetchCompanies(),
   });
 };
 
@@ -29,9 +26,8 @@ export const useCompanyDetailsQuery = (
   company_id: string,
   options?: { enabled?: boolean }
 ) => {
-  const { selectedCompanyId } = useCompany();
   return useQuery<ICompany>({
-    queryKey: ["companyDetails", company_id, selectedCompanyId],
+    queryKey: ["companyDetails", company_id],
     queryFn: () => fetchCompanyDetails(company_id),
     retry: false,
     ...options, // Распространяем переданные options
@@ -39,9 +35,8 @@ export const useCompanyDetailsQuery = (
 };
 
 export const useCompaniesForSelection = () => {
-  const { selectedCompanyId } = useCompany();
   return useQuery<ICompaniesResponse>({
-    queryKey: ["companiesForSelection", selectedCompanyId], //??????
-    queryFn: () => fetchCompanies(selectedCompanyId),
+    queryKey: ["companiesForSelection"], //??????
+    queryFn: () => fetchCompanies(),
   });
 };

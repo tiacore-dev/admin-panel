@@ -1,4 +1,3 @@
-// src/api/legalEntitiesApi.tsx
 import { axiosInstance } from "../axiosConfig";
 import { IUserCompanyRelationsResponse } from "../hooks/userCompanyRelations/useUserCompanyRelationsQuery";
 
@@ -7,10 +6,9 @@ export interface IUserCompanyRelation {
   user_id: string;
   company_id: string;
   role_id: string;
+  application_id: string;
 }
 
-// Функция для получения списка с параметрами
-// Функция для получения списка с параметрами
 export const fetchUserCompanyRelations = async (
   params: {
     user_id?: string;
@@ -41,7 +39,7 @@ export const fetchUserCompanyRelations = async (
   const response = await axiosInstance.get<IUserCompanyRelationsResponse>(
     `${url}/api/user-company-relations/all`,
     {
-      params: requestParams, // Используем объединенные параметры
+      params: requestParams,
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
@@ -52,12 +50,12 @@ export const fetchUserCompanyRelations = async (
   return response.data;
 };
 
-// Функция для создания нового
 export const createUserCompanyRelation = async (
   newUserCompanyRelation: {
     user_id: string;
     company_id: string;
     role_id: string;
+    application_id: string;
   },
   selectedCompanyId?: string | null
 ): Promise<IUserCompanyRelation> => {
@@ -83,7 +81,6 @@ export const createUserCompanyRelation = async (
   return response.data;
 };
 
-//изменить данные
 export const updateUserCompanyRelation = async (
   user_company_id: string,
   updatedData: any,
@@ -113,8 +110,6 @@ export const updateUserCompanyRelation = async (
   return response.data;
 };
 
-//удалить данные
-
 export const deleteUserCompanyRelation = async (user_company_id: string) => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");
@@ -136,7 +131,6 @@ export const deleteUserCompanyRelation = async (user_company_id: string) => {
   );
 };
 
-// Функция для проверки существующей связи
 export const checkExistingRelation = async (params: {
   user_id: string;
   company_id: string;

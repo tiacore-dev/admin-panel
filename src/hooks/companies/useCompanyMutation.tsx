@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import { Button } from "antd";
 import { refreshToken } from "../../api/authApi";
-import { useCompany } from "../../context/companyContext";
 
 export const useCompanyMutations = (
   company_id: string,
@@ -19,13 +18,6 @@ export const useCompanyMutations = (
 ) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const {
-    setAvailableCompanies,
-    // availableCompanies,
-    setSelectedCompanyId,
-    isSuperadmin,
-    selectedCompanyId,
-  } = useCompany();
 
   const createMutation = useMutation({
     mutationFn: createCompany,
@@ -37,11 +29,6 @@ export const useCompanyMutations = (
             localStorage.getItem("permissions") || "{}"
           );
           const newAvailableCompanies = Object.keys(permissions);
-          setAvailableCompanies(newAvailableCompanies);
-
-          if (!isSuperadmin && newAvailableCompanies.length === 1) {
-            setSelectedCompanyId(newAvailableCompanies[0]);
-          }
 
           queryClient.invalidateQueries({ queryKey: ["companies"] });
           toast.success(
@@ -93,19 +80,8 @@ export const useCompanyMutations = (
           const permissions = JSON.parse(
             localStorage.getItem("permissions") || "{}"
           );
-          const newAvailableCompanies = Object.keys(permissions);
-          setAvailableCompanies(newAvailableCompanies);
 
           // Если удаленная компания была выбрана
-          if (selectedCompanyId === company_id) {
-            if (newAvailableCompanies.length > 0) {
-              // Выбираем первую доступную компанию
-              setSelectedCompanyId(newAvailableCompanies[0]);
-            } else {
-              // Если компаний не осталось
-              setSelectedCompanyId(null);
-            }
-          }
 
           queryClient.invalidateQueries({ queryKey: ["companies"] });
           toast.success("Успешно удалено");

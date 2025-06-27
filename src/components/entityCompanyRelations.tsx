@@ -11,7 +11,6 @@ import {
 } from "@ant-design/icons";
 import { useEntityCompanyRelationMutations } from "../hooks/entityCompanyRelations/useEntityCompanyRelationMutations";
 import { ConfirmDeleteModal } from "./modals/confirmDeleteModal";
-import { usePermissions } from "../context/permissionsContext";
 import type { ILegalEntity } from "../api/legalEntitiesApi";
 
 interface EntityCompanyRelationsTableProps {
@@ -30,7 +29,6 @@ export const EntityCompanyRelationsTable: React.FC<
     isError,
     refetch: refetchRelations,
   } = useEntityCompanyQuery(undefined, companyId, relationType);
-  const { hasPermission } = usePermissions();
   const { data: legalEntitiesData } = useLegalEntityQuery();
   const { mutate: deleteMutation } = useEntityCompanyRelationMutations();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -82,15 +80,13 @@ export const EntityCompanyRelationsTable: React.FC<
   const getMenuItems = (relationId: string) => {
     const items = [];
 
-    if (hasPermission("delete_entity_company_relation")) {
-      items.push({
-        key: "delete",
-        icon: <DeleteOutlined />,
-        label: "Удалить из компании",
-        danger: true,
-        onClick: () => handleDelete(relationId),
-      });
-    }
+    items.push({
+      key: "delete",
+      icon: <DeleteOutlined />,
+      label: "Удалить из компании",
+      danger: true,
+      onClick: () => handleDelete(relationId),
+    });
 
     return items;
   };

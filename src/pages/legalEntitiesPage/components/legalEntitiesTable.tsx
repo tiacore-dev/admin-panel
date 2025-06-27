@@ -1,7 +1,7 @@
-// src/pages/legalEntitiesBuyersPage/components/LegalEntitiesBuyersTable.tsx
+// src/pages/legalEntitiesSellersPage/components/LegalEntitiesSellersTable.tsx
 import React from "react";
 import type { TableColumnsType } from "antd";
-import { Button, Input, Table, Typography } from "antd";
+import { Button, Input, Table, Typography, Select } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
@@ -12,12 +12,14 @@ import {
   setPageSize,
   setShortName,
   setInn,
-  // setKpp,
   setOgrn,
   setAddress,
-} from "../../../redux/slices/legalEntityBuyersSlice";
+  setVatRate,
+} from "../../../redux/slices/legalEntitySellersSlice";
 
-interface LegalEntitiesBuyersTableProps {
+const { Option } = Select;
+
+interface LegalEntitiesTableProps {
   data: {
     total: number;
     entities: ILegalEntity[];
@@ -25,14 +27,14 @@ interface LegalEntitiesBuyersTableProps {
   loading: boolean;
 }
 
-export const LegalEntitiesBuyersTable: React.FC<
-  LegalEntitiesBuyersTableProps
-> = ({ data = { total: 0, entities: [] }, loading }) => {
+export const LegalEntitiesTable: React.FC<LegalEntitiesTableProps> = ({
+  data = { total: 0, entities: [] },
+  loading,
+}) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { short_name, inn, ogrn, address, page, page_size } = useSelector(
-    (state: RootState) => state.legalEntitiesBuyers
-  );
+  const { short_name, inn, ogrn, address, vat_rate, page, page_size } =
+    useSelector((state: RootState) => state.legalEntitiesSellers);
 
   const columns: TableColumnsType<ILegalEntity> = [
     {
@@ -49,7 +51,7 @@ export const LegalEntitiesBuyersTable: React.FC<
         <Button
           type="link"
           onClick={() =>
-            navigate(`/legal-entities/buyers/${record.legal_entity_id}`, {
+            navigate(`/legal-entities/${record.legal_entity_id}`, {
               state: { fromList: true },
             })
           }
@@ -136,6 +138,37 @@ export const LegalEntitiesBuyersTable: React.FC<
       ),
       filteredValue: address ? [address] : null,
     },
+    {
+      title: "Ставка НДС",
+      dataIndex: "vat_rate",
+      key: "vat_rate",
+      render: (vatRate: number) =>
+        vatRate === 0 ? "НДС не облагается" : `${vatRate}%`,
+      filterDropdown: () => (
+        <div style={{ padding: 8 }}>
+          <Select
+            placeholder="Выберите ставку НДС"
+            style={{ width: 200 }}
+            value={vat_rate}
+            onChange={(value) => dispatch(setVatRate(value))}
+            allowClear
+          >
+            <Option value="0">0% (не облагается)</Option>
+            <Option value="5">5%</Option>
+            <Option value="7">7%</Option>
+            <Option value="20">20%</Option>
+            <Option value="null">Не указано</Option>
+          </Select>
+        </div>
+      ),
+      filteredValue: vat_rate !== null ? [vat_rate] : null,
+      onFilter: (value, record) => {
+        if (value === "null") {
+          return record.vat_rate === null || record.vat_rate === undefined;
+        }
+        return String(record.vat_rate) === value;
+      },
+    },
   ];
 
   const filteredData = data.entities.filter((entity) => {
@@ -151,8 +184,20 @@ export const LegalEntitiesBuyersTable: React.FC<
     const matchesAddress = address
       ? entity.address.toLowerCase().includes(address.toLowerCase())
       : true;
+    const matchesVatRate =
+      vat_rate !== null
+        ? String(entity.vat_rate) === vat_rate ||
+          (vat_rate === "null" &&
+            (entity.vat_rate === null || entity.vat_rate === undefined))
+        : true;
 
-    return matchesShortName && matchesInn && matchesOgrn && matchesAddress;
+    return (
+      matchesShortName &&
+      matchesInn &&
+      matchesOgrn &&
+      matchesAddress &&
+      matchesVatRate
+    );
   });
 
   return (
