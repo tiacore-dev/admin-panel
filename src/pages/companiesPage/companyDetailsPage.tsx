@@ -166,6 +166,7 @@ export const CompanyDetailsPage: React.FC = () => {
                   onCancel={() => setShowSellerModal(false)}
                   onSuccess={handleSellerSuccess}
                   companyId={company_id!}
+                  relationTypeBeforeSelect={"seller"}
                 />
               )}
 
@@ -175,6 +176,7 @@ export const CompanyDetailsPage: React.FC = () => {
                   onCancel={() => setShowBuyerModal(false)}
                   onSuccess={handleBuyerSuccess}
                   companyId={company_id!}
+                  relationTypeBeforeSelect={"buyer"}
                 />
               )}
 

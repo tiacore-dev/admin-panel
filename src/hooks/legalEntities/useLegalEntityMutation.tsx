@@ -48,7 +48,8 @@ export const useCreateLegalEntityByINN = () => {
       toast.success("Успешно создано по ИНН");
     },
     onError: (error) => {
-      toast.error(`Ошибка при создании: ${error.message}`);
+      // toast.error(`Ошибка при создании: ${error.message}`);
+      throw error;
     },
   });
 };

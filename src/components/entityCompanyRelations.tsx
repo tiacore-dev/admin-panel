@@ -99,7 +99,7 @@ export const EntityCompanyRelationsTable: React.FC<
       render: (text: string, record: ILegalEntity) => (
         <>
           <Link
-            to={`/legal-entities/${relationType}s/${record.legal_entity_id}`}
+            to={`/legal-entities/${record.legal_entity_id}`}
             state={{
               fromCompany: true,
               companyId: companyId,
