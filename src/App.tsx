@@ -31,8 +31,6 @@ import { AccountPage } from "./pages/accountPage/accountPage";
 import { AcceptInvitePage } from "./pages/invitePages/acceptInvitePage";
 import { themeConfig } from "./theme/themeConfig";
 import { InviteRegistrationPage } from "./pages/invitePages/inviteRegistrationPage";
-// import { LegalEntitiesBuyersPage } from "./pages/legalEntitiesPage/legalEntitiesBuyersPage";
-// import { BuyerDetailsPage } from "./pages/legalEntitiesPage/buyerDetailsPage";
 import { LegalEntitiesPage } from "./pages/legalEntitiesPage/legalEntitiesPage";
 import { LegalEntityDetailsPage } from "./pages/legalEntitiesPage/legalEntityDetailsPage";
 import { NotFoundPage } from "./pages/homePage/notFoundPage";
@@ -63,19 +61,10 @@ const ProtectedRoutes: React.FC = () => {
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<HomePage />} />
         <Route path="/account" element={<AccountPage />} />
-
         <Route path="/users" element={<UsersPage />} />
         <Route path="/users/:user_id" element={<UserDetailsPage />} />
         <Route path="/companies" element={<CompaniesPage />} />
         <Route path="/companies/:company_id" element={<CompanyDetailsPage />} />
-        {/* <Route
-          path="/legal-entities/buyers"
-          element={<LegalEntitiesBuyersPage />}
-        />
-        <Route
-          path="/legal-entities/buyers/:legal_entity_id"
-          element={<BuyerDetailsPage />}
-        /> */}
         <Route path="/legal-entities" element={<LegalEntitiesPage />} />
         <Route
           path="/legal-entities/:legal_entity_id"
@@ -89,7 +78,6 @@ const ProtectedRoutes: React.FC = () => {
           path="/role_permissions_relations/:role_id"
           element={<RolePermissionsDetailsPage />}
         />
-
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
@@ -134,36 +122,3 @@ const App: React.FC = () => {
   );
 };
 export default App;
-
-// const App: React.FC = () => {
-//   return (
-//     <ConfigProvider locale={ruRU}>
-//       <ConfigProvider theme={themeConfig}>
-//         <QueryClientProvider client={queryClient}>
-//           <Router>
-//             <Toaster position="bottom-right" />
-//             <Routes>
-//               <Route path="/" element={<Navigate to="/home" replace />} />
-//               <Route path="/login" element={<LoginPage />} />
-//               <Route path="/accept-invite" element={<AcceptInvitePage />} />
-//               <Route path="/invite" element={<InviteRegistrationPage />} />
-
-//               {/* Все защищенные маршруты */}
-//               <Route element={<ProtectedRoute />}>
-//                 <Route path="/home" element={<HomePage />} />
-
-//                 {/* Страница 404 для защищенных маршрутов */}
-//                 <Route path="*" element={<NotFoundPage />} />
-//               </Route>
-
-//               {/* Перенаправление на login для всех остальных (публичных) маршрутов */}
-//               <Route path="*" element={<Navigate to="/login" replace />} />
-//             </Routes>
-//           </Router>
-//         </QueryClientProvider>
-//       </ConfigProvider>
-//     </ConfigProvider>
-//   );
-// };
-
-// export default App;

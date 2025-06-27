@@ -11,6 +11,7 @@ import {
 } from "../../api/legalEntitiesApi";
 import { toast } from "react-hot-toast";
 import type { AxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
 
 export const useCreateLegalEntity = () => {
   const queryClient = useQueryClient();
@@ -78,6 +79,7 @@ export const useUpdateLegalEntity = () => {
 
 export const useDeleteLegalEntity = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   return useMutation<void, AxiosError, string>({
     mutationFn: deleteLegalEntity,
     onSuccess: (_, legal_entity_id) => {
@@ -88,6 +90,7 @@ export const useDeleteLegalEntity = () => {
         queryKey: ["legalEntityDetails", legal_entity_id],
       });
       toast.success("Успешно удалено");
+      navigate(-1);
     },
     onError: (error) => {
       toast.error(`Ошибка при удалении: ${error.message}`);

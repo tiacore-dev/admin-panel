@@ -36,6 +36,19 @@ export const EditLegalEntityModal: React.FC<EditLegalEntityModalProps> = ({
     }
   }, [visible, form, initialValues]);
 
+  const handleSubmit = (values: ILegalEntityEdit) => {
+    // Создаем новый объект только с изменяемыми полями
+    const editableFields = {
+      ...values,
+      // Удаляем неизменяемые поля
+      short_name: undefined,
+      inn: undefined,
+      kpp: undefined,
+      ogrn: undefined,
+    };
+    onSave(editableFields);
+  };
+
   return (
     <Modal
       title="Редактировать"
@@ -58,35 +71,20 @@ export const EditLegalEntityModal: React.FC<EditLegalEntityModalProps> = ({
       <Form
         form={form}
         layout="vertical"
-        onFinish={onSave}
+        onFinish={handleSubmit}
         initialValues={initialValues}
       >
-        <Form.Item
-          name="short_name"
-          label="Короткое название"
-          rules={[{ required: true, message: "Поле обязательно" }]}
-        >
-          <Input />
+        <Form.Item name="short_name" label="Короткое название">
+          <Input disabled />
         </Form.Item>
-        {/* <Form.Item name="full_name" label="Полное название">
-          <Input />
-        </Form.Item> */}
-        <Form.Item
-          name="inn"
-          label="ИНН"
-          rules={[{ required: true, message: "Поле обязательно" }]}
-        >
-          <Input />
+        <Form.Item name="inn" label="ИНН">
+          <Input disabled />
         </Form.Item>
         <Form.Item name="kpp" label="КПП">
-          <Input />
+          <Input disabled />
         </Form.Item>
-        <Form.Item
-          name="ogrn"
-          label="ОГРН"
-          rules={[{ required: true, message: "Поле обязательно" }]}
-        >
-          <Input />
+        <Form.Item name="ogrn" label="ОГРН">
+          <Input disabled />
         </Form.Item>
         <Form.Item name="opf" label="ОПФ">
           <Input />
