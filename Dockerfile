@@ -1,23 +1,21 @@
-# Use an official node image as the base
-FROM node:20 AS build
-
-
-# Set working directory
+FROM node:20 AS builder
 WORKDIR /app
+ARG REACT_APP_API_URL
+ARG REACT_APP_ID
 
-# Copy package.json and install dependencies
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV REACT_APP_ID=$REACT_APP_ID
 COPY package.json package-lock.json ./
-RUN npm install
-
-# Copy the rest of the application and build it
+RUN npm ci --legacy-peer-deps
 COPY . .
+ENV NODE_OPTIONS=--max-old-space-size=2048
+ENV CI=false
+ENV GENERATE_SOURCEMAP=false
 RUN npm run build
 
-# Устанавливаем "serve" для отдачи build-содержимого
+FROM node:20
 RUN npm install -g serve
-
-# Открываем 80-й порт внутри контейнера
+WORKDIR /app
+COPY --from=builder /app/build ./build
 EXPOSE 80
-
-# Запускаем "serve" на 80 порту
 CMD ["serve", "-s", "build", "-l", "80"]

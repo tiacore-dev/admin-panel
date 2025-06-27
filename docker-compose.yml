@@ -1,9 +1,8 @@
 
 services:
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    container_name: admin-panel-${CONFIG_NAME}
+    image: ${DOCKERHUB_USERNAME}/admin-panel:${TAG}
     ports:
       - "${PORT}:80"  # Вы можете оставить это, чтобы тестировать приложение отдельно, но Nginx будет использовать внутреннюю связь
     restart: always
