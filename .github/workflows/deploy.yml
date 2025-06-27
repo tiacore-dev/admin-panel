@@ -1,48 +1,51 @@
-name: Deploy to Server
-
 on:
   push:
     branches: [main, stage, dev]
 
+env:
+  API_URL_PROD: ${{ secrets.API_URL_PROD }}
+  API_URL_DEV: ${{ secrets.API_URL_DEV }}
+  API_URL_STAGE: ${{ secrets.API_URL_STAGE }}
+  API_URL_TEST: ${{ secrets.API_URL_TEST }}
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    env:
-      API_URL_PROD: ${{ secrets.API_URL_PROD }}
-      API_URL_DEV: ${{ secrets.API_URL_DEV }}
-      API_URL_STAGE: ${{ secrets.API_URL_STAGE }}
-      API_URL_TEST: ${{ secrets.API_URL_TEST }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set API URLs from secrets
+      - name: Extract branch name
+        run: echo "branch=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      - name: Set API URL
         id: set-urls
         run: |
-          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+          echo "Branch: $branch"
+          if [ "$branch" = "main" ]; then
             echo "api_url=${API_URL_PROD}" >> $GITHUB_OUTPUT
-          elif [ "${GITHUB_REF_NAME}" = "dev" ]; then
+          elif [ "$branch" = "dev" ]; then
             echo "api_url=${API_URL_DEV}" >> $GITHUB_OUTPUT
-          elif [ "${GITHUB_REF_NAME}" = "stage" ]; then
+          elif [ "$branch" = "stage" ]; then
             echo "api_url=${API_URL_STAGE}" >> $GITHUB_OUTPUT
           else
             echo "api_url=${API_URL_TEST}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Debug selected API URL
+      - name: Debug API URL
         run: echo "Selected API URL is ${{ steps.set-urls.outputs.api_url }}"
 
-
-      - name: Set up Docker Buildx
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to DockerHub
+      - name: Docker Login
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push image
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -57,96 +60,73 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-push
+
     steps:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Determine Deployment Path and Tag
+      - name: Determine deploy path
         run: |
           echo "DEPLOY_TAG=${GITHUB_SHA}" >> $GITHUB_ENV
-
-          case "$GITHUB_REF_NAME" in
-            main)
-              echo "DEPLOY_PATH=apps/admin-panel" >> $GITHUB_ENV
-              ;;
-            dev)
-              echo "DEPLOY_PATH=apps/admin-panel-dev" >> $GITHUB_ENV
-              ;;
-            stage)
-              echo "DEPLOY_PATH=apps/admin-panel-stage" >> $GITHUB_ENV
-              ;;
-            *)
-              echo "❌ Неизвестная ветка: $GITHUB_REF_NAME"
-              exit 1
-              ;;
+          BRANCH="${GITHUB_REF##*/}"
+          case "$BRANCH" in
+            main) echo "DEPLOY_PATH=apps/admin-panel" >> $GITHUB_ENV ;;
+            dev) echo "DEPLOY_PATH=apps/admin-panel-dev" >> $GITHUB_ENV ;;
+            stage) echo "DEPLOY_PATH=apps/admin-panel-stage" >> $GITHUB_ENV ;;
+            *) echo "Unknown branch $BRANCH"; exit 1 ;;
           esac
 
-
-
-      - name: Deploy client
+      - name: Deploy
         run: |
-          echo "🚀 Деплой..."
-          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << EOF
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << EOF
             export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
             export DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
-            export DEPLOY_TAG=${{ github.sha }}
-            export DEPLOY_BRANCH=${GITHUB_REF##*/}
+            export DEPLOY_TAG=${DEPLOY_TAG}
 
-            cd $DEPLOY_PATH || { echo "❌ Не удалось перейти в $DEPLOY_PATH"; exit 1; }
+            cd $DEPLOY_PATH || exit 1
 
-            echo "\$DOCKERHUB_TOKEN" | docker login -u "\$DOCKERHUB_USERNAME" --password-stdin \
-              || { echo "❌ Docker login failed"; exit 1; }
+            echo "\$DOCKERHUB_TOKEN" | docker login -u "\$DOCKERHUB_USERNAME" --password-stdin
 
-            docker pull \$DOCKERHUB_USERNAME/admin-panel:\$DEPLOY_TAG \
-              || { echo "❌ Docker pull failed"; exit 1; }
+            docker pull \$DOCKERHUB_USERNAME/admin-panel:\$DEPLOY_TAG
 
             if [ ! -f .env ]; then touch .env; fi
             grep -q "^TAG=" .env && sed -i "s/^TAG=.*/TAG=\$DEPLOY_TAG/" .env || echo "TAG=\$DEPLOY_TAG" >> .env
 
-            docker compose pull --quiet --ignore-pull-failures &&
-            docker compose up -d --remove-orphans \
-              || { echo "❌ docker compose up failed"; exit 1; }
+            docker compose pull --quiet --ignore-pull-failures
+            docker compose up -d --remove-orphans
           EOF
 
-
-
   notify:
-    name: 📬 Telegram Notify
     runs-on: ubuntu-latest
-    needs: [build-and-push,deploy]
+    name: 📬 Telegram Notify
+    needs: [build-and-push, deploy]
     if: always()
+
     steps:
-      - name: 📬 Telegram Notification
+      - name: Telegram Notify
         run: |
-          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
-          REF_NAME="${{ github.ref_name }}"
+          STATUS="${{ needs.deploy.result }}"
+          COMMIT="${{ github.event.head_commit.message }}"
+          REF="${{ github.ref_name }}"
           SHA="${{ github.sha }}"
           AUTHOR="${{ github.event.head_commit.author.name }}"
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          DEPLOY_STATUS="${{ needs.deploy.result }}"
-
-          if [ "$DEPLOY_STATUS" != "success" ]; then
-            STATUS="🛑 *Ошибка деплоя*"
-            EXTRA_LINK="[🔍 Открыть GitHub Actions]($RUN_URL)"
-            EXTRA_LINK="[🔍 Открыть GitHub Actions]($RUN_URL)"
+          if [ "$STATUS" != "success" ]; then
+            TEXT="🛑 *Ошибка деплоя*\n\n"
           else
-            STATUS="✅ Деплой *успешен*"
-            EXTRA_LINK=""
+            TEXT="✅ *Деплой успешен*\n\n"
           fi
 
-          CHAT_ID="${{ secrets.TELEGRAM_CHAT_ID }}"
-
-          TEXT="${STATUS}
-
-          📦 *Ветка:* \`$REF_NAME\`
-          🔖 *Тег:* \`$SHA\`
-          👤 *Автор деплоя:* [$AUTHOR](https://github.com/$AUTHOR)
-          📝 *Коммит:* $COMMIT_MESSAGE${EXTRA_LINK}"
+          TEXT+="📦 *Ветка:* \`$REF\`\n"
+          TEXT+="🔖 *Тег:* \`$SHA\`\n"
+          TEXT+="👤 *Автор:* [$AUTHOR](https://github.com/$AUTHOR)\n"
+          TEXT+="📝 *Коммит:* $COMMIT\n"
+          TEXT+="[🔍 Логи в Actions]($RUN_URL)"
 
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="$CHAT_ID" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
             -d parse_mode=Markdown \
             -d "text=$TEXT"
