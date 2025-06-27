@@ -3,10 +3,14 @@ on:
     branches: [main, stage, dev]
 
 env:
-  API_URL_PROD: ${{ secrets.API_URL_PROD }}
-  API_URL_DEV: ${{ secrets.API_URL_DEV }}
-  API_URL_STAGE: ${{ secrets.API_URL_STAGE }}
-  API_URL_TEST: ${{ secrets.API_URL_TEST }}
+  API_AUTH_URL_PROD: ${{ secrets.API_AUTH_URL_PROD }}
+  API_AUTH_URL_DEV: ${{ secrets.API_AUTH_URL_DEV }}
+  API_AUTH_URL_STAGE: ${{ secrets.API_AUTH_URL_STAGE }}
+  API_AUTH_URL_TEST: ${{ secrets.API_AUTH_URL_TEST }}
+  API_REFERENCE_URL_PROD: ${{ secrets.API_REFERENCE_URL_PROD }}
+  API_REFERENCE_URL_DEV: ${{ secrets.API_REFERENCE_URL_DEV }}
+  API_REFERENCE_URL_STAGE: ${{ secrets.API_REFERENCE_URL_STAGE }}
+  API_REFERENCE_URL_TEST: ${{ secrets.API_REFERENCE_URL_TEST }}
 
 jobs:
   build-and-push:
@@ -24,17 +28,19 @@ jobs:
         run: |
           echo "Branch: $branch"
           if [ "$branch" = "main" ]; then
-            echo "api_url=${API_URL_PROD}" >> $GITHUB_OUTPUT
+            echo "api_auth_url=${API_AUTH_URL_PROD}" >> $GITHUB_OUTPUT
+            echo "api_reference_url=${API_REFERENCE_URL_PROD}" >> $GITHUB_OUTPUT
           elif [ "$branch" = "dev" ]; then
-            echo "api_url=${API_URL_DEV}" >> $GITHUB_OUTPUT
+            echo "api_auth_url=${API_AUTH_URL_DEV}" >> $GITHUB_OUTPUT
+            echo "api_reference_url=${API_REFERENCE_URL_DEV}" >> $GITHUB_OUTPUT
           elif [ "$branch" = "stage" ]; then
-            echo "api_url=${API_URL_STAGE}" >> $GITHUB_OUTPUT
+            echo "api_auth_url=${API_AUTH_URL_STAGE}" >> $GITHUB_OUTPUT
+            echo "api_reference_url=${API_REFERENCE_URL_STAGE}" >> $GITHUB_OUTPUT
           else
-            echo "api_url=${API_URL_TEST}" >> $GITHUB_OUTPUT
+            echo "api_auth_url=${API_AUTH_URL_TEST}" >> $GITHUB_OUTPUT
+            echo "api_reference_url=${API_REFERENCE_URL_TEST}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Debug API URL
-        run: echo "Selected API URL is ${{ steps.set-urls.outputs.api_url }}"
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -54,7 +60,8 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/admin-panel:cache
           cache-to: type=inline
           build-args: |
-            REACT_APP_API_URL=${{ steps.set-urls.outputs.api_url }}
+            REACT_APP_AUTH_API_URL=${{ steps.set-urls.outputs.api_auth_url }}
+            REACT_APP_REFERENCE_API_URL=${{ steps.set-urls.outputs.api_reference_url }}
             REACT_APP_ID=${{ secrets.APP }}
 
   deploy:
