@@ -24,7 +24,7 @@ export const createEntityCompanyRelation = async (newEntityCompanyRelation: {
   company_id: string;
   relation_type: string;
 }): Promise<IEntityCompanyRelationCreate> => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -52,7 +52,7 @@ export const fetchEntityCompanyRelations = async (
   company_id?: string,
   relation_type?: string
 ) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");
@@ -83,7 +83,7 @@ export const fetchEntityCompanyRelations = async (
   return response.data;
 };
 export const deleteEntityCompanyRelation = async (relation_id: string) => {
-  const url = process.env.REACT_APP_AUTH_API_URL;
+  const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");
   const isSuperadmin = localStorage.getItem("is_superadmin") === "true";
   const selectedCompanyId = localStorage.getItem("selectedCompanyId");

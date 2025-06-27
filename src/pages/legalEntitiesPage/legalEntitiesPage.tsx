@@ -1,20 +1,20 @@
-// src/pages/legalEntitiesBuyersPage/LegalEntitiesBuyersPage.tsx
+// src/pages/legalEntitiesSellersPage/LegalEntitiesSellersPage.tsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { BackButton } from "../../components/buttons/backButton";
 import { Button, Space, Spin } from "antd";
-import { useLegalEntitiesBuyers } from "../../hooks/legalEntities/useLegalEntityQuery";
-import { LegalEntitiesBuyersTable } from "./components/legalEntitiesBuyersTable";
+import { useLegalEntityQuery } from "../../hooks/legalEntities/useLegalEntityQuery";
+import { LegalEntitiesTable } from "./components/legalEntitiesTable";
 import { PlusOutlined, ClearOutlined } from "@ant-design/icons";
-import { resetState } from "../../redux/slices/legalEntityBuyersSlice";
+import { resetState } from "../../redux/slices/legalEntitySellersSlice";
 import { RootState } from "../../redux/store";
-import { CreateBuyerModal } from "./components/createBuyerModal";
+import { CreateLegalEntityModal } from "./components/createLegalEntityModal";
 
-export const LegalEntitiesBuyersPage: React.FC = () => {
+export const LegalEntitiesPage: React.FC = () => {
   const dispatch = useDispatch();
-  const { short_name, inn, kpp } = useSelector(
-    (state: RootState) => state.legalEntitiesBuyers
+  const { short_name, inn } = useSelector(
+    (state: RootState) => state.legalEntitiesSellers
   );
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -22,17 +22,17 @@ export const LegalEntitiesBuyersPage: React.FC = () => {
     dispatch(
       setBreadcrumbs([
         { label: "Главная страница", to: "/home" },
-        { label: "Контрагенты", to: "/legal-entities/buyers" },
+        { label: "Юр. лица", to: "/legal-entities" },
       ])
     );
   }, [dispatch]);
 
   const {
-    data: buyersData,
+    data: legalEntitiesData,
     isLoading,
     isError,
     refetch,
-  } = useLegalEntitiesBuyers();
+  } = useLegalEntityQuery();
 
   const handleResetFilters = () => {
     dispatch(resetState());
@@ -57,18 +57,18 @@ export const LegalEntitiesBuyersPage: React.FC = () => {
                     icon={<PlusOutlined />}
                     onClick={() => setModalVisible(true)}
                   >
-                    Добавить контрагента
+                    Добавить юр. лицо
                   </Button>
                   <Button
                     onClick={handleResetFilters}
                     icon={<ClearOutlined />}
-                    disabled={!short_name && !inn && !kpp}
+                    disabled={!short_name && !inn}
                   >
                     Сбросить фильтры
                   </Button>
                 </Space>
-                <LegalEntitiesBuyersTable
-                  data={buyersData || { total: 0, entities: [] }}
+                <LegalEntitiesTable
+                  data={legalEntitiesData || { total: 0, entities: [] }}
                   loading={isLoading}
                 />
               </div>
@@ -78,7 +78,7 @@ export const LegalEntitiesBuyersPage: React.FC = () => {
         </>
       )}
 
-      <CreateBuyerModal
+      <CreateLegalEntityModal
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
         onSuccess={handleSuccess}

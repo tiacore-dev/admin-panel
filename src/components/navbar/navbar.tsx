@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, Button, Dropdown, Drawer } from "antd";
+import { Menu, Button, Dropdown, Drawer, message } from "antd";
 import {
   LogoutOutlined,
   MenuOutlined,
@@ -13,7 +13,7 @@ import { useMobileDetection } from "../../hooks/useMobileDetection";
 import { CompanyFormModal } from "../../pages/companiesPage/components/companyFormModal";
 import { logoutApi } from "../../api/authApi";
 
-const LOGO_TEXT = "ADMIN | Tiacore"; // Замените на ваш текст лого
+const LOGO_TEXT = "ADMIN | Tiacore";
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -27,21 +27,23 @@ export const Navbar: React.FC = () => {
   const companies = companiesData?.companies || [];
 
   const mainItems = [
-    // { label: "Главная", key: "/home" },
     // { label: "Контрагенты", key: "/legal-entities/buyers" },
-    // { label: "Организации", key: "/legal-entities/sellers" },
+    { label: "Юр. лица", key: "/legal-entities" },
     { label: "Компании", key: "/companies" },
     { label: "Пользователи", key: "/users" },
     { label: "Управление доступом", key: "/role_permissions_relations" },
   ];
 
-  // Пункты меню для обычного пользователя (аккаунт и выход)
   const userMenuItems = [
     { label: "Аккаунт", key: "/account", icon: <UserOutlined /> },
-    { label: "Выйти", key: "/login", icon: <LogoutOutlined /> },
+    {
+      label: "Выйти",
+      key: "logout",
+      icon: <LogoutOutlined />,
+      danger: true,
+    },
   ];
 
-  // Объединяем все пункты меню для мобильной версии
   const mobileMenuItems = [...mainItems, ...userMenuItems];
 
   const getSelectedKeys = () => {
@@ -57,14 +59,23 @@ export const Navbar: React.FC = () => {
     setDrawerVisible(!drawerVisible);
   };
 
-  const handleUserMenuClick = ({ key }: { key: string }) => {
+  const handleLogout = async () => {
+    try {
+      await logoutApi();
+      navigate("/login");
+    } catch (error) {
+      message.error("Ошибка при выходе из системы");
+    }
+  };
+
+  const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "logout") {
-      logoutApi();
-      // navigate("/login");
+      handleLogout();
     } else {
       navigate(key);
     }
   };
+
   return (
     <>
       {isMobile && (
@@ -81,13 +92,7 @@ export const Navbar: React.FC = () => {
               </div>
             </div>
             <div className="buttons-container">
-              <button
-                className="animated-btn"
-                onClick={() => {
-                  localStorage.clear();
-                  window.location.href = "/login";
-                }}
-              >
+              <button className="animated-btn" onClick={handleLogout}>
                 <div className="sign">
                   <LogoutOutlined />
                 </div>
@@ -108,8 +113,7 @@ export const Navbar: React.FC = () => {
               selectedKeys={getSelectedKeys()}
               onClick={({ key }) => {
                 if (key === "logout") {
-                  localStorage.clear();
-                  navigate("/login");
+                  handleLogout();
                 } else {
                   navigate(key);
                 }
@@ -144,23 +148,10 @@ export const Navbar: React.FC = () => {
           />
 
           <div className="buttons-container">
-            {/* <button className="animated-settings-btn" onClick={toggleSettings}>
-              <div className="sign">
-                <div className="text">Настройки</div>
-                <SettingOutlined
-                  className={`rotate-icon ${
-                    showSettings
-                      ? "rotate-icon-anticlockwise"
-                      : "rotate-icon-clockwise"
-                  }`}
-                />
-              </div>
-            </button> */}
-
             <Dropdown
               menu={{
                 items: userMenuItems,
-                onClick: handleUserMenuClick,
+                onClick: handleMenuClick,
               }}
               placement="bottomRight"
             >

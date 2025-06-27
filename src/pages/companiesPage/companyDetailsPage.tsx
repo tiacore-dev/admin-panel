@@ -13,8 +13,8 @@ import { CompanyFormModal } from "./components/companyFormModal";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { UserCompanyRelationsTable } from "../../components/userCompanyRelations/userCompanyRelationsTable";
 import { EntityCompanyRelationsTable } from "../../components/entityCompanyRelations";
-import { CreateSellerModal } from "../legalEntitiesPage/components/createSellerModal";
-import { CreateBuyerModal } from "../legalEntitiesPage/components/createBuyerModal";
+import { CreateLegalEntityModal } from "../legalEntitiesPage/components/createLegalEntityModal";
+// import { CreateBuyerModal } from "../legalEntitiesPage/components/createBuyerModal";
 
 export const CompanyDetailsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -108,7 +108,7 @@ export const CompanyDetailsPage: React.FC = () => {
                 <UserCompanyRelationsTable companyId={company_id} />
 
                 {/* Таблица организаций (sellers) */}
-                {/* <div style={{ marginBottom: 24, marginTop: 16 }}>
+                <div style={{ marginBottom: 24, marginTop: 16 }}>
                   <Space style={{ marginBottom: 16 }}>
                     <Typography.Title level={4} style={{ margin: 0 }}>
                       Организации
@@ -126,10 +126,10 @@ export const CompanyDetailsPage: React.FC = () => {
                     title="Организации"
                     companyName={companyDetails?.company_name} // Передаем название компании
                   />
-                </div> */}
+                </div>
 
                 {/* Таблица контрагентов (buyers) */}
-                {/* <div style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 24 }}>
                   <Space style={{ marginBottom: 16 }}>
                     <Typography.Title level={4} style={{ margin: 0 }}>
                       Контрагенты
@@ -147,7 +147,7 @@ export const CompanyDetailsPage: React.FC = () => {
                     title="Контрагенты"
                     companyName={companyDetails?.company_name} // Передаем название компании
                   />
-                </div> */}
+                </div>
               </div>
 
               {showEditModal && (
@@ -160,8 +160,8 @@ export const CompanyDetailsPage: React.FC = () => {
                 />
               )}
 
-              {/* {showSellerModal && (
-                <CreateSellerModal
+              {showSellerModal && (
+                <CreateLegalEntityModal
                   visible={showSellerModal}
                   onCancel={() => setShowSellerModal(false)}
                   onSuccess={handleSellerSuccess}
@@ -170,13 +170,13 @@ export const CompanyDetailsPage: React.FC = () => {
               )}
 
               {showBuyerModal && (
-                <CreateBuyerModal
+                <CreateLegalEntityModal
                   visible={showBuyerModal}
                   onCancel={() => setShowBuyerModal(false)}
                   onSuccess={handleBuyerSuccess}
                   companyId={company_id!}
                 />
-              )} */}
+              )}
 
               {showDeleteConfirm && (
                 <ConfirmDeleteModal

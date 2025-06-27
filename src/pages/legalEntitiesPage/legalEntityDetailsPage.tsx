@@ -4,15 +4,17 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { BackButton } from "../../components/buttons/backButton";
-import { Spin, Descriptions, Button, Space } from "antd";
+import { Spin, Descriptions, Typography, Button, Space } from "antd";
 import { useLegalEntityDetailsQuery } from "../../hooks/legalEntities/useLegalEntityQuery";
 import { useDeleteLegalEntity } from "../../hooks/legalEntities/useLegalEntityMutation";
 import { useUpdateLegalEntity } from "../../hooks/legalEntities/useLegalEntityMutation";
 import { ConfirmDeleteModal } from "../../components/modals/confirmDeleteModal";
-import { EditBuyerModal } from "./components/editBuyerModal";
+import { EditLegalEntityModal } from "./components/editLegalEntityModal";
 import { ILegalEntityEdit } from "../../api/legalEntitiesApi";
 
-export const BuyerDetailsPage: React.FC = () => {
+const { Title } = Typography;
+
+export const LegalEntityDetailsPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { legal_entity_id } = useParams<{ legal_entity_id: string }>();
@@ -46,7 +48,7 @@ export const BuyerDetailsPage: React.FC = () => {
           },
           {
             label: legalEntity?.short_name || "Детали",
-            to: `/legal-entities/buyers/${legal_entity_id}`,
+            to: `/legal-entities/${legal_entity_id}`,
           },
         ])
       );
@@ -55,10 +57,10 @@ export const BuyerDetailsPage: React.FC = () => {
       dispatch(
         setBreadcrumbs([
           { label: "Главная страница", to: "/home" },
-          { label: "Контрагенты", to: "/legal-entities/buyers" },
+          { label: "Юр. лица", to: "/legal-entities" },
           {
             label: legalEntity?.short_name || "Детали",
-            to: `/legal-entities/buyers/${legal_entity_id}`,
+            to: `/legal-entities/${legal_entity_id}`,
           },
         ])
       );
@@ -70,7 +72,7 @@ export const BuyerDetailsPage: React.FC = () => {
 
     deleteMutation.mutate(legal_entity_id, {
       onSuccess: () => {
-        navigate("/legal-entities/buyers");
+        navigate("/legal-entities/sellers");
         // message.success("Контрагент успешно удален");
       },
       onError: () => {
@@ -105,7 +107,7 @@ export const BuyerDetailsPage: React.FC = () => {
     return (
       <div>
         <BackButton />
-        <div>Не удалось загрузить данные контрагента</div>
+        <div>Не удалось загрузить данные организации</div>
       </div>
     );
   }
@@ -136,9 +138,9 @@ export const BuyerDetailsPage: React.FC = () => {
       {/* }
       > */}
       <Descriptions bordered column={1}>
-        {/* <Descriptions.Item label="Полное название">
-            {legalEntity.full_name || "-"}
-          </Descriptions.Item> */}
+        <Descriptions.Item label="Полное название">
+          {legalEntity.full_name || "-"}
+        </Descriptions.Item>
         <Descriptions.Item label="Короткое название">
           {legalEntity.short_name}
         </Descriptions.Item>
@@ -150,17 +152,17 @@ export const BuyerDetailsPage: React.FC = () => {
         <Descriptions.Item label="ОПФ">
           {legalEntity.opf || "-"}
         </Descriptions.Item>
-        {/* <Descriptions.Item label="Ставка НДС">
-            {legalEntity.vat_rate !== 0
-              ? `${legalEntity.vat_rate}%`
-              : "НДС не облагается"}
-          </Descriptions.Item> */}
+        <Descriptions.Item label="Ставка НДС">
+          {legalEntity.vat_rate !== 0
+            ? `${legalEntity.vat_rate}%`
+            : "НДС не облагается"}
+        </Descriptions.Item>
         <Descriptions.Item label="Адрес">
           {legalEntity.address}
         </Descriptions.Item>
-        {/* <Descriptions.Item label="Подписант">
-            {legalEntity.signer || "-"}
-          </Descriptions.Item> */}
+        <Descriptions.Item label="Подписант">
+          {legalEntity.signer || "-"}
+        </Descriptions.Item>
       </Descriptions>
       {/* </Card> */}
 
@@ -172,20 +174,20 @@ export const BuyerDetailsPage: React.FC = () => {
         />
       )}
 
-      <EditBuyerModal
+      <EditLegalEntityModal
         visible={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
         onSave={handleUpdate}
         initialValues={{
           short_name: legalEntity.short_name,
-          full_name: legalEntity.full_name || "",
+          full_name: legalEntity.full_name || undefined,
           inn: legalEntity.inn,
-          kpp: legalEntity.kpp || "",
+          kpp: legalEntity.kpp || undefined,
           ogrn: legalEntity.ogrn,
-          opf: legalEntity.opf || "",
+          opf: legalEntity.opf || undefined,
           vat_rate: legalEntity.vat_rate,
           address: legalEntity.address,
-          signer: legalEntity.signer || "",
+          signer: legalEntity.signer || undefined,
         }}
         isLoading={updateMutation.isPending}
       />
