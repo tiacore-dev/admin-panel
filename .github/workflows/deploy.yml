@@ -71,7 +71,7 @@ jobs:
               echo "DEPLOY_PATH=apps/admin-panel-dev" >> $GITHUB_ENV
               ;;
             stage)
-              echo "DEPLOY_PATH=apps/crm-tiacore-frontend-stage" >> $GITHUB_ENV
+              echo "DEPLOY_PATH=apps/admin-panel-stage" >> $GITHUB_ENV
               ;;
             *)
               echo "❌ Неизвестная ветка: $GITHUB_REF_NAME"
