@@ -132,7 +132,7 @@ export const LegalEntitiesPage: React.FC = () => {
           </Row>
         </Card>
 
-        {/* Статистические карточки */}
+        {/* Статистические карточки
         <div className="stats-grid">
           <Card className="stat-card">
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -244,7 +244,7 @@ export const LegalEntitiesPage: React.FC = () => {
               </div>
             </div>
           </Card>
-        </div>
+        </div> */}
 
         {/* Основная таблица */}
         <Card

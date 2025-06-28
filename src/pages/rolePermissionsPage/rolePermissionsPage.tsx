@@ -201,7 +201,7 @@ export const RolePermissionsPage: React.FC = () => {
           </Row>
         </Card>
 
-        {/* Статистические карточки */}
+        {/* Статистические карточки
         <div className="stats-grid">
           <Card className="stat-card">
             <Statistic
@@ -224,11 +224,50 @@ export const RolePermissionsPage: React.FC = () => {
               prefix={<KeyOutlined style={{ color: "#ff9ff3" }} />}
             />
           </Card>
-        </div>
+        </div> */}
 
         {/* Основной контент */}
+        {hasRoles && (
+          <Card className="filters-card" style={{ marginBottom: 16 }}>
+            <Row gutter={[16, 16]} align="middle">
+              <Col xs={24} sm={12} md={8}>
+                <Search
+                  placeholder="Поиск по названию роли..."
+                  allowClear
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  onSearch={handleSearch}
+                  style={{ width: "100%" }}
+                />
+              </Col>
+              <Col xs={24} sm={12} md={8}>
+                <Select
+                  placeholder="Фильтр по приложению"
+                  allowClear
+                  value={selectedApp}
+                  onChange={handleAppFilter}
+                  style={{ width: "100%" }}
+                >
+                  <Select.Option value="all">Все приложения</Select.Option>
+                  {Array.from(appsMap.entries()).map(([id, name]) => (
+                    <Select.Option key={id} value={id}>
+                      {name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Col>
+              <Col xs={24} sm={24} md={8}>
+                <Space>
+                  <Text type="secondary">
+                    Найдено: {statistics.filtered} из {statistics.total}
+                  </Text>
+                </Space>
+              </Col>
+            </Row>
+          </Card>
+        )}
         <Card className="content-card">
-          <Row
+          {/* <Row
             justify="space-between"
             align="middle"
             style={{ marginBottom: 16 }}
@@ -245,48 +284,9 @@ export const RolePermissionsPage: React.FC = () => {
                 </Text>
               </Space>
             </Col>
-          </Row>
+          </Row> */}
 
           {/* Фильтры и поиск */}
-          {hasRoles && (
-            <Card className="filters-card" style={{ marginBottom: 16 }}>
-              <Row gutter={[16, 16]} align="middle">
-                <Col xs={24} sm={12} md={8}>
-                  <Search
-                    placeholder="Поиск по названию роли..."
-                    allowClear
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    onSearch={handleSearch}
-                    style={{ width: "100%" }}
-                  />
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <Select
-                    placeholder="Фильтр по приложению"
-                    allowClear
-                    value={selectedApp}
-                    onChange={handleAppFilter}
-                    style={{ width: "100%" }}
-                  >
-                    <Select.Option value="all">Все приложения</Select.Option>
-                    {Array.from(appsMap.entries()).map(([id, name]) => (
-                      <Select.Option key={id} value={id}>
-                        {name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Col>
-                <Col xs={24} sm={24} md={8}>
-                  <Space>
-                    <Text type="secondary">
-                      Найдено: {statistics.filtered} из {statistics.total}
-                    </Text>
-                  </Space>
-                </Col>
-              </Row>
-            </Card>
-          )}
 
           {!hasRoles ? (
             <Empty

@@ -153,7 +153,7 @@ export const CompaniesPage: React.FC = () => {
           </Row>
         </Card>
 
-        {/* Статистические карточки */}
+        {/* Статистические карточки
         <div className="stats-grid">
           <Card className="stat-card">
             <Statistic
@@ -176,7 +176,7 @@ export const CompaniesPage: React.FC = () => {
               prefix={<TeamOutlined style={{ color: "#fa8c16" }} />}
             />
           </Card>
-        </div>
+        </div> */}
 
         {/* Фильтры */}
         <Card className="filters-card">
