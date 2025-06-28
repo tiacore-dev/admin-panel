@@ -1,9 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, Button, Checkbox, Select } from "antd";
+"use client";
+
+import type React from "react";
+import { useEffect, useState } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Button,
+  Checkbox,
+  Select,
+  Card,
+  Space,
+  Typography,
+  Alert,
+} from "antd";
 import { useUserMutations } from "../../../hooks/users/useUserMutation";
-import { IUser } from "../../../api/usersApi";
+import type { IUser } from "../../../api/usersApi";
 import { useCompaniesForSelection } from "../../../hooks/companies/useCompanyQuery";
 import { useAppsQuery } from "../../../hooks/base/useBaseQuery";
+import {
+  UserOutlined,
+  MailOutlined,
+  LockOutlined,
+  IdcardOutlined,
+  BankOutlined,
+  AppstoreOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 interface UserCreateModalProps {
   visible: boolean;
@@ -112,9 +137,27 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
     }
   };
 
+  const getSubmitButtonText = () => {
+    switch (mode) {
+      case "registration":
+        return "Зарегистрироваться";
+      case "create":
+        return "Создать пользователя";
+      case "edit":
+        return "Сохранить изменения";
+      default:
+        return "Создать";
+    }
+  };
+
   return (
     <Modal
-      title={getModalTitle()}
+      title={
+        <Space>
+          <UserOutlined />
+          {getModalTitle()}
+        </Space>
+      }
       open={visible}
       onCancel={onCancel}
       footer={[
@@ -127,116 +170,137 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
           loading={isSubmitting}
           onClick={handleSubmit}
         >
-          {mode === "registration"
-            ? "Зарегистрироваться"
-            : mode === "create"
-            ? "Создать"
-            : "Сохранить"}
+          {getSubmitButtonText()}
         </Button>,
       ]}
       width={700}
       destroyOnClose
     >
       <Form form={form} layout="vertical">
-        <Form.Item
-          label="Email пользователя"
-          name="email"
-          rules={[
-            {
-              required: mode !== "edit",
-              message: "Пожалуйста, введите email пользователя",
-            },
-            {
-              validator: (_, value) => {
-                if (!value) return Promise.resolve();
-                if (
-                  value === "admin" ||
-                  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-                ) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(
-                  new Error('Введите корректный email адрес или "admin"')
-                );
+        {/* Основная информация */}
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Title level={5} style={{ marginBottom: 16 }}>
+            <IdcardOutlined style={{ marginRight: 8 }} />
+            Основная информация
+          </Title>
+
+          <Form.Item
+            label="Email пользователя"
+            name="email"
+            rules={[
+              {
+                required: mode !== "edit",
+                message: "Пожалуйста, введите email пользователя",
               },
-            },
-            { min: 3, message: "Минимум 3 символа" },
-          ]}
-        >
-          <Input placeholder="Введите email пользователя или 'admin'" />
-        </Form.Item>
-
-        <Form.Item
-          label="Пароль"
-          name="password"
-          rules={[
-            {
-              required: mode !== "edit",
-              message: "Пожалуйста, введите пароль",
-            },
-            { min: 6, message: "Минимум 6 символов" },
-          ]}
-        >
-          <Input.Password
-            placeholder={
-              mode === "edit"
-                ? "Оставьте пустым, чтобы не изменять"
-                : "Введите пароль"
-            }
-            onChange={handlePasswordChange}
-          />
-        </Form.Item>
-
-        <Form.Item
-          label="Подтверждение пароля"
-          name="confirmPassword"
-          dependencies={["password"]}
-          rules={[
-            {
-              required: mode !== "edit" || isPasswordChanged,
-              message: "Пожалуйста, подтвердите пароль",
-            },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue("password") === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error("Пароли не совпадают"));
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  if (
+                    value === "admin" ||
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+                  ) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error('Введите корректный email адрес или "admin"')
+                  );
+                },
               },
-            }),
-          ]}
-        >
-          <Input.Password placeholder="Повторите пароль" />
-        </Form.Item>
-        <Form.Item
-          label="Ф.И.О."
-          name="full_name"
-          rules={[
-            {
-              required: mode !== "edit",
-              message: "Пожалуйста, введите Ф.И.О.",
-            },
-            { min: 3, message: "Минимум 3 символа" },
-          ]}
-        >
-          <Input placeholder="Введите Ф.И.О." />
-        </Form.Item>
+              { min: 3, message: "Минимум 3 символа" },
+            ]}
+          >
+            <Input
+              prefix={<MailOutlined />}
+              placeholder="Введите email пользователя или 'admin'"
+            />
+          </Form.Item>
 
-        {/* <Form.Item
-          label="Должность"
-          name="position"
-          rules={[
-            {
-              required: mode !== "edit",
-              message: "Пожалуйста, введите должность",
-            },
-          ]}
-        >
-          <Input placeholder="Введите должность" />
-        </Form.Item> */}
+          <Form.Item
+            label="Ф.И.О."
+            name="full_name"
+            rules={[
+              {
+                required: mode !== "edit",
+                message: "Пожалуйста, введите Ф.И.О.",
+              },
+              { min: 3, message: "Минимум 3 символа" },
+            ]}
+          >
+            <Input prefix={<UserOutlined />} placeholder="Введите Ф.И.О." />
+          </Form.Item>
+        </Card>
 
+        {/* Безопасность */}
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Title level={5} style={{ marginBottom: 16 }}>
+            <LockOutlined style={{ marginRight: 8 }} />
+            Безопасность
+          </Title>
+
+          <Form.Item
+            label="Пароль"
+            name="password"
+            rules={[
+              {
+                required: mode !== "edit",
+                message: "Пожалуйста, введите пароль",
+              },
+              { min: 6, message: "Минимум 6 символов" },
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder={
+                mode === "edit"
+                  ? "Оставьте пустым, чтобы не изменять"
+                  : "Введите пароль"
+              }
+              onChange={handlePasswordChange}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Подтверждение пароля"
+            name="confirmPassword"
+            dependencies={["password"]}
+            rules={[
+              {
+                required: mode !== "edit" || isPasswordChanged,
+                message: "Пожалуйста, подтвердите пароль",
+              },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error("Пароли не совпадают"));
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Повторите пароль"
+            />
+          </Form.Item>
+        </Card>
+
+        {/* Настройки для суперадминистратора */}
         {isSuperadmin && mode === "create" && (
-          <>
+          <Card size="small" style={{ marginBottom: 16 }}>
+            <Title level={5} style={{ marginBottom: 16 }}>
+              <BankOutlined style={{ marginRight: 8 }} />
+              Привязка к системе
+            </Title>
+
+            <Alert
+              message="Настройки суперадминистратора"
+              description="Эти поля доступны только для суперадминистратора"
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+
             <Form.Item
               label="Компания"
               name="company_id"
@@ -244,7 +308,10 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
                 { required: true, message: "Пожалуйста, выберите компанию" },
               ]}
             >
-              <Select placeholder="Выберите компанию">
+              <Select
+                placeholder="Выберите компанию"
+                suffixIcon={<BankOutlined />}
+              >
                 {companies.map((company) => (
                   <Select.Option
                     key={company.company_id}
@@ -263,7 +330,10 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
                 { required: true, message: "Пожалуйста, выберите приложение" },
               ]}
             >
-              <Select placeholder="Выберите приложение">
+              <Select
+                placeholder="Выберите приложение"
+                suffixIcon={<AppstoreOutlined />}
+              >
                 {apps.map((app) => (
                   <Select.Option
                     key={app.application_id}
@@ -274,13 +344,26 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
                 ))}
               </Select>
             </Form.Item>
-          </>
+          </Card>
         )}
 
+        {/* Верификация для редактирования */}
         {isSuperadmin && mode === "edit" && (
-          <Form.Item name="is_verified" valuePropName="checked">
-            <Checkbox>Верифицировать пользователя</Checkbox>
-          </Form.Item>
+          <Card size="small">
+            <Title level={5} style={{ marginBottom: 16 }}>
+              <CheckCircleOutlined style={{ marginRight: 8 }} />
+              Статус верификации
+            </Title>
+
+            <Form.Item name="is_verified" valuePropName="checked">
+              <Checkbox>
+                <Space>
+                  <CheckCircleOutlined />
+                  Верифицировать пользователя
+                </Space>
+              </Checkbox>
+            </Form.Item>
+          </Card>
         )}
       </Form>
     </Modal>

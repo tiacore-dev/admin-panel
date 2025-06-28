@@ -1,20 +1,11 @@
+"use client";
+
 // src/pages/rolePermissions/RolePermissionsDetailsPage.tsx
 import type React from "react";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
-import {
-  Spin,
-  Space,
-  Card,
-  Typography,
-  Row,
-  Col,
-  Tag,
-  Alert,
-  Empty,
-  Badge,
-} from "antd";
+import { Spin, Space, Card, Typography, Tag, Alert, Empty, Badge } from "antd";
 import {
   UserOutlined,
   SafetyOutlined,
@@ -31,6 +22,7 @@ import { useRoleMutations } from "../../hooks/role/useRoleMutations";
 import { useRolePermissionRelationsMutations } from "../../hooks/rolePermissionRelations/useRolePermissionRelationsMutations";
 import toast from "react-hot-toast";
 import { useAppNameById } from "../../hooks/base/useAppHelpers";
+import { ContextualNavigation } from "../../components/contextualNavigation/contextualNavigation";
 
 // Импорты новых компонентов
 import { RoleHeader } from "./components/roleHeader";
@@ -90,7 +82,8 @@ export const RolePermissionsDetailsPage: React.FC = () => {
 
   const { deleteMutation, renameMutation } = useRoleMutations(
     role_id || "",
-    role?.role_name || ""
+    role?.role_name || "",
+    setIsEditing
   );
 
   const { createMutation, deleteMutation: deleteRelationMutation } =
@@ -504,153 +497,206 @@ export const RolePermissionsDetailsPage: React.FC = () => {
 
   // Показываем полный спиннер только при первоначальной загрузке
   if (isInitialLoading) {
-    return <Spin size="large" className="center-spin" />;
+    return (
+      <div className="page-container">
+        <div className="center-spin">
+          <Spin size="large" />
+        </div>
+      </div>
+    );
   }
 
   if (isError) {
-    return <BackButton />;
+    return (
+      <div className="page-container">
+        <div className="page-content">
+          <BackButton />
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="main-container">
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        {/* Информация о роли */}
-        <Card>
-          <div
+    <div className="page-container">
+      <div className="page-content">
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          {/* Заголовок с контекстной навигацией и градиентом */}
+          <Card
+            className="gradient-header"
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center", // Выравнивание по вертикали по центру
+              background: "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
+              border: "none",
+              borderRadius: "12px",
+              color: "white",
             }}
           >
-            <Space direction="vertical" size="small" style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <UserOutlined style={{ fontSize: 24, color: "#1890ff" }} />
-                <Title level={2} style={{ margin: 0 }}>
-                  {role?.role_name}
-                </Title>
-                {appName && (
-                  <Tag color="blue" style={{ fontSize: 14 }}>
-                    <AppstoreOutlined style={{ marginRight: 4 }} />
-                    {appName}
-                  </Tag>
-                )}
-              </div>
-              <Text type="secondary">
-                Управление разрешениями и ограничениями для роли пользователя
-              </Text>
-            </Space>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Space direction="vertical" size="small" style={{ flex: 1 }}>
+                <ContextualNavigation
+                  textColor="rgba(255, 255, 255, 0.8)"
+                  size="small"
+                  showIcon={true}
+                />
+                <div className="header-content">
+                  <div className="header-icon">
+                    <SafetyOutlined style={{ fontSize: 24, color: "white" }} />
+                  </div>
+                  <div className="header-text">
+                    <Title level={2} style={{ margin: 0, color: "white" }}>
+                      {role?.role_name}
+                    </Title>
+                    <Text className="header-description">
+                      Управление разрешениями и ограничениями для роли
+                      пользователя
+                    </Text>
+                  </div>
+                  {appName && (
+                    <Tag
+                      color="rgba(255, 255, 255, 0.2)"
+                      style={{
+                        fontSize: 14,
+                        color: "white",
+                        border: "1px solid rgba(255, 255, 255, 0.3)",
+                        marginLeft: 12,
+                      }}
+                    >
+                      <AppstoreOutlined style={{ marginRight: 4 }} />
+                      {appName}
+                    </Tag>
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+                  <div style={{ color: "rgba(255, 255, 255, 0.9)" }}>
+                    <UserOutlined style={{ marginRight: 4 }} />
+                    Разрешений: {permissionsStats.assignedCount}
+                  </div>
+                  {permissionsStats.hasRestrictions && (
+                    <div style={{ color: "rgba(255, 255, 255, 0.9)" }}>
+                      <SafetyOutlined style={{ marginRight: 4 }} />
+                      Ограничений: {permissionsStats.assignedRestrictionsCount}
+                    </div>
+                  )}
+                </div>
+              </Space>
 
-            {isDataLoading ? (
-              <RoleHeaderSkeleton />
-            ) : (
-              <RoleHeader
-                role={role}
-                isEditing={isEditing}
-                selectedPermissions={selectedPermissions}
-                allPermissions={allPermissions}
-                onEditClick={handleEditClick}
-                onDeleteClick={handleDeleteClick}
-                onRenameClick={handleRenameClick}
-                onSelectAllPermissions={handleSelectAllPermissions}
-                onCancelEdit={handleCancelEdit}
-                onSavePermissions={handleSavePermissions}
-                isSaving={isSaving}
-              />
-            )}
-          </div>
-        </Card>
-
-        {/* Предупреждения и информация */}
-        {isEditing && (
-          <Alert
-            message="Режим редактирования"
-            description="Вы находитесь в режиме редактирования разрешений. Не забудьте сохранить изменения."
-            type="info"
-            showIcon
-            closable
-          />
-        )}
-
-        {permissionsStats.hasRestrictions && !isEditing && (
-          <Alert
-            message="Активные ограничения"
-            description="Для этой роли настроены ограничения доступа. Проверьте их актуальность."
-            type="warning"
-            showIcon
-          />
-        )}
-
-        {/* Список разрешений */}
-        <Card
-          title={
-            <Space>
-              <SafetyOutlined />
-              <span>Разрешения роли</span>
-              {!isEditing && permissionsStats.assignedCount > 0 && (
-                <Badge count={permissionsStats.assignedCount} color="green" />
+              {isDataLoading ? (
+                <RoleHeaderSkeleton />
+              ) : (
+                <RoleHeader
+                  role={role}
+                  isEditing={isEditing}
+                  selectedPermissions={selectedPermissions}
+                  allPermissions={allPermissions}
+                  onEditClick={handleEditClick}
+                  onDeleteClick={handleDeleteClick}
+                  onRenameClick={handleRenameClick}
+                  onSelectAllPermissions={handleSelectAllPermissions}
+                  onCancelEdit={handleCancelEdit}
+                  onSavePermissions={handleSavePermissions}
+                  isSaving={isSaving}
+                />
               )}
-            </Space>
-          }
-          extra={
-            !isEditing &&
-            permissionsStats.assignedCount === 0 && (
-              <Text type="secondary">Разрешения не назначены</Text>
-            )
-          }
-        >
-          {isDataLoading ? (
-            <PermissionsListSkeleton
-              count={allPermissions?.permissions?.length || 5}
-            />
-          ) : permissionsStats.totalPermissions === 0 ? (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={
-                <Space direction="vertical">
-                  <Text>Разрешения для приложения не найдены</Text>
-                  <Text type="secondary">
-                    Обратитесь к администратору для настройки разрешений
-                  </Text>
-                </Space>
-              }
-            />
-          ) : (
-            <PermissionsList
-              permissions={allPermissions?.permissions || []}
-              restrictions={allRestrictions?.restrictions || []}
-              assignedPermissions={assignedPermissions}
-              assignedPermissionIds={assignedPermissionIds}
-              assignedRestrictionIds={assignedRestrictionIds}
-              selectedPermissions={selectedPermissions}
-              selectedRestrictions={selectedRestrictions}
-              isEditing={isEditing}
-              onPermissionChange={handlePermissionChange}
-              onRestrictionChange={handleRestrictionChange}
-              onSelectAllRestrictions={handleSelectAllRestrictions}
+            </div>
+          </Card>
+
+          {/* Предупреждения и информация */}
+          {isEditing && (
+            <Alert
+              message="Режим редактирования"
+              description="Вы находитесь в режиме редактирования разрешений. Не забудьте сохранить изменения."
+              type="info"
+              showIcon
+              closable
             />
           )}
-        </Card>
-      </Space>
 
-      {isDeleteModalOpen && (
-        <ConfirmDeleteModal
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setIsDeleteModalOpen(false)}
-          isDeleteLoading={deleteMutation.isPending}
+          {permissionsStats.hasRestrictions && !isEditing && (
+            <Alert
+              message="Активные ограничения"
+              description="Для этой роли настроены ограничения доступа. Проверьте их актуальность."
+              type="warning"
+              showIcon
+            />
+          )}
+
+          {/* Список разрешений */}
+          <Card
+            className="content-card"
+            title={
+              <Space>
+                <SafetyOutlined />
+                <span>Разрешения роли</span>
+                {!isEditing && permissionsStats.assignedCount > 0 && (
+                  <Badge count={permissionsStats.assignedCount} color="green" />
+                )}
+              </Space>
+            }
+            extra={
+              !isEditing &&
+              permissionsStats.assignedCount === 0 && (
+                <Text type="secondary">Разрешения не назначены</Text>
+              )
+            }
+          >
+            {isDataLoading ? (
+              <PermissionsListSkeleton
+                count={allPermissions?.permissions?.length || 5}
+              />
+            ) : permissionsStats.totalPermissions === 0 ? (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={
+                  <Space direction="vertical">
+                    <Text>Разрешения для приложения не найдены</Text>
+                    <Text type="secondary">
+                      Обратитесь к администратору для настройки разрешений
+                    </Text>
+                  </Space>
+                }
+              />
+            ) : (
+              <PermissionsList
+                permissions={allPermissions?.permissions || []}
+                restrictions={allRestrictions?.restrictions || []}
+                assignedPermissions={assignedPermissions}
+                assignedPermissionIds={assignedPermissionIds}
+                assignedRestrictionIds={assignedRestrictionIds}
+                selectedPermissions={selectedPermissions}
+                selectedRestrictions={selectedRestrictions}
+                isEditing={isEditing}
+                onPermissionChange={handlePermissionChange}
+                onRestrictionChange={handleRestrictionChange}
+                onSelectAllRestrictions={handleSelectAllRestrictions}
+              />
+            )}
+          </Card>
+        </Space>
+
+        {isDeleteModalOpen && (
+          <ConfirmDeleteModal
+            onConfirm={handleConfirmDelete}
+            onCancel={() => setIsDeleteModalOpen(false)}
+            isDeleteLoading={deleteMutation.isPending}
+          />
+        )}
+
+        <RenameModal
+          isOpen={isRenaming}
+          newRoleName={newRoleName}
+          onRoleNameChange={setNewRoleName}
+          onConfirm={handleConfirmRename}
+          onCancel={handleCancelRename}
+          isLoading={renameMutation.isPending}
         />
-      )}
 
-      <RenameModal
-        isOpen={isRenaming}
-        newRoleName={newRoleName}
-        onRoleNameChange={setNewRoleName}
-        onConfirm={handleConfirmRename}
-        onCancel={handleCancelRename}
-        isLoading={renameMutation.isPending}
-      />
-
-      <ScrollToTopButton show={showScrollButton} onClick={scrollToTop} />
+        <ScrollToTopButton show={showScrollButton} onClick={scrollToTop} />
+      </div>
     </div>
   );
 };

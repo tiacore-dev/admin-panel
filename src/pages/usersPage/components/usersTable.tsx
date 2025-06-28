@@ -1,7 +1,19 @@
-import { IUser } from "../../../api/usersApi";
-import React from "react";
+"use client";
+
+import type { IUser } from "../../../api/usersApi";
+import type React from "react";
 import type { TableColumnsType } from "antd";
-import { Button, Input, Table, Tag, Typography, Radio, Space } from "antd";
+import {
+  Button,
+  Input,
+  Table,
+  Tag,
+  Typography,
+  Radio,
+  Space,
+  Avatar,
+  Tooltip,
+} from "antd";
 import {
   setFullName,
   setPage,
@@ -11,8 +23,14 @@ import {
 } from "../../../redux/slices/usersSlice";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { SearchOutlined } from "@ant-design/icons";
-import { RootState } from "../../../redux/store";
+import {
+  SearchOutlined,
+  UserOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  MailOutlined,
+} from "@ant-design/icons";
+import type { RootState } from "../../../redux/store";
 
 interface UsersTableProps {
   data: {
@@ -32,6 +50,23 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     (state: RootState) => state.users
   );
 
+  // Функция для получения инициалов
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Функция для получения цвета аватара
+  const getAvatarColor = (name: string) => {
+    const colors = ["#f56a00", "#7265e6", "#ffbf00", "#00a2ae", "#87d068"];
+    const index = name.length % colors.length;
+    return colors[index];
+  };
+
   // Фильтрация данных
   const filteredData = data.users.filter((user) => {
     const matchesEmail = email
@@ -48,25 +83,41 @@ export const UsersTable: React.FC<UsersTableProps> = ({
 
   const columns: TableColumnsType<IUser> = [
     {
-      title: "Имя",
+      title: "Пользователь",
       dataIndex: "full_name",
       key: "full_name",
+      width: 300,
       filterIcon: (filtered) => (
         <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
       ),
       sorter: (a: IUser, b: IUser) => a.full_name.localeCompare(b.full_name),
       sortDirections: ["ascend", "descend"],
       render: (text: string, record: IUser) => (
-        <Button
-          type="link"
-          onClick={() =>
-            navigate(`/users/${record.user_id}`, {
-              state: { from: "usersPage" },
-            })
-          }
-        >
-          {text}
-        </Button>
+        <Space>
+          <Avatar
+            style={{ backgroundColor: getAvatarColor(text) }}
+            icon={!text ? <UserOutlined /> : null}
+          >
+            {text ? getInitials(text) : null}
+          </Avatar>
+          <div>
+            <Button
+              type="link"
+              style={{ padding: 0, height: "auto", fontWeight: 500 }}
+              onClick={() =>
+                navigate(`/users/${record.user_id}`, {
+                  state: { from: "usersPage" },
+                })
+              }
+            >
+              {text}
+            </Button>
+            <div style={{ fontSize: "12px", color: "#8c8c8c" }}>
+              <MailOutlined style={{ marginRight: 4 }} />
+              {record.email}
+            </div>
+          </div>
+        </Space>
       ),
       filterDropdown: () => (
         <div style={{ padding: 8 }}>
@@ -76,6 +127,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             onChange={(e) => dispatch(setFullName(e.target.value))}
             style={{ width: 200 }}
             allowClear
+            prefix={<SearchOutlined />}
           />
         </div>
       ),
@@ -89,6 +141,18 @@ export const UsersTable: React.FC<UsersTableProps> = ({
       ),
       sorter: (a: IUser, b: IUser) => a.email.localeCompare(b.email),
       sortDirections: ["ascend", "descend"],
+      render: (email: string) => (
+        <Tooltip title="Нажмите, чтобы скопировать">
+          <Button
+            type="link"
+            style={{ padding: 0 }}
+            onClick={() => navigator.clipboard.writeText(email)}
+          >
+            <MailOutlined style={{ marginRight: 4 }} />
+            {email}
+          </Button>
+        </Tooltip>
+      ),
       filterDropdown: () => (
         <div style={{ padding: 8 }}>
           <Input
@@ -97,6 +161,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             onChange={(e) => dispatch(setEmail(e.target.value))}
             style={{ width: 200 }}
             allowClear
+            prefix={<SearchOutlined />}
           />
         </div>
       ),
@@ -105,9 +170,13 @@ export const UsersTable: React.FC<UsersTableProps> = ({
       title: "Статус",
       dataIndex: "is_verified",
       key: "is_verified",
+      width: 150,
       render: (isVerified: boolean) => (
-        <Tag color={isVerified ? "green" : "orange"}>
-          {isVerified ? "Верифицирован" : "Не верифицирован"}
+        <Tag
+          color={isVerified ? "success" : "warning"}
+          icon={isVerified ? <CheckCircleOutlined /> : <ClockCircleOutlined />}
+        >
+          {isVerified ? "Верифицирован" : "Ожидает верификации"}
         </Tag>
       ),
       filterDropdown: () => (
@@ -125,23 +194,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         </div>
       ),
       filterIcon: (filtered) => (
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <SearchOutlined
-            style={{
-              color: filtered ? "#1890ff" : undefined,
-              marginRight: 4,
-            }}
-          />
-          {filtered && (
-            <span style={{ color: "#1890ff" }}>
-              {is_verified === true
-                ? "Верифицированные"
-                : is_verified === false
-                ? "Не верифицированные"
-                : "Все статусы"}
-            </span>
-          )}
-        </div>
+        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
       ),
     },
   ];
@@ -158,7 +211,9 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         total: filteredData.length,
         showSizeChanger: true,
         pageSizeOptions: ["10", "20", "50", "100"],
-        showTotal: (total) => <Typography.Text>Всего: {total}</Typography.Text>,
+        showTotal: (total, range) => (
+          <Typography.Text>{`${range[0]}-${range[1]} из ${total} пользователей`}</Typography.Text>
+        ),
         onChange: (newPage, newPageSize) => {
           if (newPageSize !== page_size) {
             dispatch(setPageSize(newPageSize));
@@ -166,6 +221,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
           dispatch(setPage(newPage));
         },
       }}
+      size="middle"
     />
   );
 };

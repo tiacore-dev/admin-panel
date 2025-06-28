@@ -1,9 +1,32 @@
-import { Modal, Form, Select, Button, message } from "antd";
+"use client";
+
+import type React from "react";
+
+import {
+  Modal,
+  Form,
+  Select,
+  Button,
+  Card,
+  Space,
+  Typography,
+  Avatar,
+} from "antd";
 import { useUserCompanyRelationsMutations } from "../../hooks/userCompanyRelations/useUserCompanyRelationsMutations";
-import { IUserCompanyRelation } from "../../api/userCompanyRelationsApi";
+import type { IUserCompanyRelation } from "../../api/userCompanyRelationsApi";
 import { useEffect, useState } from "react";
-import { IUser } from "../../api/usersApi";
+import type { IUser } from "../../api/usersApi";
 import { fetchUserCompanyRelations } from "../../api/userCompanyRelationsApi";
+import {
+  UserOutlined,
+  SafetyCertificateOutlined,
+  AppstoreOutlined,
+  InfoCircleOutlined,
+  LinkOutlined,
+} from "@ant-design/icons";
+import { useAppNameById } from "../../hooks/base/useAppHelpers";
+
+const { Title, Text } = Typography;
 
 interface RelationFormModalProps {
   visible: boolean;
@@ -42,6 +65,38 @@ export const RelationFormModal = ({
     initialData?.role_id || "",
     () => {}
   );
+
+  // Функция для получения инициалов
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Функция для получения цвета аватара
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      "#f56a00",
+      "#7265e6",
+      "#ffbf00",
+      "#00a2ae",
+      "#87d068",
+      "#108ee9",
+    ];
+    const index = name.length % colors.length;
+    return colors[index];
+  };
+
+  // Компонент для отображения названия приложения
+  const AppNameDisplay: React.FC<{ applicationId: string }> = ({
+    applicationId,
+  }) => {
+    const appName = useAppNameById(applicationId);
+    return <span>{appName || applicationId}</span>;
+  };
 
   useEffect(() => {
     if (initialData && mode === "edit") {
@@ -102,12 +157,21 @@ export const RelationFormModal = ({
 
   return (
     <Modal
-      title={initialData ? "Редактировать" : "Добавить"}
+      title={
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <LinkOutlined style={{ color: "#1890ff" }} />
+          <span>
+            {mode === "create"
+              ? "Создание связи пользователь-компания"
+              : "Редактирование связи"}
+          </span>
+        </div>
+      }
       open={visible}
       onOk={handleSubmit}
       onCancel={onCancel}
       footer={[
-        <Button key="back" onClick={onCancel}>
+        <Button key="back" onClick={onCancel} size="large">
           Отмена
         </Button>,
         <Button
@@ -115,97 +179,224 @@ export const RelationFormModal = ({
           type="primary"
           loading={isSubmitting}
           onClick={handleSubmit}
+          size="large"
         >
-          {mode === "create" ? "Добавить" : "Сохранить"}
+          {mode === "create" ? "Создать связь" : "Сохранить изменения"}
         </Button>,
       ]}
-      width={700}
+      width={800}
+      destroyOnClose
     >
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{
-          role_id: initialData?.role_id,
-          application_id: initialData?.application_id,
-        }}
-      >
-        {mode === "create" && !userId && (
-          <Form.Item
-            name="user_id"
-            label="Пользователь"
-            rules={[
-              {
-                required: !companyId,
-                message: "Пожалуйста, выберите пользователя",
-              },
-            ]}
-          >
-            <Select placeholder="Выберите пользователя">
-              {users.map((user) => (
-                <Select.Option key={user.user_id} value={user.user_id}>
-                  {user.full_name
-                    ? `${user.full_name}${user.email ? ` (${user.email})` : ""}`
-                    : user.email || user.user_id}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        )}
-
-        {mode === "create" && !companyId && (
-          <Form.Item
-            name="company_id"
-            label="Компания"
-            rules={[
-              { required: !userId, message: "Пожалуйста, выберите компанию" },
-            ]}
-          >
-            <Select placeholder="Выберите компанию">
-              {companies.map((company) => (
-                <Select.Option
-                  key={company.company_id}
-                  value={company.company_id}
-                >
-                  {company.company_name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        )}
-
-        <Form.Item
-          name="role_id"
-          label="Роль"
-          rules={[{ required: true, message: "Пожалуйста, выберите роль" }]}
+      <div style={{ marginTop: 24 }}>
+        {/* Информационный блок */}
+        <Card
+          size="small"
+          style={{
+            marginBottom: 24,
+            backgroundColor: "#f6ffed",
+            border: "1px solid #b7eb8f",
+          }}
         >
-          <Select placeholder="Выберите роль">
-            {roles.map((role) => (
-              <Select.Option key={role.role_id} value={role.role_id}>
-                {role.role_name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+          <Space>
+            <InfoCircleOutlined style={{ color: "#52c41a" }} />
+            <Text style={{ color: "#389e0d" }}>
+              {mode === "create"
+                ? "Создайте связь между пользователем и компанией с назначением роли"
+                : "Обновите параметры связи пользователя с компанией"}
+            </Text>
+          </Space>
+        </Card>
 
-        <Form.Item
-          name="application_id"
-          label="Приложение"
-          rules={[
-            { required: true, message: "Пожалуйста, выберите приложение" },
-          ]}
+        <Form
+          form={form}
+          layout="vertical"
+          size="large"
+          initialValues={{
+            role_id: initialData?.role_id,
+            application_id: initialData?.application_id,
+          }}
         >
-          <Select placeholder="Выберите приложение">
-            {applications.map((app) => (
-              <Select.Option
-                key={app.application_id}
-                value={app.application_id}
+          {/* Выбор участников */}
+          <Card
+            title={
+              <Space>
+                <UserOutlined />
+                <span>Участники связи</span>
+              </Space>
+            }
+            size="small"
+            style={{ marginBottom: 16 }}
+          >
+            {mode === "create" && !userId && (
+              <Form.Item
+                name="user_id"
+                label="Пользователь"
+                rules={[
+                  {
+                    required: !companyId,
+                    message: "Пожалуйста, выберите пользователя",
+                  },
+                ]}
               >
-                {app.application_name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-      </Form>
+                <Select
+                  placeholder="Выберите пользователя"
+                  showSearch
+                  filterOption={(input, option) =>
+                    (
+                      option?.label as any
+                    )?.props?.children?.[1]?.props?.children?.[0]
+                      ?.toLowerCase()
+                      ?.includes(input.toLowerCase()) ?? false
+                  }
+                >
+                  {users.map((user) => (
+                    <Select.Option key={user.user_id} value={user.user_id}>
+                      <Space>
+                        <Avatar
+                          size="small"
+                          style={{
+                            backgroundColor: getAvatarColor(
+                              user.full_name || user.email || user.user_id
+                            ),
+                            fontSize: "12px",
+                          }}
+                        >
+                          {getInitials(
+                            user.full_name || user.email || user.user_id
+                          )}
+                        </Avatar>
+                        <div>
+                          <div style={{ fontWeight: 500 }}>
+                            {user.full_name || "Без имени"}
+                          </div>
+                          {user.email && (
+                            <Text type="secondary" style={{ fontSize: "12px" }}>
+                              {user.email}
+                            </Text>
+                          )}
+                        </div>
+                      </Space>
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+
+            {mode === "create" && !companyId && (
+              <Form.Item
+                name="company_id"
+                label="Компания"
+                rules={[
+                  {
+                    required: !userId,
+                    message: "Пожалуйста, выберите компанию",
+                  },
+                ]}
+              >
+                <Select
+                  placeholder="Выберите компанию"
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label as any)?.props?.children?.[1]
+                      ?.toLowerCase()
+                      ?.includes(input.toLowerCase()) ?? false
+                  }
+                >
+                  {companies.map((company) => (
+                    <Select.Option
+                      key={company.company_id}
+                      value={company.company_id}
+                    >
+                      <Space>
+                        <Avatar
+                          size="small"
+                          style={{
+                            backgroundColor: getAvatarColor(
+                              company.company_name
+                            ),
+                            fontSize: "12px",
+                          }}
+                        >
+                          {getInitials(company.company_name)}
+                        </Avatar>
+                        {company.company_name}
+                      </Space>
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+          </Card>
+
+          {/* Настройки доступа */}
+          <Card
+            title={
+              <Space>
+                <SafetyCertificateOutlined />
+                <span>Настройки доступа</span>
+              </Space>
+            }
+            size="small"
+          >
+            <Form.Item
+              name="role_id"
+              label="Роль"
+              rules={[{ required: true, message: "Пожалуйста, выберите роль" }]}
+              extra="Выберите роль, которая будет назначена пользователю в данной компании"
+            >
+              <Select
+                placeholder="Выберите роль"
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label as any)?.props?.children?.[1]
+                    ?.toLowerCase()
+                    ?.includes(input.toLowerCase()) ?? false
+                }
+              >
+                {roles.map((role) => (
+                  <Select.Option key={role.role_id} value={role.role_id}>
+                    <Space>
+                      <SafetyCertificateOutlined style={{ color: "#1890ff" }} />
+                      {role.role_name}
+                    </Space>
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="application_id"
+              label="Приложение"
+              rules={[
+                { required: true, message: "Пожалуйста, выберите приложение" },
+              ]}
+              extra="Выберите приложение, в рамках которого действует данная связь"
+            >
+              <Select
+                placeholder="Выберите приложение"
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label as any)?.props?.children?.[1]
+                    ?.toLowerCase()
+                    ?.includes(input.toLowerCase()) ?? false
+                }
+              >
+                {applications.map((app) => (
+                  <Select.Option
+                    key={app.application_id}
+                    value={app.application_id}
+                  >
+                    <Space>
+                      <AppstoreOutlined style={{ color: "#722ed1" }} />
+                      <AppNameDisplay applicationId={app.application_id} />
+                    </Space>
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Card>
+        </Form>
+      </div>
     </Modal>
   );
 };

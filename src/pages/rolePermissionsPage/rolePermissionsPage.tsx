@@ -1,6 +1,5 @@
 "use client";
 
-// src/pages/rolePermissions/rolePermissionsPage.tsx
 import type React from "react";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useDispatch } from "react-redux";
@@ -16,13 +15,22 @@ import {
   Row,
   Col,
   Empty,
+  Statistic,
 } from "antd";
 import { BackButton } from "../../components/buttons/backButton";
-import { PlusOutlined, SearchOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  UserOutlined,
+  SafetyOutlined,
+  KeyOutlined,
+  SettingOutlined,
+  ClearOutlined,
+} from "@ant-design/icons";
 import { RolesTable } from "./components/rolesTable";
 import { useRolesQuery } from "../../hooks/role/useRoleQuery";
 import { CreateRoleModal } from "./components/createRoleModal";
 import { useAppsMap } from "../../hooks/base/useAppHelpers";
+import { ContextualNavigation } from "../../components/contextualNavigation/contextualNavigation";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -104,25 +112,130 @@ export const RolePermissionsPage: React.FC = () => {
     setSelectedApp(undefined);
   }, []);
 
+  // Вычисляем статистику для карточек
+  const totalRoles = roles_data?.roles?.length || 0;
+  const systemRoles =
+    roles_data?.roles?.filter(
+      (role) =>
+        role.role_name.toLowerCase().includes("admin") ||
+        role.role_name.toLowerCase().includes("system")
+    )?.length || 0;
+  const customRoles = totalRoles - systemRoles;
+  const hasActiveFilters = searchText || selectedApp;
+
   if (isLoadingRoles) {
-    return <Spin size="large" className="center-spin" />;
+    return (
+      <div className="page-container">
+        <div className="center-spin">
+          <Spin size="large" />
+        </div>
+      </div>
+    );
   }
 
   if (isErrorRoles) {
-    return <BackButton />;
+    return (
+      <div className="page-container">
+        <div className="page-content">
+          <BackButton />
+        </div>
+      </div>
+    );
   }
 
   const hasRoles = roles_data?.roles && roles_data.roles.length > 0;
 
   return (
-    <div className="main-container">
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        {/* Заголовок страницы */}
-        <Card>
-          <Row justify="space-between" align="middle">
+    <div className="page-container">
+      <div className="page-content">
+        {/* Градиентный заголовок */}
+        <Card
+          className="gradient-header"
+          style={{
+            background: "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
+          }}
+        >
+          <Row align="middle" justify="space-between">
+            <Col>
+              <div className="header-content">
+                <div className="header-icon">
+                  <SafetyOutlined style={{ fontSize: 24, color: "white" }} />
+                </div>
+                <div className="header-text">
+                  <ContextualNavigation
+                    textColor="rgba(255, 255, 255, 0.9)"
+                    size="small"
+                  />
+                  <Title level={2} className="header-title">
+                    Роли и права доступа
+                  </Title>
+                  <Text className="header-description">
+                    Управление ролями и разрешениями • {totalRoles} ролей
+                  </Text>
+                </div>
+              </div>
+            </Col>
+            <Col>
+              <div className="header-actions">
+                <Button
+                  size="large"
+                  icon={<ClearOutlined />}
+                  disabled={!hasActiveFilters}
+                  onClick={clearFilters}
+                  className="filter-button"
+                >
+                  Сбросить фильтры
+                </Button>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<PlusOutlined />}
+                  onClick={showModal}
+                  className="primary-button"
+                  style={{ color: "#ff6b6b" }}
+                >
+                  Создать роль
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </Card>
+
+        {/* Статистические карточки */}
+        <div className="stats-grid">
+          <Card className="stat-card">
+            <Statistic
+              title="Всего ролей"
+              value={totalRoles}
+              prefix={<SafetyOutlined style={{ color: "#ff6b6b" }} />}
+            />
+          </Card>
+          <Card className="stat-card">
+            <Statistic
+              title="Системные роли"
+              value={systemRoles}
+              prefix={<SettingOutlined style={{ color: "#ee5a24" }} />}
+            />
+          </Card>
+          <Card className="stat-card">
+            <Statistic
+              title="Пользовательские роли"
+              value={customRoles}
+              prefix={<KeyOutlined style={{ color: "#ff9ff3" }} />}
+            />
+          </Card>
+        </div>
+
+        {/* Основной контент */}
+        <Card className="content-card">
+          <Row
+            justify="space-between"
+            align="middle"
+            style={{ marginBottom: 16 }}
+          >
             <Col>
               <Space direction="vertical" size="small">
-                <Title level={2} style={{ margin: 0 }}>
+                <Title level={3} style={{ margin: 0 }}>
                   <UserOutlined style={{ marginRight: 8 }} />
                   Управление ролями
                 </Title>
@@ -132,23 +245,11 @@ export const RolePermissionsPage: React.FC = () => {
                 </Text>
               </Space>
             </Col>
-            <Col>
-              <Button
-                type="primary"
-                size="large"
-                icon={<PlusOutlined />}
-                onClick={showModal}
-              >
-                Создать роль
-              </Button>
-            </Col>
           </Row>
 
           {/* Фильтры и поиск */}
           {hasRoles && (
-            <div style={{ margin: "16px 0" }}>
-              {" "}
-              {/* Добавляем отступы сверху и снизу */}
+            <Card className="filters-card" style={{ marginBottom: 16 }}>
               <Row gutter={[16, 16]} align="middle">
                 <Col xs={24} sm={12} md={8}>
                   <Search
@@ -178,15 +279,15 @@ export const RolePermissionsPage: React.FC = () => {
                 </Col>
                 <Col xs={24} sm={24} md={8}>
                   <Space>
-                    <Button onClick={clearFilters}>Сбросить фильтры</Button>
                     <Text type="secondary">
                       Найдено: {statistics.filtered} из {statistics.total}
                     </Text>
                   </Space>
                 </Col>
               </Row>
-            </div>
+            </Card>
           )}
+
           {!hasRoles ? (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -230,13 +331,13 @@ export const RolePermissionsPage: React.FC = () => {
             />
           )}
         </Card>
-      </Space>
 
-      <CreateRoleModal
-        visible={isModalOpen}
-        onCancel={handleCancel}
-        onSuccess={handleSuccess}
-      />
+        <CreateRoleModal
+          visible={isModalOpen}
+          onCancel={handleCancel}
+          onSuccess={handleSuccess}
+        />
+      </div>
     </div>
   );
 };

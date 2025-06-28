@@ -1,15 +1,20 @@
-import React from "react";
+import type React from "react";
 import { Outlet } from "react-router-dom";
+import { Layout } from "antd";
 import { Navbar } from "./components/navbar/navbar";
-import { Breadcrumbs } from "./components/breadcrumbs/breadcrumbs";
+
+const { Content } = Layout;
 
 const ProtectedRoute: React.FC = () => {
   return (
-    <>
+    <Layout style={{ minHeight: "100vh" }}>
       <Navbar />
-      <Breadcrumbs />
-      <Outlet />
-    </>
+      <Layout>
+        <Content style={{ overflow: "initial" }}>
+          <Outlet />
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 
