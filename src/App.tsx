@@ -26,7 +26,7 @@ import "./App.css";
 import "antd/dist/reset.css";
 import weekday from "dayjs/plugin/weekday";
 import weekOfYear from "dayjs/plugin/weekOfYear";
-import { RolePermissionsDetailsPage } from "./pages/rolePermissionsPage/rolePermissionsDetailsPage";
+import { RolePermissionsDetailsPage } from "./pages/rolePermissionsDetailsPage/rolePermissionsDetailsPage";
 import { AccountPage } from "./pages/accountPage/accountPage";
 import { AcceptInvitePage } from "./pages/invitePages/acceptInvitePage";
 import { themeConfig } from "./theme/themeConfig";

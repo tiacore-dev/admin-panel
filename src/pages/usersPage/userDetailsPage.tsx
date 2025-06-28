@@ -23,7 +23,7 @@ export const UserDetailsPage: React.FC = () => {
   const { data: companyDetails } = useCompanyDetailsQuery(
     location.state?.companyId || "",
     {
-      enabled: !!location.state?.companyId, // Запрос выполняется только если companyId существует
+      enabled: !!location.state?.companyId,
     }
   );
   const {
@@ -38,7 +38,6 @@ export const UserDetailsPage: React.FC = () => {
         location.state?.from === "companyDetails" &&
         location.state?.companyId
       ) {
-        // Хлебные крошки для перехода со страницы компании
         dispatch(
           setBreadcrumbs([
             { label: "Главная страница", to: "/home" },
@@ -54,7 +53,6 @@ export const UserDetailsPage: React.FC = () => {
           ])
         );
       } else {
-        // Стандартные хлебные крошки для перехода со страницы пользователей
         dispatch(
           setBreadcrumbs([
             { label: "Главная страница", to: "/home" },
@@ -110,14 +108,15 @@ export const UserDetailsPage: React.FC = () => {
                     display: "flex",
                     gap: "24px",
                     alignItems: "flex-start",
+                    flexDirection: "column",
                   }}
                 >
-                  <div style={{ flex: "0 0 300px" }}>
+                  <div style={{ width: "100%" }}>
                     <UserDetailsCard userDetails={userDetails} />
                   </div>
-                  {/* <div style={{ flex: 1 }}>
+                  <div style={{ width: "100%" }}>
                     <UserCompanyRelationsTable userId={user_id} />
-                  </div> */}
+                  </div>
                 </div>
               </div>
 

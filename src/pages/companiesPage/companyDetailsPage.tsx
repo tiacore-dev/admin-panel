@@ -1,7 +1,7 @@
 // companyDetailsPage.tsx
 import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useCompanyDetailsQuery } from "../../hooks/companies/useCompanyQuery";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { Button, Space, Spin, Typography } from "antd";
@@ -14,6 +14,7 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { UserCompanyRelationsTable } from "../../components/userCompanyRelations/userCompanyRelationsTable";
 import { EntityCompanyRelationsTable } from "../../components/entityCompanyRelations";
 import { CreateLegalEntityModal } from "../legalEntitiesPage/components/createLegalEntityModal";
+import { useUserDetailsQuery } from "../../hooks/users/useUserQuery";
 // import { CreateBuyerModal } from "../legalEntitiesPage/components/createBuyerModal";
 
 export const CompanyDetailsPage: React.FC = () => {
@@ -24,6 +25,14 @@ export const CompanyDetailsPage: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSellerModal, setShowSellerModal] = useState(false);
   const [showBuyerModal, setShowBuyerModal] = useState(false);
+  const location = useLocation();
+
+  const { data: userDetails } = useUserDetailsQuery(
+    location.state?.userId || "",
+    {
+      enabled: !!location.state?.userId,
+    }
+  );
 
   const {
     data: companyDetails,
@@ -40,18 +49,35 @@ export const CompanyDetailsPage: React.FC = () => {
 
   useEffect(() => {
     if (companyDetails) {
-      dispatch(
-        setBreadcrumbs([
-          { label: "Главная страница", to: "/home" },
-          { label: "Компании", to: "/companies" },
-          {
-            label: companyDetails.company_name,
-            to: `/companies/${company_id}`,
-          },
-        ])
-      );
+      if (location.state?.from === "userDetails" && location.state?.userId) {
+        dispatch(
+          setBreadcrumbs([
+            { label: "Главная страница", to: "/home" },
+            { label: "Пльзователи", to: "/users" },
+            {
+              label: userDetails?.full_name || "Пользователь",
+              to: `/users/${location.state.userId}`,
+            },
+            {
+              label: companyDetails.company_name,
+              to: `/companies/${company_id}`,
+            },
+          ])
+        );
+      } else {
+        dispatch(
+          setBreadcrumbs([
+            { label: "Главная страница", to: "/home" },
+            { label: "Компании", to: "/companies" },
+            {
+              label: companyDetails.company_name,
+              to: `/companies/${company_id}`,
+            },
+          ])
+        );
+      }
     }
-  }, [dispatch, companyDetails, company_id]);
+  }, [dispatch, userDetails, company_id, location.state, companyDetails]);
 
   const handleDelete = useCallback(() => {
     deleteMutation.mutate(undefined, {

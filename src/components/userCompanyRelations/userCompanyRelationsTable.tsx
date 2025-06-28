@@ -135,12 +135,22 @@ export const UserCompanyRelationsTable = ({
       key: userId ? "company" : "user",
       render: (id: string) => (
         <Space>
-          <Link
-            to={`/users/${id}`}
-            state={{ from: "companyDetails", companyId: companyId }}
-          >
-            <ExportOutlined />
-          </Link>
+          {companyId && (
+            <Link
+              to={`/users/${id}`}
+              state={{ from: "companyDetails", companyId: companyId }}
+            >
+              <ExportOutlined />
+            </Link>
+          )}
+          {userId && (
+            <Link
+              to={`/companies/${id}`}
+              state={{ from: "userDetails", userId: userId }}
+            >
+              <ExportOutlined />
+            </Link>
+          )}
           {userId
             ? getCompanyName(id)
             : getEmailById(id, usersData?.users) || id}
