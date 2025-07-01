@@ -220,34 +220,6 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({
               // prefix={<InfoCircleOutlined style={{ color: "#bfbfbf" }} />}
             />
           </Form.Item>
-          <Form.Item
-            label="Приложение"
-            name="application_id"
-            rules={[
-              { required: true, message: "Пожалуйста, выберите приложение" },
-            ]}
-          >
-            <Select
-              placeholder="Выберите приложение"
-              loading={!appsData}
-              suffixIcon={<AppstoreOutlined />}
-              options={appsData?.applications.map((app) => ({
-                value: app.application_id,
-                label: (
-                  <Space>
-                    <AppstoreOutlined />
-                    {app.application_name}
-                  </Space>
-                ),
-              }))}
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label as any)?.props?.children?.[1]
-                  ?.toLowerCase()
-                  ?.includes(input.toLowerCase()) ?? false
-              }
-            />
-          </Form.Item>
         </Form>
       </div>
     </Modal>

@@ -182,51 +182,6 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
           </div>
         </div>
 
-        {/* Приложение */}
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 8,
-            }}
-          >
-            <AppstoreOutlined style={{ color: "#722ed1", marginRight: 8 }} />
-            <Title level={5} style={{ margin: 0 }}>
-              Приложение
-            </Title>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <Tag
-              color="blue"
-              style={{
-                fontSize: 14,
-                padding: "4px 12px",
-                borderRadius: 6,
-              }}
-            >
-              <AppstoreOutlined style={{ marginRight: 4 }} />
-              {appName || data.application_id}
-            </Tag>
-            <Tooltip title="Копировать ID приложения">
-              <Button
-                type="text"
-                size="small"
-                icon={<CopyOutlined />}
-                onClick={() =>
-                  copyToClipboard(data.application_id, "ID приложения")
-                }
-              />
-            </Tooltip>
-          </div>
-        </div>
-
         {/* ID компании */}
         <div>
           <div
