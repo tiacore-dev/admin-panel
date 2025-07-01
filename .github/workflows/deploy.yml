@@ -91,14 +91,14 @@ jobs:
             export DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
             export DEPLOY_TAG=${DEPLOY_TAG}
 
-            cd $DEPLOY_PATH  exit 1
+            cd $DEPLOY_PATH || exit 1
 
             echo "\$DOCKERHUB_TOKEN" | docker login -u "\$DOCKERHUB_USERNAME" --password-stdin
 
             docker pull \$DOCKERHUB_USERNAME/admin-panel:\$DEPLOY_TAG
 
             if [ ! -f .env ]; then touch .env; fi
-            grep -q "^TAG=" .env && sed -i "s/^TAG=.*/TAG=\$DEPLOY_TAG/" .env  echo "TAG=\$DEPLOY_TAG" >> .env
+            grep -q "^TAG=" .env && sed -i "s/^TAG=.*/TAG=\$DEPLOY_TAG/" .env || echo "TAG=\$DEPLOY_TAG" >> .env
 
             docker compose pull --quiet --ignore-pull-failures
             docker compose up -d --remove-orphans
@@ -109,6 +109,7 @@ jobs:
     name: 📬 Telegram Notify
     needs: [build-and-push, deploy]
     if: always()
+
     steps:
       - name: Telegram Notify
         run: |
