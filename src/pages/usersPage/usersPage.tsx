@@ -25,9 +25,14 @@ import {
   UserOutlined,
   TeamOutlined,
   CrownOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { ContextualNavigation } from "../../components/contextualNavigation/contextualNavigation";
-import { resetState } from "../../redux/slices/usersSlice";
+import {
+  resetState,
+  setSearch,
+  setIsVerified,
+} from "../../redux/slices/usersSlice";
 import type { RootState } from "../../redux/store";
 
 const { Title, Text } = Typography;
@@ -37,10 +42,9 @@ const { Option } = Select;
 export const UsersPage: React.FC = () => {
   const dispatch = useDispatch();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
 
-  const { email, full_name, position, is_verified } = useSelector(
+  // Получаем значения фильтров из Redux
+  const { email: searchText, is_verified: statusFilter } = useSelector(
     (state: RootState) => state.users
   );
 
@@ -57,8 +61,15 @@ export const UsersPage: React.FC = () => {
 
   const handleResetFilters = () => {
     dispatch(resetState());
-    setSearchText("");
-    setStatusFilter("all");
+  };
+
+  // Обработчики изменений фильтров
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setSearch(e.target.value));
+  };
+
+  const handleStatusFilterChange = (value: boolean | "all") => {
+    dispatch(setIsVerified(value));
   };
 
   // Фильтрация пользователей
@@ -69,8 +80,8 @@ export const UsersPage: React.FC = () => {
         user.email?.toLowerCase().includes(searchText.toLowerCase());
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "verified" && user.is_verified) ||
-        (statusFilter === "unverified" && !user.is_verified);
+        (statusFilter === true && user.is_verified) ||
+        (statusFilter === false && !user.is_verified);
       return matchesSearch && matchesStatus;
     }) || [];
 
@@ -84,14 +95,7 @@ export const UsersPage: React.FC = () => {
       (u) => u.email === "admin" || u.full_name?.toLowerCase().includes("admin")
     )?.length || 0;
 
-  const hasFilters = !!(
-    email ||
-    full_name ||
-    position ||
-    is_verified !== null ||
-    searchText ||
-    statusFilter !== "all"
-  );
+  const hasFilters = !!(searchText || statusFilter !== "all");
 
   if (isLoading) {
     return (
@@ -138,8 +142,7 @@ export const UsersPage: React.FC = () => {
                     Пользователи
                   </Title>
                   <Text className="header-description">
-                    Управление пользователями системы • {totalUsers}{" "}
-                    пользователей
+                    {totalUsers} записей
                   </Text>
                 </div>
               </div>
@@ -147,21 +150,12 @@ export const UsersPage: React.FC = () => {
             <Col>
               <div className="header-actions">
                 <Button
-                  size="large"
-                  icon={<ClearOutlined />}
-                  disabled={!hasFilters}
-                  onClick={handleResetFilters}
-                  className="filter-button"
-                >
-                  Сбросить фильтры
-                </Button>
-                <Button
                   type="primary"
                   size="large"
                   icon={<PlusOutlined />}
                   onClick={() => setIsModalVisible(true)}
                   className="primary-button"
-                  style={{ color: "#667eea" }}
+                  style={{ color: "#764ba2" }}
                 >
                   Добавить пользователя
                 </Button>
@@ -170,66 +164,40 @@ export const UsersPage: React.FC = () => {
           </Row>
         </Card>
 
-        {/* Статистические карточки
-        <div className="stats-grid">
-          <Card className="stat-card">
-            <Statistic
-              title="Всего пользователей"
-              value={totalUsers}
-              prefix={<UserOutlined style={{ color: "#667eea" }} />}
-            />
-          </Card>
-          <Card className="stat-card">
-            <Statistic
-              title="Верифицированные"
-              value={verifiedUsers}
-              prefix={<TeamOutlined style={{ color: "#52c41a" }} />}
-            />
-          </Card>
-          <Card className="stat-card">
-            <Statistic
-              title="Неверифицированные"
-              value={unverifiedUsers}
-              prefix={<UserOutlined style={{ color: "#fa8c16" }} />}
-            />
-          </Card>
-          <Card className="stat-card">
-            <Statistic
-              title="Администраторы"
-              value={adminUsers}
-              prefix={<CrownOutlined style={{ color: "#722ed1" }} />}
-            />
-          </Card>
-        </div> */}
-
         {/* Фильтры */}
         <Card className="filters-card">
-          <Row gutter={16} align="middle">
+          <Row gutter={16} align="middle" style={{ marginBottom: 16 }}>
             <Col xs={24} sm={12} md={8}>
-              <Search
+              <Input
                 placeholder="Поиск по имени или email"
                 value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                onChange={handleSearchChange}
                 style={{ width: "100%" }}
                 allowClear
+                prefix={<SearchOutlined />}
               />
             </Col>
             <Col xs={24} sm={12} md={6}>
               <Select
                 value={statusFilter}
-                onChange={setStatusFilter}
+                onChange={handleStatusFilterChange}
                 style={{ width: "100%" }}
               >
                 <Option value="all">Все статусы</Option>
-                <Option value="verified">Верифицированные</Option>
-                <Option value="unverified">Неверифицированные</Option>
+                <Option value={true}>Верифицированные</Option>
+                <Option value={false}>Неверифицированные</Option>
               </Select>
             </Col>
+            <Button
+              icon={<ClearOutlined />}
+              disabled={!hasFilters}
+              onClick={handleResetFilters}
+            >
+              Сбросить фильтры
+            </Button>
           </Row>
-        </Card>
 
-        {/* Таблица пользователей */}
-        <Card className="content-card">
+          {/* Таблица пользователей */}
           <UsersTable
             data={{ total: filteredUsers.length, users: filteredUsers }}
             loading={isLoading}

@@ -25,9 +25,14 @@ import {
   BankOutlined,
   ShopOutlined,
   TeamOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { ContextualNavigation } from "../../components/contextualNavigation/contextualNavigation";
-import { resetState } from "../../redux/slices/companiesSlice";
+import {
+  resetState,
+  setSearch,
+  setPage,
+} from "../../redux/slices/companiesSlice";
 import type { RootState } from "../../redux/store";
 
 const { Title, Text } = Typography;
@@ -37,7 +42,6 @@ const { Option } = Select;
 export const CompaniesPage: React.FC = () => {
   const dispatch = useDispatch();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const { search } = useSelector((state: RootState) => state.companies);
 
@@ -54,7 +58,6 @@ export const CompaniesPage: React.FC = () => {
 
   const handleResetFilters = () => {
     dispatch(resetState());
-    setSearchText("");
     setStatusFilter("all");
   };
 
@@ -62,19 +65,16 @@ export const CompaniesPage: React.FC = () => {
   const filteredCompanies =
     companies_data?.companies?.filter((company) => {
       const matchesSearch =
-        company.company_name
-          ?.toLowerCase()
-          .includes(searchText.toLowerCase()) ||
-        company.description?.toLowerCase().includes(searchText.toLowerCase());
+        !search ||
+        company.company_name?.toLowerCase().includes(search.toLowerCase()) ||
+        company.description?.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === "all";
       return matchesSearch && matchesStatus;
     }) || [];
 
   // Статистика
   const totalCompanies = companies_data?.companies?.length || 0;
-  const activeCompanies = totalCompanies;
-  const inactiveCompanies = 0;
-  const hasActiveFilters = searchText || statusFilter !== "all" || search;
+  const hasActiveFilters = search || statusFilter !== "all";
 
   if (isLoading) {
     return (
@@ -103,7 +103,7 @@ export const CompaniesPage: React.FC = () => {
         <Card
           className="gradient-header"
           style={{
-            background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           }}
         >
           <Row align="middle" justify="space-between">
@@ -121,8 +121,7 @@ export const CompaniesPage: React.FC = () => {
                     Компании
                   </Title>
                   <Text className="header-description">
-                    Управление компаниями и организациями • {totalCompanies}{" "}
-                    записей
+                    {totalCompanies} записей
                   </Text>
                 </div>
               </div>
@@ -130,21 +129,12 @@ export const CompaniesPage: React.FC = () => {
             <Col>
               <div className="header-actions">
                 <Button
-                  size="large"
-                  icon={<ClearOutlined />}
-                  disabled={!hasActiveFilters}
-                  onClick={handleResetFilters}
-                  className="filter-button"
-                >
-                  Сбросить фильтры
-                </Button>
-                <Button
                   type="primary"
                   size="large"
                   icon={<PlusOutlined />}
                   onClick={() => setIsModalVisible(true)}
                   className="primary-button"
-                  style={{ color: "#4facfe" }}
+                  style={{ color: "#764ba2" }}
                 >
                   Добавить компанию
                 </Button>
@@ -153,61 +143,40 @@ export const CompaniesPage: React.FC = () => {
           </Row>
         </Card>
 
-        {/* Статистические карточки
-        <div className="stats-grid">
-          <Card className="stat-card">
-            <Statistic
-              title="Всего компаний"
-              value={totalCompanies}
-              prefix={<BankOutlined style={{ color: "#4facfe" }} />}
-            />
-          </Card>
-          <Card className="stat-card">
-            <Statistic
-              title="Активные"
-              value={activeCompanies}
-              prefix={<ShopOutlined style={{ color: "#52c41a" }} />}
-            />
-          </Card>
-          <Card className="stat-card">
-            <Statistic
-              title="Неактивные"
-              value={inactiveCompanies}
-              prefix={<TeamOutlined style={{ color: "#fa8c16" }} />}
-            />
-          </Card>
-        </div> */}
-
         {/* Фильтры */}
         <Card className="filters-card">
-          <Row gutter={16} align="middle">
+          <Row gutter={16} align="middle" style={{ marginBottom: 16 }}>
             <Col xs={24} sm={12} md={8}>
-              <Search
-                placeholder="Поиск по названию компании"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                style={{ width: "100%" }}
+              <Input
+                placeholder="Поиск по названию или описанию"
+                prefix={<SearchOutlined />}
+                value={search}
+                onChange={(e) => {
+                  dispatch(setSearch(e.target.value));
+                  dispatch(setPage(1));
+                }}
                 allowClear
               />
             </Col>
             <Col xs={24} sm={12} md={6}>
-              <Select
-                value={statusFilter}
-                onChange={setStatusFilter}
-                style={{ width: "100%" }}
+              <Button
+                icon={<ClearOutlined />}
+                disabled={!hasActiveFilters}
+                onClick={handleResetFilters}
               >
-                <Option value="all">Все статусы</Option>
-                <Option value="active">Активные</Option>
-                <Option value="inactive">Неактивные</Option>
-              </Select>
+                Сбросить фильтры
+              </Button>
             </Col>
           </Row>
-        </Card>
+          {/* </Card> */}
 
-        {/* Таблица компаний */}
-        <Card className="content-card">
+          {/* Таблица компаний */}
+          {/* <Card className="content-card"> */}
           <CompaniesTable
-            data={companies_data || { total: 0, companies: [] }}
+            data={{
+              total: filteredCompanies.length,
+              companies: filteredCompanies,
+            }}
             loading={isLoading}
           />
         </Card>

@@ -24,6 +24,7 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   EditOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import { useLegalEntityByInnKppQuery } from "../../../hooks/legalEntities/useLegalEntityQuery";
 import {
@@ -224,315 +225,238 @@ export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
     return Promise.resolve();
   };
 
-  const steps = [
-    {
-      title: "Основные данные",
-      icon: <FileTextOutlined />,
-      description: "ИНН, КПП и тип контрагента",
-    },
-    {
-      title: "Дополнительная информация",
-      icon: <EditOutlined />,
-      description: "Детальная информация об организации",
-    },
-  ];
-
   return (
     <>
       <Modal
         title={
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 8,
-                background: "#f0f9ff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <BankOutlined style={{ fontSize: 20, color: "#0ea5e9" }} />
-            </div>
-            <div>
-              <Title level={4} style={{ margin: 0 }}>
-                Добавить юридическое лицо
-              </Title>
-              <Text type="secondary">
-                Создание новой организации или контрагента
-              </Text>
-            </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              margin: "-24px -24px 20px -24px",
+              padding: "20px 24px",
+              color: "white",
+              borderRadius: "8px 8px 0 0",
+            }}
+          >
+            <BankOutlined style={{ fontSize: "20px" }} />
+            <span style={{ fontSize: "18px", fontWeight: "600" }}>
+              Добавить юридическое лицо
+            </span>
           </div>
         }
         open={visible}
         onCancel={handleCancel}
-        footer={null}
-        width={800}
-        destroyOnClose
+        centered
+        width={700}
+        footer={[
+          <Button
+            key="back"
+            onClick={currentStep === 1 ? () => setCurrentStep(0) : handleCancel}
+            size="large"
+            style={{
+              borderRadius: "8px",
+              height: "40px",
+              fontWeight: "500",
+              borderColor: "#d1d5db",
+              color: "#6b7280",
+            }}
+          >
+            Отмена
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            size="large"
+            onClick={currentStep === 0 ? handleNext : handleSubmit}
+            loading={isFetchingInnKpp || isCreatingByINN || isCreating}
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              border: "none",
+              borderRadius: "8px",
+              height: "40px",
+              fontWeight: "500",
+            }}
+            icon={<SaveOutlined />}
+          >
+            {currentStep === 0 ? "Продолжить" : "Сохранить"}
+          </Button>,
+        ]}
+        styles={{
+          content: {
+            borderRadius: "12px",
+            overflow: "hidden",
+          },
+          footer: {
+            borderTop: "1px solid #f3f4f6",
+            marginTop: "20px",
+          },
+        }}
       >
-        <Divider />
-
-        <Steps
-          current={currentStep}
-          style={{ marginBottom: 32 }}
-          items={steps}
-        />
-
-        <Form form={form} layout="vertical" size="large">
+        <Form form={form} layout="vertical">
           {currentStep === 0 && (
-            <Space direction="vertical" size="large" style={{ width: "100%" }}>
-              {/* Company and Relation Type Section */}
-              <Card
-                title={
-                  <Space>
-                    <BankOutlined />
-                    <span>Связь с компанией</span>
-                  </Space>
-                }
-                size="small"
-              >
-                {(showCompanySelect || !companyId) && (
-                  <Form.Item
-                    name="company_id"
-                    label="Компания"
-                    rules={[{ required: true, message: "Выберите компанию" }]}
+            <Space direction="vertical" size="small" style={{ width: "100%" }}>
+              {(showCompanySelect || !companyId) && (
+                <Form.Item
+                  name="company_id"
+                  label="Компания"
+                  rules={[{ required: true, message: "Выберите компанию" }]}
+                >
+                  <Select
+                    placeholder="Выберите компанию"
+                    showSearch
+                    optionFilterProp="children"
                   >
-                    <Select
-                      placeholder="Выберите компанию"
-                      showSearch
-                      optionFilterProp="children"
-                    >
-                      {companiesData?.companies.map((company) => (
-                        <Option
-                          key={company.company_id}
-                          value={company.company_id}
-                        >
-                          {company.company_name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                )}
+                    {companiesData?.companies.map((company) => (
+                      <Option
+                        key={company.company_id}
+                        value={company.company_id}
+                      >
+                        {company.company_name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              )}
 
-                {!relationTypeBeforeSelect && (
-                  <Form.Item
-                    name="relation_type"
-                    label="Тип контрагента"
-                    rules={[
-                      { required: true, message: "Выберите тип контрагента" },
-                    ]}
+              {!relationTypeBeforeSelect && (
+                <Form.Item
+                  name="relation_type"
+                  label="Тип юр.лица"
+                  rules={[{ required: true, message: "Выберите тип юр.лица" }]}
+                >
+                  <Select
+                    placeholder="Выберите тип"
+                    onChange={(value) => setRelationType(value)}
+                    value={relationType}
                   >
-                    <Select
-                      placeholder="Выберите тип"
-                      onChange={(value) => setRelationType(value)}
-                      value={relationType}
-                    >
-                      <Option value="buyer">
-                        <Space>
-                          <UserOutlined />
-                          Контрагент
-                        </Space>
-                      </Option>
-                      <Option value="seller">
-                        <Space>
-                          <BankOutlined />
-                          Организация
-                        </Space>
-                      </Option>
-                    </Select>
-                  </Form.Item>
-                )}
-              </Card>
+                    <Option value="buyer">
+                      <Space>
+                        <UserOutlined />
+                        Контрагент
+                      </Space>
+                    </Option>
+                    <Option value="seller">
+                      <Space>
+                        <BankOutlined />
+                        Организация
+                      </Space>
+                    </Option>
+                  </Select>
+                </Form.Item>
+              )}
 
-              {/* Tax Information Section */}
-              <Card
-                title={
-                  <Space>
-                    <FileTextOutlined />
-                    <span>Налоговая информация</span>
-                  </Space>
-                }
-                size="small"
+              <Form.Item
+                name="inn"
+                label="ИНН"
+                rules={[
+                  { required: true, message: "Пожалуйста, введите ИНН" },
+                  {
+                    pattern: /^[0-9]{10,12}$/,
+                    message: "ИНН должен содержать 10 или 12 цифр",
+                  },
+                ]}
               >
-                <Alert
-                  message="Автоматический поиск"
-                  description="Система попытается найти организацию по ИНН и КПП в базе данных"
-                  type="info"
-                  showIcon
-                  style={{ marginBottom: 16 }}
+                <Input
+                  placeholder="Введите ИНН"
+                  onChange={(e) => setInn(e.target.value)}
+                  maxLength={12}
+                  prefix={<FileTextOutlined />}
                 />
+              </Form.Item>
 
-                <Form.Item
-                  name="inn"
-                  label="ИНН"
-                  rules={[
-                    { required: true, message: "Пожалуйста, введите ИНН" },
-                    {
-                      pattern: /^[0-9]{10,12}$/,
-                      message: "ИНН должен содержать 10 или 12 цифр",
-                    },
-                  ]}
-                >
-                  <Input
-                    placeholder="Введите ИНН"
-                    onChange={(e) => setInn(e.target.value)}
-                    maxLength={12}
-                    prefix={<FileTextOutlined />}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="kpp"
-                  label="КПП"
-                  rules={[
-                    { validator: validateInnKpp },
-                    {
-                      pattern: kpp ? /^[0-9]{9}$/ : undefined,
-                      message: "КПП должен содержать 9 цифр",
-                    },
-                  ]}
-                >
-                  <Input
-                    placeholder="Введите КПП (обязательно для ИНН из 10 цифр)"
-                    onChange={(e) => setKpp(e.target.value)}
-                    maxLength={9}
-                    prefix={<FileTextOutlined />}
-                  />
-                </Form.Item>
-              </Card>
-
-              <div style={{ textAlign: "right" }}>
-                <Button
-                  type="primary"
-                  size="large"
-                  onClick={handleNext}
-                  loading={isFetchingInnKpp || isCreatingByINN}
-                  icon={<CheckCircleOutlined />}
-                >
-                  Продолжить
-                </Button>
-              </div>
+              <Form.Item
+                name="kpp"
+                label="КПП"
+                rules={[
+                  { validator: validateInnKpp },
+                  {
+                    pattern: kpp ? /^[0-9]{9}$/ : undefined,
+                    message: "КПП должен содержать 9 цифр",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="Введите КПП (обязательно для ИНН из 10 цифр)"
+                  onChange={(e) => setKpp(e.target.value)}
+                  maxLength={9}
+                  prefix={<FileTextOutlined />}
+                />
+              </Form.Item>
             </Space>
           )}
 
           {currentStep === 1 && isManualCreation && (
-            <Space direction="vertical" size="large" style={{ width: "100%" }}>
-              {/* Basic Information */}
-              <Card
-                title={
-                  <Space>
-                    <BankOutlined />
-                    <span>Основная информация</span>
-                  </Space>
-                }
-                size="small"
+            <Space direction="vertical" style={{ width: "100%" }}>
+              <Form.Item
+                name="short_name"
+                label="Название"
+                rules={[{ required: true, message: "Введите название" }]}
               >
-                <Form.Item
-                  name="short_name"
-                  label="Название"
-                  rules={[{ required: true, message: "Введите название" }]}
-                >
-                  <Input
-                    placeholder="Введите краткое название"
-                    prefix={<BankOutlined />}
-                  />
-                </Form.Item>
+                <Input
+                  placeholder="Введите краткое название"
+                  prefix={<BankOutlined />}
+                />
+              </Form.Item>
 
-                <Form.Item name="opf" label="ОПФ">
-                  <Input
-                    placeholder="Введите организационно-правовую форму"
-                    prefix={<FileTextOutlined />}
-                  />
-                </Form.Item>
-              </Card>
+              <Form.Item name="opf" label="ОПФ">
+                <Input
+                  placeholder="Введите организационно-правовую форму"
+                  prefix={<FileTextOutlined />}
+                />
+              </Form.Item>
 
-              {/* Legal Information */}
-              <Card
-                title={
-                  <Space>
-                    <FileTextOutlined />
-                    <span>Юридическая информация</span>
-                  </Space>
-                }
-                size="small"
+              <Form.Item
+                name="ogrn"
+                label="ОГРН"
+                rules={[
+                  { required: true, message: "Введите ОГРН" },
+                  {
+                    pattern: /^[0-9]{13,15}$/,
+                    message: "ОГРН должен содержать 13-15 цифр",
+                  },
+                ]}
               >
-                <Form.Item
-                  name="ogrn"
-                  label="ОГРН"
-                  rules={[
-                    { required: true, message: "Введите ОГРН" },
-                    {
-                      pattern: /^[0-9]{13,15}$/,
-                      message: "ОГРН должен содержать 13-15 цифр",
-                    },
-                  ]}
-                >
-                  <Input
-                    placeholder="Введите ОГРН"
-                    maxLength={15}
-                    prefix={<FileTextOutlined />}
-                  />
-                </Form.Item>
+                <Input
+                  placeholder="Введите ОГРН"
+                  maxLength={15}
+                  prefix={<FileTextOutlined />}
+                />
+              </Form.Item>
 
-                <Form.Item
-                  name="vat_rate"
-                  label="Ставка НДС"
-                  rules={[{ required: true, message: "Выберите ставку НДС" }]}
-                >
-                  <Select placeholder="Выберите ставку НДС">
-                    <Option value="0">НДС не облагается</Option>
-                    <Option value="5">5%</Option>
-                    <Option value="7">7%</Option>
-                    <Option value="20">20%</Option>
-                  </Select>
-                </Form.Item>
-              </Card>
-
-              {/* Address Information */}
-              <Card
-                title={
-                  <Space>
-                    <EnvironmentOutlined />
-                    <span>Адресная информация</span>
-                  </Space>
-                }
-                size="small"
+              <Form.Item
+                name="vat_rate"
+                label="Ставка НДС"
+                rules={[{ required: true, message: "Выберите ставку НДС" }]}
               >
-                <Form.Item
-                  name="address"
-                  label="Адрес"
-                  rules={[
-                    {
-                      min: 5,
-                      message: "Адрес должен содержать минимум 5 символов",
-                      required: true,
-                    },
-                  ]}
-                >
-                  <Input.TextArea
-                    placeholder="Введите адрес"
-                    rows={3}
-                    showCount
-                    maxLength={255}
-                  />
-                </Form.Item>
-              </Card>
+                <Select placeholder="Выберите ставку НДС">
+                  <Option value="0">НДС не облагается</Option>
+                  <Option value="5">5%</Option>
+                  <Option value="7">7%</Option>
+                  <Option value="20">20%</Option>
+                </Select>
+              </Form.Item>
 
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <Button size="large" onClick={() => setCurrentStep(0)}>
-                  Назад
-                </Button>
-                <Button
-                  type="primary"
-                  size="large"
-                  onClick={handleSubmit}
-                  loading={isCreating}
-                  icon={<CheckCircleOutlined />}
-                >
-                  Создать
-                </Button>
-              </div>
+              <Form.Item
+                name="address"
+                label="Адрес"
+                rules={[
+                  {
+                    min: 5,
+                    message: "Адрес должен содержать минимум 5 символов",
+                    required: true,
+                  },
+                ]}
+              >
+                <Input.TextArea
+                  placeholder="Введите адрес"
+                  rows={3}
+                  showCount
+                  maxLength={255}
+                />
+              </Form.Item>
             </Space>
           )}
         </Form>
@@ -563,7 +487,6 @@ export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
           </Button>,
           <Button
             key="submit"
-            type="primary"
             onClick={handleConfirmContinue}
             icon={<CheckCircleOutlined />}
           >

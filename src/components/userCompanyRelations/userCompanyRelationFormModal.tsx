@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import {
   Modal,
   Form,
@@ -21,8 +20,8 @@ import {
   UserOutlined,
   SafetyCertificateOutlined,
   AppstoreOutlined,
-  InfoCircleOutlined,
   LinkOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import { useAppNameById } from "../../hooks/base/useAppHelpers";
 
@@ -155,58 +154,83 @@ export const RelationFormModal = ({
     }
   };
 
+  const getModalTitle = () => {
+    return mode === "create"
+      ? "Создание связи пользователь-компания"
+      : "Редактирование связи";
+  };
+
+  const getSubmitButtonText = () => {
+    return mode === "create" ? "Создать связь" : "Сохранить изменения";
+  };
+
   return (
     <Modal
       title={
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <LinkOutlined style={{ color: "#1890ff" }} />
-          <span>
-            {mode === "create"
-              ? "Создание связи пользователь-компания"
-              : "Редактирование связи"}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            margin: "-24px -24px 20px -24px",
+            padding: "20px 24px",
+            color: "white",
+            borderRadius: "8px 8px 0 0",
+          }}
+        >
+          <LinkOutlined style={{ fontSize: "20px" }} />
+          <span style={{ fontSize: "18px", fontWeight: "600" }}>
+            {getModalTitle()}
           </span>
         </div>
       }
       open={visible}
       onOk={handleSubmit}
       onCancel={onCancel}
-      footer={[
-        <Button key="back" onClick={onCancel} size="large">
-          Отмена
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          loading={isSubmitting}
-          onClick={handleSubmit}
-          size="large"
-        >
-          {mode === "create" ? "Создать связь" : "Сохранить изменения"}
-        </Button>,
-      ]}
+      centered
       width={800}
+      okText={
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <SaveOutlined />
+          {getSubmitButtonText()}
+        </span>
+      }
+      cancelText="Отмена"
+      okButtonProps={{
+        size: "large",
+        style: {
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          border: "none",
+          borderRadius: "8px",
+          height: "40px",
+          fontWeight: "500",
+        },
+        disabled: isSubmitting,
+      }}
+      cancelButtonProps={{
+        size: "large",
+        style: {
+          borderRadius: "8px",
+          height: "40px",
+          fontWeight: "500",
+          borderColor: "#d1d5db",
+          color: "#6b7280",
+        },
+      }}
+      styles={{
+        content: {
+          borderRadius: "12px",
+          overflow: "hidden",
+        },
+        footer: {
+          borderTop: "1px solid #f3f4f6",
+          marginTop: "20px",
+        },
+      }}
       destroyOnClose
     >
       <div style={{ marginTop: 24 }}>
-        {/* Информационный блок */}
-        <Card
-          size="small"
-          style={{
-            marginBottom: 24,
-            backgroundColor: "#f6ffed",
-            border: "1px solid #b7eb8f",
-          }}
-        >
-          <Space>
-            <InfoCircleOutlined style={{ color: "#52c41a" }} />
-            <Text style={{ color: "#389e0d" }}>
-              {mode === "create"
-                ? "Создайте связь между пользователем и компанией с назначением роли"
-                : "Обновите параметры связи пользователя с компанией"}
-            </Text>
-          </Space>
-        </Card>
-
         <Form
           form={form}
           layout="vertical"
@@ -216,17 +240,7 @@ export const RelationFormModal = ({
             application_id: initialData?.application_id,
           }}
         >
-          {/* Выбор участников */}
-          <Card
-            title={
-              <Space>
-                <UserOutlined />
-                <span>Участники связи</span>
-              </Space>
-            }
-            size="small"
-            style={{ marginBottom: 16 }}
-          >
+          <Card size="small" style={{ marginBottom: 16, border: "none" }}>
             {mode === "create" && !userId && (
               <Form.Item
                 name="user_id"
@@ -326,23 +340,11 @@ export const RelationFormModal = ({
                 </Select>
               </Form.Item>
             )}
-          </Card>
 
-          {/* Настройки доступа */}
-          <Card
-            title={
-              <Space>
-                <SafetyCertificateOutlined />
-                <span>Настройки доступа</span>
-              </Space>
-            }
-            size="small"
-          >
             <Form.Item
               name="role_id"
               label="Роль"
               rules={[{ required: true, message: "Пожалуйста, выберите роль" }]}
-              extra="Выберите роль, которая будет назначена пользователю в данной компании"
             >
               <Select
                 placeholder="Выберите роль"
@@ -370,7 +372,6 @@ export const RelationFormModal = ({
               rules={[
                 { required: true, message: "Пожалуйста, выберите приложение" },
               ]}
-              extra="Выберите приложение, в рамках которого действует данная связь"
             >
               <Select
                 placeholder="Выберите приложение"

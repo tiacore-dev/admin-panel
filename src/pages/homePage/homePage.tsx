@@ -40,7 +40,7 @@ export const HomePage = () => {
       description: "Управление компаниями",
       icon: <ShopOutlined style={{ fontSize: 24, color: "#4facfe" }} />,
       path: "/companies",
-      color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     },
     {
       title: "Юр. лица",
@@ -54,7 +54,7 @@ export const HomePage = () => {
       description: "Управление доступом",
       icon: <SafetyOutlined style={{ fontSize: 24, color: "#ff6b6b" }} />,
       path: "/role_permissions_relations",
-      color: "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
+      color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     },
   ];
 
@@ -65,8 +65,7 @@ export const HomePage = () => {
         <Card
           className="gradient-header"
           style={{
-            background:
-              "linear-gradient(135deg, #0f00df 0%, #3b82f6 50%, #8b5cf6 100%)",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             marginBottom: 24,
           }}
         >
@@ -92,42 +91,6 @@ export const HomePage = () => {
             </Col>
           </Row>
         </Card>
-
-        {/* Статистика */}
-        <div className="stats-grid">
-          <Card className="stat-card">
-            <Statistic
-              title="Активные пользователи"
-              value={42}
-              prefix={<UserOutlined style={{ color: "#667eea" }} />}
-              suffix="чел."
-            />
-          </Card>
-          <Card className="stat-card">
-            <Statistic
-              title="Компании"
-              value={15}
-              prefix={<ShopOutlined style={{ color: "#4facfe" }} />}
-              suffix="орг."
-            />
-          </Card>
-          <Card className="stat-card">
-            <Statistic
-              title="Юр. лица"
-              value={28}
-              prefix={<BankOutlined style={{ color: "#667eea" }} />}
-              suffix="ед."
-            />
-          </Card>
-          <Card className="stat-card">
-            <Statistic
-              title="Активные роли"
-              value={8}
-              prefix={<SafetyOutlined style={{ color: "#ff6b6b" }} />}
-              suffix="шт."
-            />
-          </Card>
-        </div>
 
         {/* Быстрые действия */}
         <Card className="content-card" title="Быстрые действия">
@@ -184,60 +147,6 @@ export const HomePage = () => {
               </Col>
             ))}
           </Row>
-        </Card>
-
-        {/* Последние действия */}
-        <Card className="content-card" title="Последние действия">
-          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <Text strong>Создан новый пользователь</Text>
-                <br />
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  2 минуты назад
-                </Text>
-              </div>
-              <UserOutlined style={{ color: "#667eea" }} />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <Text strong>Обновлена информация о компании</Text>
-                <br />
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  15 минут назад
-                </Text>
-              </div>
-              <ShopOutlined style={{ color: "#4facfe" }} />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <Text strong>Изменены права доступа</Text>
-                <br />
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  1 час назад
-                </Text>
-              </div>
-              <SafetyOutlined style={{ color: "#ff6b6b" }} />
-            </div>
-          </Space>
         </Card>
       </div>
     </div>

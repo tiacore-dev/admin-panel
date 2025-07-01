@@ -77,6 +77,7 @@ export const AccountPage: React.FC = () => {
                   size="large"
                   icon={<EditOutlined />}
                   className="primary-button"
+                  // className="filter-button"
                   style={{ color: "#667eea" }}
                 >
                   Редактировать профиль

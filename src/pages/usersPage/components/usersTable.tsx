@@ -3,34 +3,14 @@
 import type { IUser } from "../../../api/usersApi";
 import type React from "react";
 import type { TableColumnsType } from "antd";
-import {
-  Button,
-  Input,
-  Table,
-  Tag,
-  Typography,
-  Radio,
-  Space,
-  Avatar,
-  Tooltip,
-} from "antd";
-import {
-  setFullName,
-  setPage,
-  setPageSize,
-  setEmail,
-  setIsVerified,
-} from "../../../redux/slices/usersSlice";
+import { Button, Table, Tag, Typography, Avatar, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import {
-  SearchOutlined,
-  UserOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   MailOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
-import type { RootState } from "../../../redux/store";
 
 interface UsersTableProps {
   data: {
@@ -45,10 +25,6 @@ export const UsersTable: React.FC<UsersTableProps> = ({
   loading,
 }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { email, full_name, page, page_size, is_verified } = useSelector(
-    (state: RootState) => state.users
-  );
 
   // Функция для получения инициалов
   const getInitials = (name: string) => {
@@ -67,68 +43,50 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     return colors[index];
   };
 
-  // Фильтрация данных
-  const filteredData = data.users.filter((user) => {
-    const matchesEmail = email
-      ? user.email.toLowerCase().includes(email.toLowerCase())
-      : true;
-    const matchesFullName = full_name
-      ? user.full_name.toLowerCase().includes(full_name.toLowerCase())
-      : true;
-    const matchesStatus =
-      is_verified !== null ? user.is_verified === is_verified : true;
-
-    return matchesEmail && matchesFullName && matchesStatus;
-  });
-
   const columns: TableColumnsType<IUser> = [
     {
       title: "Пользователь",
       dataIndex: "full_name",
       key: "full_name",
-      width: 300,
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
       sorter: (a: IUser, b: IUser) => a.full_name.localeCompare(b.full_name),
       sortDirections: ["ascend", "descend"],
       render: (text: string, record: IUser) => (
-        <Space>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            cursor: "pointer",
+          }}
+          onClick={() =>
+            navigate(`/users/${record.user_id}`, {
+              state: { from: "usersPage" },
+            })
+          }
+        >
           <Avatar
-            style={{ backgroundColor: getAvatarColor(text) }}
+            size={40}
+            style={{
+              backgroundColor: getAvatarColor(text),
+              fontSize: 14,
+              fontWeight: 600,
+            }}
             icon={!text ? <UserOutlined /> : null}
           >
             {text ? getInitials(text) : null}
           </Avatar>
-          <div>
-            <Button
-              type="link"
-              style={{ padding: 0, height: "auto", fontWeight: 500 }}
-              onClick={() =>
-                navigate(`/users/${record.user_id}`, {
-                  state: { from: "usersPage" },
-                })
-              }
-            >
-              {text}
-            </Button>
-            <div style={{ fontSize: "12px", color: "#8c8c8c" }}>
-              <MailOutlined style={{ marginRight: 4 }} />
-              {record.email}
-            </div>
+          <div
+            style={{
+              fontWeight: 600,
+              color: "#1890ff",
+              marginBottom: 2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {text}
           </div>
-        </Space>
-      ),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder="Поиск по имени"
-            value={full_name}
-            onChange={(e) => dispatch(setFullName(e.target.value))}
-            style={{ width: 200 }}
-            allowClear
-            prefix={<SearchOutlined />}
-          />
         </div>
       ),
     },
@@ -136,15 +94,12 @@ export const UsersTable: React.FC<UsersTableProps> = ({
       title: "Email",
       dataIndex: "email",
       key: "email",
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
       sorter: (a: IUser, b: IUser) => a.email.localeCompare(b.email),
       sortDirections: ["ascend", "descend"],
       render: (email: string) => (
         <Tooltip title="Нажмите, чтобы скопировать">
           <Button
-            type="link"
+            type="text"
             style={{ padding: 0 }}
             onClick={() => navigator.clipboard.writeText(email)}
           >
@@ -153,48 +108,20 @@ export const UsersTable: React.FC<UsersTableProps> = ({
           </Button>
         </Tooltip>
       ),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder="Поиск по email"
-            value={email}
-            onChange={(e) => dispatch(setEmail(e.target.value))}
-            style={{ width: 200 }}
-            allowClear
-            prefix={<SearchOutlined />}
-          />
-        </div>
-      ),
     },
     {
       title: "Статус",
       dataIndex: "is_verified",
       key: "is_verified",
-      width: 150,
+      width: 300,
       render: (isVerified: boolean) => (
         <Tag
           color={isVerified ? "success" : "warning"}
           icon={isVerified ? <CheckCircleOutlined /> : <ClockCircleOutlined />}
+          style={{ fontSize: 14 }}
         >
           {isVerified ? "Верифицирован" : "Ожидает верификации"}
         </Tag>
-      ),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Radio.Group
-            value={is_verified}
-            onChange={(e) => dispatch(setIsVerified(e.target.value))}
-          >
-            <Space direction="vertical">
-              <Radio value={null}>Все статусы</Radio>
-              <Radio value={true}>Верифицированные</Radio>
-              <Radio value={false}>Не верифицированные</Radio>
-            </Space>
-          </Radio.Group>
-        </div>
-      ),
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
       ),
     },
   ];
@@ -202,26 +129,17 @@ export const UsersTable: React.FC<UsersTableProps> = ({
   return (
     <Table
       columns={columns}
-      dataSource={filteredData}
+      dataSource={data.users}
       rowKey="user_id"
       loading={loading}
+      size="middle"
       pagination={{
-        current: page,
-        pageSize: page_size,
-        total: filteredData.length,
-        showSizeChanger: true,
         pageSizeOptions: ["10", "20", "50", "100"],
+        showSizeChanger: true,
         showTotal: (total, range) => (
           <Typography.Text>{`${range[0]}-${range[1]} из ${total} пользователей`}</Typography.Text>
         ),
-        onChange: (newPage, newPageSize) => {
-          if (newPageSize !== page_size) {
-            dispatch(setPageSize(newPageSize));
-          }
-          dispatch(setPage(newPage));
-        },
       }}
-      size="middle"
     />
   );
 };

@@ -1,6 +1,5 @@
 "use client";
 
-// src/pages/rolePermissions/components/CreateRoleModal.tsx
 import type React from "react";
 import { useState, useCallback, useMemo } from "react";
 import {
@@ -16,7 +15,11 @@ import {
   Typography,
   Divider,
 } from "antd";
-import { AppstoreOutlined, SafetyOutlined } from "@ant-design/icons";
+import {
+  AppstoreOutlined,
+  SafetyOutlined,
+  SaveOutlined,
+} from "@ant-design/icons";
 import { useCombinedPermissionsQuery } from "../../../hooks/permissions/usePermissionsQuery";
 import { useRoleMutations } from "../../../hooks/role/useRoleMutations";
 import { useAppsQuery } from "../../../hooks/base/useBaseQuery";
@@ -41,10 +44,8 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
     useCombinedPermissionsQuery(selectedApp);
   const { data: appsData, isLoading: isLoadingApps } = useAppsQuery();
 
-  // Получаем текущие выбранные разрешения из формы
   const currentPermissions = Form.useWatch("permissions", form) || [];
 
-  // Мемоизированные данные
   const uniquePermissions = useMemo(() => {
     if (!permission_data?.permissions) return [];
 
@@ -59,11 +60,9 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
     return uniquePermissions.map((permission) => permission.permission_id);
   }, [uniquePermissions]);
 
-  // Обработчики с useCallback
   const handleAppChange = useCallback(
     (value: string) => {
       setSelectedApp(value);
-      // Сбрасываем выбранные разрешения при смене приложения
       form.setFieldsValue({ permissions: [] });
     },
     [form]
@@ -71,13 +70,12 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
 
   const handlePermissionsChange = useCallback(
     (checkedValues: string[]) => {
-      console.log("Permissions changed:", checkedValues);
       form.setFieldsValue({ permissions: checkedValues });
     },
     [form]
   );
 
-  const handleOk = useCallback(() => {
+  const handleSubmit = useCallback(() => {
     form.validateFields().then((values) => {
       createMutation.mutate(
         {
@@ -102,19 +100,14 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
     setSelectedApp(undefined);
   }, [onCancel, form]);
 
-  // Функция для выбора всех разрешений
   const selectAllPermissions = useCallback(() => {
-    console.log("Selecting all permissions:", allPermissionIds);
     form.setFieldsValue({ permissions: allPermissionIds });
   }, [form, allPermissionIds]);
 
-  // Функция для снятия всех разрешений
   const clearAllPermissions = useCallback(() => {
-    console.log("Clearing all permissions");
     form.setFieldsValue({ permissions: [] });
   }, [form]);
 
-  // Проверки для кнопок
   const isSelectAllDisabled = useMemo(() => {
     return currentPermissions.length === allPermissionIds.length;
   }, [currentPermissions.length, allPermissionIds.length]);
@@ -126,68 +119,125 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
   return (
     <Modal
       title={
-        <Space>
-          <SafetyOutlined />
-          <span>Создание новой роли</span>
-        </Space>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            margin: "-24px -24px 20px -24px",
+            padding: "20px 24px",
+            color: "white",
+            borderRadius: "8px 8px 0 0",
+          }}
+        >
+          <SafetyOutlined style={{ fontSize: "20px" }} />
+          <span style={{ fontSize: "18px", fontWeight: "600" }}>
+            Создание новой роли
+          </span>
+        </div>
       }
       open={visible}
-      onOk={handleOk}
+      onOk={handleSubmit}
       onCancel={handleCancel}
-      confirmLoading={createMutation.isPending}
-      okText="Создать роль"
-      cancelText="Отмена"
+      centered
       width={700}
-      style={{ top: 20 }}
+      okText={
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <SaveOutlined />
+          Создать роль
+        </span>
+      }
+      cancelText="Отмена"
+      okButtonProps={{
+        size: "large",
+        style: {
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          border: "none",
+          borderRadius: "8px",
+          height: "40px",
+          fontWeight: "500",
+        },
+        disabled: createMutation.isPending,
+      }}
+      cancelButtonProps={{
+        size: "large",
+        style: {
+          borderRadius: "8px",
+          height: "40px",
+          fontWeight: "500",
+          borderColor: "#d1d5db",
+          color: "#6b7280",
+        },
+      }}
+      styles={{
+        content: {
+          borderRadius: "12px",
+          overflow: "hidden",
+        },
+        footer: {
+          borderTop: "1px solid #f3f4f6",
+          marginTop: "20px",
+        },
+      }}
+      confirmLoading={createMutation.isPending}
     >
       <Form form={form} layout="vertical">
-        <Card size="small" style={{ marginBottom: 16 }}>
-          <Form.Item
-            name="role_name"
-            label="Название роли"
-            rules={[
-              { required: true, message: "Пожалуйста, введите название роли" },
-            ]}
-            style={{ marginBottom: 16 }}
-          >
-            <Input placeholder="Введите название роли" size="large" />
-          </Form.Item>
+        {/* <Card
+          size="small"
+          style={{
+            marginBottom: 16,
+            border: "1px solid #f0f0f0",
+            borderRadius: "8px",
+          }}
+        > */}
+        <Form.Item
+          name="role_name"
+          label="Название роли"
+          rules={[
+            { required: true, message: "Пожалуйста, введите название роли" },
+          ]}
+          style={{ marginBottom: 16 }}
+        >
+          <Input placeholder="Введите название роли" size="large" />
+        </Form.Item>
 
-          <Form.Item
-            name="application_id"
-            label={
-              <Space>
-                <AppstoreOutlined />
-                <span>Приложение</span>
-              </Space>
-            }
-            rules={[
-              { required: true, message: "Пожалуйста, выберите приложение" },
-            ]}
-            style={{ marginBottom: 0 }}
+        <Form.Item
+          name="application_id"
+          label="Приложение"
+          rules={[
+            { required: true, message: "Пожалуйста, выберите приложение" },
+          ]}
+          style={{ marginBottom: 0 }}
+        >
+          <Select
+            placeholder="Выберите приложение"
+            onChange={handleAppChange}
+            loading={isLoadingApps}
+            size="large"
+            showSearch
+            optionFilterProp="children"
+            suffixIcon={<AppstoreOutlined />}
           >
-            <Select
-              placeholder="Выберите приложение"
-              onChange={handleAppChange}
-              loading={isLoadingApps}
-              size="large"
-              showSearch
-              optionFilterProp="children"
-            >
-              {appsData?.applications.map((app) => (
-                <Select.Option
-                  key={app.application_id}
-                  value={app.application_id}
-                >
-                  {app.application_name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Card>
+            {appsData?.applications.map((app) => (
+              <Select.Option
+                key={app.application_id}
+                value={app.application_id}
+              >
+                {app.application_name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+        {/* </Card> */}
 
         <Card
           size="small"
+          style={{
+            border: "1px solid #f0f0f0",
+            borderRadius: "8px",
+            marginTop: "24px",
+          }}
           title={
             <Space>
               <SafetyOutlined />
@@ -212,14 +262,14 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
               <>
                 <Space style={{ marginBottom: 16 }}>
                   <Button
-                    size="small"
+                    // size="small"
                     onClick={selectAllPermissions}
                     disabled={isSelectAllDisabled}
                   >
-                    Выбрать все ({uniquePermissions.length})
+                    Выбрать все
                   </Button>
                   <Button
-                    size="small"
+                    // size="small"
                     onClick={clearAllPermissions}
                     disabled={isClearAllDisabled}
                   >
@@ -235,8 +285,8 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
                   style={{
                     maxHeight: 300,
                     overflowY: "auto",
-                    border: "1px solid #f0f0f0",
-                    borderRadius: 6,
+                    // border: "1px solid #f0f0f0",
+                    borderRadius: "6px",
                   }}
                 >
                   <Checkbox.Group

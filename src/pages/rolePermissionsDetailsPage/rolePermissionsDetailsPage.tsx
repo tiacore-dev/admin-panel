@@ -5,11 +5,24 @@ import type React from "react";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useDispatch } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
-import { Spin, Space, Card, Typography, Tag, Alert, Empty, Badge } from "antd";
+import {
+  Spin,
+  Space,
+  Card,
+  Typography,
+  Tag,
+  Alert,
+  Empty,
+  Badge,
+  Button,
+} from "antd";
 import {
   UserOutlined,
   SafetyOutlined,
   AppstoreOutlined,
+  EditOutlined,
+  CloseOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import { BackButton } from "../../components/buttons/backButton";
 import { useRoleDetailsQuery } from "../../hooks/role/useRoleQuery";
@@ -524,10 +537,11 @@ export const RolePermissionsDetailsPage: React.FC = () => {
           <Card
             className="gradient-header"
             style={{
-              background: "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               border: "none",
               borderRadius: "12px",
               color: "white",
+              // marginBottom: -24,
             }}
           >
             <div
@@ -551,10 +565,10 @@ export const RolePermissionsDetailsPage: React.FC = () => {
                     <Title level={2} style={{ margin: 0, color: "white" }}>
                       {role?.role_name}
                     </Title>
-                    <Text className="header-description">
+                    {/* <Text className="header-description">
                       Управление разрешениями и ограничениями для роли
                       пользователя
-                    </Text>
+                    </Text> */}
                   </div>
                   {appName && (
                     <Tag
@@ -589,17 +603,8 @@ export const RolePermissionsDetailsPage: React.FC = () => {
                 <RoleHeaderSkeleton />
               ) : (
                 <RoleHeader
-                  role={role}
-                  isEditing={isEditing}
-                  selectedPermissions={selectedPermissions}
-                  allPermissions={allPermissions}
-                  onEditClick={handleEditClick}
                   onDeleteClick={handleDeleteClick}
                   onRenameClick={handleRenameClick}
-                  onSelectAllPermissions={handleSelectAllPermissions}
-                  onCancelEdit={handleCancelEdit}
-                  onSavePermissions={handleSavePermissions}
-                  isSaving={isSaving}
                 />
               )}
             </div>
@@ -629,13 +634,90 @@ export const RolePermissionsDetailsPage: React.FC = () => {
           <Card
             className="content-card"
             title={
-              <Space>
-                <SafetyOutlined />
-                <span>Разрешения роли</span>
-                {!isEditing && permissionsStats.assignedCount > 0 && (
-                  <Badge count={permissionsStats.assignedCount} color="green" />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Space>
+                  <SafetyOutlined />
+                  <span>Разрешения роли</span>
+                  {!isEditing && permissionsStats.assignedCount > 0 && (
+                    <Badge
+                      count={permissionsStats.assignedCount}
+                      color="green"
+                    />
+                  )}
+                </Space>
+
+                {isEditing ? (
+                  <Space>
+                    <Button
+                      onClick={() => handleSelectAllPermissions(true)}
+                      disabled={
+                        selectedPermissions.length ===
+                        allPermissions?.permissions.length
+                      }
+                    >
+                      Выбрать все
+                    </Button>
+                    <Button
+                      onClick={() => handleSelectAllPermissions(false)}
+                      disabled={selectedPermissions.length === 0}
+                    >
+                      Убрать все
+                    </Button>
+                    <Button
+                      danger
+                      style={{
+                        background: "rgba(255, 77, 79, 0.2) !important",
+                        borderColor: "rgba(255, 77, 79, 0.5) !important",
+                      }}
+                      icon={<CloseOutlined />}
+                      onClick={handleCancelEdit}
+                    >
+                      Отмена
+                    </Button>
+                    <Button
+                      style={{
+                        background: "rgb(63, 190, 0)",
+                        border: "none",
+                        borderRadius: "8px",
+                        height: "35px",
+                        color: "white",
+                        fontSize: "16px",
+                        fontWeight: "500",
+                      }}
+                      icon={<SaveOutlined />}
+                      onClick={handleSavePermissions}
+                      loading={isSaving}
+                    >
+                      Сохранить
+                    </Button>
+                  </Space>
+                ) : (
+                  <Space>
+                    <Button
+                      icon={<EditOutlined />}
+                      onClick={handleEditClick}
+                      size="large"
+                      style={{
+                        background: "#7165c6",
+                        border: "none",
+                        borderRadius: "8px",
+                        height: "35px",
+                        color: "white",
+                        fontSize: "16px",
+                        fontWeight: "500",
+                      }}
+                    >
+                      Редактировать
+                    </Button>
+                  </Space>
                 )}
-              </Space>
+              </div>
             }
             extra={
               !isEditing &&
@@ -654,9 +736,6 @@ export const RolePermissionsDetailsPage: React.FC = () => {
                 description={
                   <Space direction="vertical">
                     <Text>Разрешения для приложения не найдены</Text>
-                    <Text type="secondary">
-                      Обратитесь к администратору для настройки разрешений
-                    </Text>
                   </Space>
                 }
               />

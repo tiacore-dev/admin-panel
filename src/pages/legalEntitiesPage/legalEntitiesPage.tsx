@@ -5,7 +5,17 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { BackButton } from "../../components/buttons/backButton";
-import { Button, Spin, Card, Typography, Row, Col } from "antd";
+import {
+  Button,
+  Spin,
+  Card,
+  Typography,
+  Row,
+  Col,
+  Input,
+  Select,
+  Space,
+} from "antd";
 import { useLegalEntityQuery } from "../../hooks/legalEntities/useLegalEntityQuery";
 import { LegalEntitiesTable } from "./components/legalEntitiesTable";
 import {
@@ -13,17 +23,26 @@ import {
   ClearOutlined,
   BankOutlined,
   FileTextOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
-import { resetState } from "../../redux/slices/legalEntitySellersSlice";
+import {
+  resetState,
+  setInn,
+  setOgrn,
+  setShortName,
+  setVatRate,
+} from "../../redux/slices/legalEntitySellersSlice";
 import type { RootState } from "../../redux/store";
 import { CreateLegalEntityModal } from "./components/createLegalEntityModal";
 import { ContextualNavigation } from "../../components/contextualNavigation/contextualNavigation";
 
 const { Title, Text } = Typography;
+const { Search } = Input;
+const { Option } = Select;
 
 export const LegalEntitiesPage: React.FC = () => {
   const dispatch = useDispatch();
-  const { short_name, inn } = useSelector(
+  const { short_name, inn, ogrn, address, vat_rate } = useSelector(
     (state: RootState) => state.legalEntitiesSellers
   );
   const [modalVisible, setModalVisible] = useState(false);
@@ -72,7 +91,8 @@ export const LegalEntitiesPage: React.FC = () => {
     );
   }
 
-  const hasActiveFilters = short_name || inn;
+  const hasActiveFilters =
+    short_name || inn || ogrn || address || vat_rate !== null;
   const totalEntities = legalEntitiesData?.total || 0;
 
   return (
@@ -100,8 +120,7 @@ export const LegalEntitiesPage: React.FC = () => {
                     Юридические лица
                   </Title>
                   <Text className="header-description">
-                    Управление организациями и контрагентами • {totalEntities}{" "}
-                    записей
+                    {totalEntities} записей
                   </Text>
                 </div>
               </div>
@@ -109,21 +128,12 @@ export const LegalEntitiesPage: React.FC = () => {
             <Col>
               <div className="header-actions">
                 <Button
-                  size="large"
-                  icon={<ClearOutlined />}
-                  disabled={!hasActiveFilters}
-                  onClick={handleResetFilters}
-                  className="filter-button"
-                >
-                  Сбросить фильтры
-                </Button>
-                <Button
                   type="primary"
                   size="large"
                   icon={<PlusOutlined />}
                   onClick={() => setModalVisible(true)}
                   className="primary-button"
-                  style={{ color: "#667eea" }}
+                  style={{ color: "#764ba2" }}
                 >
                   Добавить юр. лицо
                 </Button>
@@ -132,133 +142,62 @@ export const LegalEntitiesPage: React.FC = () => {
           </Row>
         </Card>
 
-        {/* Статистические карточки
-        <div className="stats-grid">
-          <Card className="stat-card">
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 8,
-                  background: "#f0f9ff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+        {/* Фильтры */}
+        {/* Фильтры */}
+        <Card className="filters-card">
+          <Row gutter={16} align="middle" style={{ marginBottom: 16 }}>
+            <Col flex="auto">
+              <Input
+                placeholder="Поиск по названию"
+                value={short_name}
+                onChange={(e) => dispatch(setShortName(e.target.value))}
+                allowClear
+                prefix={<SearchOutlined />}
+              />
+            </Col>
+            <Col flex="auto">
+              <Input
+                placeholder="Поиск по ИНН"
+                value={inn}
+                onChange={(e) => dispatch(setInn(e.target.value))}
+                allowClear
+                prefix={<SearchOutlined />}
+              />
+            </Col>
+            <Col flex="auto">
+              <Input
+                placeholder="Поиск по ОГРН"
+                value={ogrn}
+                onChange={(e) => dispatch(setOgrn(e.target.value))}
+                allowClear
+                prefix={<SearchOutlined />}
+              />
+            </Col>
+            <Col>
+              <Select
+                placeholder="Ставка НДС"
+                value={vat_rate}
+                onChange={(value) => dispatch(setVatRate(value))}
+                style={{ width: 165 }}
               >
-                <BankOutlined style={{ fontSize: 20, color: "#0ea5e9" }} />
-              </div>
-              <div>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Всего организаций
-                </Text>
-                <div
-                  style={{ fontSize: 20, fontWeight: 600, color: "#0ea5e9" }}
-                >
-                  {totalEntities}
-                </div>
-              </div>
-            </div>
-          </Card>
-          <Card className="stat-card">
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 8,
-                  background: "#f0fdf4",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                <Option value="0">НДС не облагается</Option>
+                <Option value="5">5%</Option>
+                <Option value="7">7%</Option>
+                <Option value="20">20%</Option>
+              </Select>
+            </Col>
+            <Col>
+              <Button
+                icon={<ClearOutlined />}
+                onClick={handleResetFilters}
+                disabled={!hasActiveFilters}
               >
-                <FileTextOutlined style={{ fontSize: 20, color: "#22c55e" }} />
-              </div>
-              <div>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  С НДС 20%
-                </Text>
-                <div
-                  style={{ fontSize: 20, fontWeight: 600, color: "#22c55e" }}
-                >
-                  {legalEntitiesData?.entities?.filter((e) => e.vat_rate === 20)
-                    .length || 0}
-                </div>
-              </div>
-            </div>
-          </Card>
-          <Card className="stat-card">
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 8,
-                  background: "#fef3c7",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <FileTextOutlined style={{ fontSize: 20, color: "#f59e0b" }} />
-              </div>
-              <div>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Без НДС
-                </Text>
-                <div
-                  style={{ fontSize: 20, fontWeight: 600, color: "#f59e0b" }}
-                >
-                  {legalEntitiesData?.entities?.filter((e) => e.vat_rate === 0)
-                    .length || 0}
-                </div>
-              </div>
-            </div>
-          </Card>
-          <Card className="stat-card">
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 8,
-                  background: "#fce7f3",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <BankOutlined style={{ fontSize: 20, color: "#ec4899" }} />
-              </div>
-              <div>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Активные фильтры
-                </Text>
-                <div
-                  style={{ fontSize: 20, fontWeight: 600, color: "#ec4899" }}
-                >
-                  {hasActiveFilters ? "✓" : "—"}
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div> */}
+                Сбросить фильтры
+              </Button>
+            </Col>
+          </Row>
 
-        {/* Основная таблица */}
-        <Card
-          className="content-card"
-          title={
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <BankOutlined />
-              <span>Список юридических лиц</span>
-            </div>
-          }
-          extra={
-            hasActiveFilters && <Text type="secondary">Применены фильтры</Text>
-          }
-        >
+          {/* Основная таблица */}
           <LegalEntitiesTable
             data={legalEntitiesData || { total: 0, entities: [] }}
             loading={isLoading}

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import type { IRole } from "../../../api/roleApi";
 import { Button, Table, type TableColumnsType, Typography, Tag } from "antd";
 import { useAppsMap } from "../../../hooks/base/useAppHelpers";
+import { getTegColorForString } from "../../../utils/stringToColour";
 
 interface RolesTableResponse {
   rolesData: {
@@ -32,9 +33,25 @@ export const RolesTable: React.FC<RolesTableResponse> = ({
         dataIndex: "role_name",
         key: "role_name",
         render: (text: string, record: IRole) => (
-          <Button type="link" onClick={() => handleRoleClick(record.role_id)}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              cursor: "pointer",
+              fontWeight: 600,
+              color: "#1890ff",
+              marginBottom: 2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+            onClick={() => handleRoleClick(record.role_id)}
+          >
+            {/* <Button type="link" onClick={() => handleRoleClick(record.role_id)}> */}
             {text}
-          </Button>
+            {/* </Button> */}
+          </div>
         ),
         sorter: (a, b) => a.role_name.localeCompare(b.role_name),
       },
@@ -44,10 +61,13 @@ export const RolesTable: React.FC<RolesTableResponse> = ({
         key: "application_id",
         render: (applicationId: string) => {
           const appName = appsMap.get(applicationId);
+          const color = appName ? getTegColorForString(appName) : "default";
           return appName ? (
-            <Tag color="blue">{appName}</Tag>
+            <Tag color={color} style={{ fontSize: 14 }}>
+              {appName}
+            </Tag>
           ) : (
-            <Tag color="default">Неизвестное приложение</Tag>
+            <Tag color="orange">Неизвестное приложение</Tag>
           );
         },
         // filters: Array.from(appsMap.entries()).map(([id, name]) => ({

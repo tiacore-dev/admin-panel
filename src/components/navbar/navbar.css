@@ -29,7 +29,7 @@
   align-items: center;
   font-size: 18px;
   font-weight: 700;
-  background: linear-gradient(135deg, #0f00df 0%, #3b82f6 50%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -61,7 +61,7 @@
 
 .navbar-menu .ant-menu-item {
   color: #475569 !important;
-  border-bottom: 2px solid transparent !important;
+  /* border-bottom: 2px solid transparent !important; */
   transition: all 0.3s ease !important;
   margin: 0 8px !important;
   padding: 0 16px !important;
@@ -75,30 +75,42 @@
 }
 
 .navbar-menu .ant-menu-item:hover {
-  color: #0f00df !important;
+  color: linear-gradient(
+    135deg,
+    rgba(15, 0, 223, 0.05) 0%,
+    rgba(59, 130, 246, 0.05) 100%
+  ) !important;
   background: linear-gradient(
     135deg,
     rgba(15, 0, 223, 0.05) 0%,
     rgba(59, 130, 246, 0.05) 100%
   ) !important;
-  border-bottom-color: #0f00df !important;
+  /* border-bottom-color: #0f00df !important; */
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(15, 0, 223, 0.15);
+  /* box-shadow: 0 4px 12px rgba(15, 0, 223, 0.15); */
 }
 
 .navbar-menu .ant-menu-item-selected {
-  color: #0f00df !important;
-  background: linear-gradient(
+  color: linear-gradient(
+    135deg,
+    rgba(15, 0, 223, 0.05) 0%,
+    rgba(59, 130, 246, 0.05) 100%
+  ) !important;
+  /* background: linear-gradient(
     135deg,
     rgba(15, 0, 223, 0.1) 0%,
     rgba(59, 130, 246, 0.1) 100%
-  ) !important;
-  border-bottom-color: #0f00df !important;
+  ) !important; */
+  border-bottom-color: #ffffff !important;
   font-weight: 600 !important;
 }
 
 .navbar-menu .ant-menu-item-selected::after {
-  border-bottom-color: #0f00df !important;
+  border-bottom-color: linear-gradient(
+    135deg,
+    rgba(15, 0, 223, 0.05) 0%,
+    rgba(59, 130, 246, 0.05) 100%
+  ) !important;
 }
 
 .navbar-menu .ant-menu-item span {
@@ -126,7 +138,7 @@
 }
 
 .mobile-menu-button {
-  background: linear-gradient(135deg, #0f00df 0%, #3b82f6 100%) !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   border: none !important;
   color: white !important;
   display: flex;
@@ -140,7 +152,7 @@
 }
 
 .mobile-menu-button:hover {
-  background: linear-gradient(135deg, #1a0aff 0%, #4f46e5 100%) !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   transform: scale(1.05);
   box-shadow: 0 4px 8px rgba(15, 0, 223, 0.3);
 }
@@ -150,7 +162,7 @@
   align-items: center;
   font-size: 16px;
   font-weight: 700;
-  background: linear-gradient(135deg, #0f00df 0%, #3b82f6 50%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -178,7 +190,7 @@
     rgba(59, 130, 246, 0.05) 100%
   ) !important;
   border: 1px solid rgba(15, 0, 223, 0.2) !important;
-  color: #0f00df !important;
+  color: #764ba2 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,7 +202,7 @@
 }
 
 .user-menu-button:hover {
-  background: linear-gradient(135deg, #0f00df 0%, #3b82f6 100%) !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   color: white !important;
   border-color: transparent !important;
   transform: scale(1.1);
@@ -207,7 +219,7 @@
   height: 45px;
   border: none;
   padding: 0px 0px;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 50%;
   cursor: pointer;
   outline: none;
@@ -240,9 +252,9 @@
 
 .animated-btn:hover {
   width: 90px;
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 25px;
-  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 8px rgba(176, 68, 239, 0.3);
 }
 
 .animated-btn:hover .sign {
@@ -275,7 +287,7 @@
     rgba(15, 0, 223, 0.05) 0%,
     rgba(59, 130, 246, 0.05) 100%
   ) !important;
-  color: #0f00df !important;
+  /* color: #0f00df !important; */
   transform: translateX(4px);
 }
 
@@ -285,7 +297,7 @@
     rgba(15, 0, 223, 0.1) 0%,
     rgba(59, 130, 246, 0.1) 100%
   ) !important;
-  color: #0f00df !important;
+  /* color: #0f00df !important; */
   font-weight: 600 !important;
 }
 
@@ -370,7 +382,11 @@
 
 .ant-menu-horizontal > .ant-menu-item-selected,
 .ant-menu-horizontal > .ant-menu-submenu-selected {
-  border-bottom-color: #0f00df !important;
+  border-bottom-color: linear-gradient(
+    135deg,
+    rgba(15, 0, 223, 0.05) 0%,
+    rgba(59, 130, 246, 0.05) 100%
+  ) !important;
 }
 
 /* Prevent menu items from being hidden */
@@ -401,7 +417,7 @@
     rgba(15, 0, 223, 0.05) 0%,
     rgba(59, 130, 246, 0.05) 100%
   ) !important;
-  color: #0f00df !important;
+  color: #764ba2 !important;
 }
 
 .ant-dropdown-menu-item-danger {

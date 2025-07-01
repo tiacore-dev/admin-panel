@@ -2,22 +2,11 @@
 
 import type React from "react";
 import type { TableColumnsType } from "antd";
+import { Button, Table, Typography, Avatar, Tag, Tooltip, message } from "antd";
 import {
-  Button,
-  Input,
-  Table,
-  Typography,
-  Select,
-  Avatar,
-  Tag,
-  Tooltip,
-  message,
-} from "antd";
-import {
-  SearchOutlined,
   BankOutlined,
   CopyOutlined,
-  EyeOutlined,
+  // EyeOutlined,
 } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../../redux/store";
@@ -26,14 +15,8 @@ import { useNavigate } from "react-router-dom";
 import {
   setPage,
   setPageSize,
-  setShortName,
-  setInn,
-  setOgrn,
-  setAddress,
-  setVatRate,
 } from "../../../redux/slices/legalEntitySellersSlice";
 
-const { Option } = Select;
 const { Text } = Typography;
 
 interface LegalEntitiesTableProps {
@@ -100,13 +83,10 @@ export const LegalEntitiesTable: React.FC<LegalEntitiesTableProps> = ({
 
   const columns: TableColumnsType<ILegalEntity> = [
     {
-      title: "Организация",
+      title: "Юр. лицо",
       dataIndex: "short_name",
       key: "short_name",
-      width: 300,
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
+      width: 380,
       sorter: (a: ILegalEntity, b: ILegalEntity) =>
         a.short_name.localeCompare(b.short_name),
       sortDirections: ["ascend", "descend"],
@@ -135,61 +115,31 @@ export const LegalEntitiesTable: React.FC<LegalEntitiesTableProps> = ({
           >
             {text ? getEntityInitials(text) : null}
           </Avatar>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                fontWeight: 600,
-                color: "#1890ff",
-                marginBottom: 2,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {text}
-            </div>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {record.opf || "Организация"}
-            </Text>
-          </div>
-          <Button
-            type="text"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/legal-entities/${record.legal_entity_id}`, {
-                state: { fromList: true },
-              });
+          {/* <div style={{ flex: 1, minWidth: 0 }}> */}
+          <div
+            style={{
+              fontWeight: 600,
+              color: "#1890ff",
+              marginBottom: 2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
-          />
+          >
+            {text}
+            {/* </div> */}
+          </div>
         </div>
       ),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder="Поиск по названию"
-            value={short_name}
-            onChange={(e) => dispatch(setShortName(e.target.value))}
-            style={{ width: 200 }}
-            allowClear
-            prefix={<SearchOutlined />}
-          />
-        </div>
-      ),
-      filteredValue: short_name ? [short_name] : null,
     },
     {
       title: "ИНН / КПП",
       key: "inn_kpp",
       width: 180,
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
       render: (record: ILegalEntity) => (
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <Text strong>{record.inn}</Text>
+            <Text>{record.inn}</Text>
             <Tooltip title="Копировать ИНН">
               <Button
                 type="text"
@@ -216,33 +166,15 @@ export const LegalEntitiesTable: React.FC<LegalEntitiesTableProps> = ({
           )}
         </div>
       ),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder="Поиск по ИНН"
-            value={inn}
-            onChange={(e) => dispatch(setInn(e.target.value))}
-            style={{ width: 200 }}
-            allowClear
-            prefix={<SearchOutlined />}
-          />
-        </div>
-      ),
-      filteredValue: inn ? [inn] : null,
     },
     {
       title: "ОГРН",
       dataIndex: "ogrn",
       key: "ogrn",
-      width: 160,
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
+      width: 180,
       render: (text: string) => (
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <Text code style={{ fontSize: 12 }}>
-            {text}
-          </Text>
+          <Text>{text}</Text>
           <Tooltip title="Копировать ОГРН">
             <Button
               type="text"
@@ -253,78 +185,25 @@ export const LegalEntitiesTable: React.FC<LegalEntitiesTableProps> = ({
           </Tooltip>
         </div>
       ),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder="Поиск по ОГРН"
-            value={ogrn}
-            onChange={(e) => dispatch(setOgrn(e.target.value))}
-            style={{ width: 200 }}
-            allowClear
-            prefix={<SearchOutlined />}
-          />
-        </div>
-      ),
-      filteredValue: ogrn ? [ogrn] : null,
+    },
+    {
+      title: "НДС",
+      dataIndex: "vat_rate",
+      key: "vat_rate",
+      width: 160,
+      align: "center",
+      render: (vatRate: number) => getVatRateTag(vatRate),
     },
     {
       title: "Адрес",
       dataIndex: "address",
       key: "address",
       ellipsis: true,
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
       render: (text: string) => (
         <Tooltip title={text}>
-          <Text style={{ fontSize: 12 }}>{text}</Text>
+          <Text>{text}</Text>
         </Tooltip>
       ),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder="Поиск по адресу"
-            value={address}
-            onChange={(e) => dispatch(setAddress(e.target.value))}
-            style={{ width: 200 }}
-            allowClear
-            prefix={<SearchOutlined />}
-          />
-        </div>
-      ),
-      filteredValue: address ? [address] : null,
-    },
-    {
-      title: "НДС",
-      dataIndex: "vat_rate",
-      key: "vat_rate",
-      width: 120,
-      align: "center",
-      render: (vatRate: number) => getVatRateTag(vatRate),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Select
-            placeholder="Выберите ставку НДС"
-            style={{ width: 200 }}
-            value={vat_rate}
-            onChange={(value) => dispatch(setVatRate(value))}
-            allowClear
-          >
-            <Option value="0">0% (не облагается)</Option>
-            <Option value="5">5%</Option>
-            <Option value="7">7%</Option>
-            <Option value="20">20%</Option>
-            <Option value="null">Не указано</Option>
-          </Select>
-        </div>
-      ),
-      filteredValue: vat_rate !== null ? [vat_rate] : null,
-      onFilter: (value, record) => {
-        if (value === "null") {
-          return record.vat_rate === null || record.vat_rate === undefined;
-        }
-        return String(record.vat_rate) === value;
-      },
     },
   ];
 
@@ -342,11 +221,7 @@ export const LegalEntitiesTable: React.FC<LegalEntitiesTableProps> = ({
       ? entity.address.toLowerCase().includes(address.toLowerCase())
       : true;
     const matchesVatRate =
-      vat_rate !== null
-        ? String(entity.vat_rate) === vat_rate ||
-          (vat_rate === "null" &&
-            (entity.vat_rate === null || entity.vat_rate === undefined))
-        : true;
+      vat_rate !== null ? String(entity.vat_rate) === vat_rate : true;
 
     return (
       matchesShortName &&
@@ -364,15 +239,15 @@ export const LegalEntitiesTable: React.FC<LegalEntitiesTableProps> = ({
       rowKey="legal_entity_id"
       loading={loading}
       size="middle"
-      onRow={(record) => ({
-        style: { cursor: "pointer" },
-        onMouseEnter: (e) => {
-          e.currentTarget.style.backgroundColor = "#f5f5f5";
-        },
-        onMouseLeave: (e) => {
-          e.currentTarget.style.backgroundColor = "";
-        },
-      })}
+      // onRow={() => ({
+      //   style: { cursor: "pointer" },
+      //   onMouseEnter: (e) => {
+      //     e.currentTarget.style.backgroundColor = "#f5f5f5";
+      //   },
+      //   onMouseLeave: (e) => {
+      //     e.currentTarget.style.backgroundColor = "";
+      //   },
+      // })}
       pagination={{
         current: page,
         pageSize: page_size,

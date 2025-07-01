@@ -11,6 +11,7 @@ import {
   Row,
   Col,
   Spin,
+  Button,
 } from "antd";
 import {
   UserOutlined,
@@ -20,6 +21,8 @@ import {
   IdcardOutlined,
 } from "@ant-design/icons";
 import type { IUser } from "../../../api/usersApi";
+import { useState } from "react";
+import { useUserMutations } from "../../../hooks/users/useUserMutation";
 
 const { Title, Text } = Typography;
 
@@ -41,7 +44,21 @@ export const UserDetailsCard: React.FC<UserDetailsCardProps> = ({
       .toUpperCase()
       .slice(0, 2);
   };
-
+  const { updateMutation } = useUserMutations(userDetails?.user_id);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const handleSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+      const dataToSend = {
+        is_verified: true,
+      };
+      await updateMutation.mutateAsync(dataToSend);
+    } catch (error) {
+      // Ошибки обрабатываются в хуке useUserMutations
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   // Показываем загрузку если данные загружаются
   if (loading) {
     return (
@@ -117,25 +134,30 @@ export const UserDetailsCard: React.FC<UserDetailsCardProps> = ({
               <Title level={4} style={{ margin: 0, marginBottom: 4 }}>
                 {userDetails.full_name || "Не указано"}
               </Title>
-              <Text type="secondary" copyable={{ text: userDetails.email }}>
+              {/* <Text type="secondary" copyable={{ text: userDetails.email }}>
                 <MailOutlined style={{ marginRight: 4 }} />
                 {userDetails.email}
-              </Text>
+              </Text> */}
             </div>
 
-            <Tag
-              color={userDetails.is_verified ? "success" : "warning"}
-              icon={
-                userDetails.is_verified ? (
-                  <CheckCircleOutlined />
-                ) : (
-                  <ClockCircleOutlined />
-                )
-              }
-              style={{ fontSize: 14, padding: "4px 12px" }}
-            >
-              {userDetails.is_verified ? "Верифицирован" : "Не верифицирован"}
-            </Tag>
+            {!userDetails.is_verified && (
+              <Tag
+                color={"success"}
+                icon={<CheckCircleOutlined />}
+                style={{ fontSize: 14, padding: "4px 12px" }}
+              >
+                <Button
+                  type="text"
+                  size="small"
+                  style={{ fontSize: 12 }}
+                  key="submit"
+                  loading={isSubmitting}
+                  onClick={handleSubmit}
+                >
+                  Верифицировать
+                </Button>
+              </Tag>
+            )}
           </Space>
         </Col>
 
@@ -206,11 +228,6 @@ export const UserDetailsCard: React.FC<UserDetailsCardProps> = ({
                     ? "Верифицирован"
                     : "Не верифицирован"}
                 </Tag>
-                {!userDetails.is_verified && (
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Требуется подтверждение email
-                  </Text>
-                )}
               </Space>
             </Descriptions.Item>
           </Descriptions>

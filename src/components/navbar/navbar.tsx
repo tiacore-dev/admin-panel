@@ -13,7 +13,7 @@ import {
   ShopOutlined,
   UsergroupAddOutlined,
   SafetyOutlined,
-  RocketOutlined,
+  // RocketOutlined,
 } from "@ant-design/icons";
 import "./navbar.css";
 import { useCompanyQuery } from "../../hooks/companies/useCompanyQuery";
@@ -73,23 +73,23 @@ export const Navbar: React.FC = () => {
   ];
 
   const userMenuItems: MenuProps["items"] = [
-    {
-      label: (
-        <span
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "4px 0",
-            fontWeight: 400,
-          }}
-        >
-          <UserOutlined />
-          Мой аккаунт
-        </span>
-      ),
-      key: "/account",
-    },
+    // {
+    //   label: (
+    //     <span
+    //       style={{
+    //         display: "flex",
+    //         alignItems: "center",
+    //         gap: "8px",
+    //         padding: "4px 0",
+    //         fontWeight: 400,
+    //       }}
+    //     >
+    //       <UserOutlined />
+    //       Мой аккаунт
+    //     </span>
+    //   ),
+    //   key: "/account",
+    // },
     {
       label: (
         <span
@@ -221,7 +221,7 @@ export const Navbar: React.FC = () => {
                 onClick={toggleDrawer}
               />
               <div className="mobile-logo" onClick={() => navigate("/home")}>
-                <RocketOutlined style={{ marginRight: "8px" }} />
+                {/* <RocketOutlined style={{ marginRight: "8px" }} /> */}
                 {LOGO_TEXT}
               </div>
             </div>
@@ -247,7 +247,7 @@ export const Navbar: React.FC = () => {
                   color: "white",
                 }}
               >
-                <RocketOutlined style={{ fontSize: "18px" }} />
+                {/* <RocketOutlined style={{ fontSize: "18px" }} /> */}
                 Навигация
               </div>
             }
@@ -291,7 +291,7 @@ export const Navbar: React.FC = () => {
       {!isMobile && (
         <div className="navbar-container desktop">
           <div className="navbar-logo" onClick={() => navigate("/home")}>
-            <RocketOutlined style={{ marginRight: "8px", fontSize: "18px" }} />
+            {/* <RocketOutlined style={{ marginRight: "8px", fontSize: "18px" }} /> */}
             {LOGO_TEXT}
           </div>
 
@@ -323,8 +323,11 @@ export const Navbar: React.FC = () => {
             >
               <Button
                 className="user-menu-button"
-                icon={<UserOutlined style={{ fontSize: "16px" }} />}
-              />
+                // icon={<UserOutlined style={{ fontSize: "16px" }} />}
+              >
+                {" "}
+                <UserOutlined style={{ fontSize: "16px" }} />{" "}
+              </Button>
             </Dropdown>
           </div>
         </div>

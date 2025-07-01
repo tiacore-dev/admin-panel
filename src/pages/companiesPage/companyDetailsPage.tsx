@@ -21,7 +21,7 @@ import {
   BankOutlined,
 } from "@ant-design/icons";
 import { UserCompanyRelationsTable } from "../../components/userCompanyRelations/userCompanyRelationsTable";
-import { EntityCompanyRelationsTable } from "../../components/entityCompanyRelations";
+// import { EntityCompanyRelationsTable } from "../../components/entityCompanyRelations";
 import { CreateLegalEntityModal } from "../legalEntitiesPage/components/createLegalEntityModal";
 import { useUserDetailsQuery } from "../../hooks/users/useUserQuery";
 import { ContextualNavigation } from "../../components/contextualNavigation/contextualNavigation";
@@ -204,53 +204,22 @@ export const CompanyDetailsPage: React.FC = () => {
         <CompanyCard data={companyDetails} loading={isLoading} />
 
         {/* Таблица пользователей компании */}
-        <Card
-          className="content-card"
-          title={
-            <Space>
-              <TeamOutlined style={{ color: "#1890ff" }} />
-              <span>Пользователи компании</span>
-            </Space>
-          }
-        >
+        <Card className="content-card">
           <UserCompanyRelationsTable companyId={company_id} />
         </Card>
 
         {/* Таблица организаций (sellers) */}
-        <Card
-          className="content-card"
-          title={
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Space>
-                <BankOutlined style={{ color: "#52c41a" }} />
-                <span>Организации</span>
-              </Space>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => setShowSellerModal(true)}
-              >
-                Добавить организацию
-              </Button>
-            </div>
-          }
-        >
-          <EntityCompanyRelationsTable
-            companyId={company_id!}
-            relationType="seller"
-            title="Организации"
-            companyName={companyDetails?.company_name}
-          />
-        </Card>
+        {/* <Card className="content-card"> */}
+        {/* <EntityCompanyRelationsTable
+          companyId={company_id!}
+          relationType="seller"
+          title="Организации"
+          companyName={companyDetails?.company_name}
+        /> */}
+        {/* </Card> */}
 
         {/* Таблица контрагентов (buyers) */}
-        <Card
+        {/* <Card
           className="content-card"
           title={
             <div
@@ -273,14 +242,14 @@ export const CompanyDetailsPage: React.FC = () => {
               </Button>
             </div>
           }
-        >
-          <EntityCompanyRelationsTable
-            companyId={company_id!}
-            relationType="buyer"
-            title="Контрагенты"
-            companyName={companyDetails?.company_name}
-          />
-        </Card>
+        > */}
+        {/* <EntityCompanyRelationsTable
+          companyId={company_id!}
+          relationType="buyer"
+          title="Контрагенты"
+          companyName={companyDetails?.company_name}
+        /> */}
+        {/* </Card> */}
 
         {showEditModal && (
           <CompanyFormModal

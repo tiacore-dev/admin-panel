@@ -19,6 +19,8 @@ import {
   BuildOutlined,
   AppstoreOutlined,
   InfoCircleOutlined,
+  BankOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
@@ -86,9 +88,20 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({
   return (
     <Modal
       title={
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <BuildOutlined style={{ color: "#1890ff" }} />
-          <span>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            margin: "-24px -24px 20px -24px",
+            padding: "20px 24px",
+            color: "white",
+            borderRadius: "8px 8px 0 0",
+          }}
+        >
+          <BankOutlined style={{ fontSize: "20px" }} />
+          <span style={{ fontSize: "18px", fontWeight: "600" }}>
             {mode === "create"
               ? "Создание новой компании"
               : "Редактирование компании"}
@@ -97,8 +110,59 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({
       }
       open={visible}
       onCancel={onCancel}
+      centered
+      width={700}
+      okText={
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <SaveOutlined />
+          {mode === "create" ? "Создать компанию" : "Сохранить изменения"}
+        </span>
+      }
+      cancelText="Отмена"
+      okButtonProps={{
+        size: "large",
+        style: {
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          border: "none",
+          borderRadius: "8px",
+          height: "40px",
+          fontWeight: "500",
+        },
+        disabled: isSubmitting,
+      }}
+      cancelButtonProps={{
+        size: "large",
+        style: {
+          borderRadius: "8px",
+          height: "40px",
+          fontWeight: "500",
+          borderColor: "#d1d5db",
+          color: "#6b7280",
+        },
+      }}
+      styles={{
+        content: {
+          borderRadius: "12px",
+          overflow: "hidden",
+        },
+        footer: {
+          borderTop: "1px solid #f3f4f6",
+          marginTop: "20px",
+        },
+      }}
       footer={[
-        <Button key="back" onClick={onCancel} size="large">
+        <Button
+          key="cancel"
+          size="large"
+          onClick={onCancel}
+          style={{
+            borderRadius: "8px",
+            height: "40px",
+            fontWeight: "500",
+            borderColor: "#d1d5db",
+            color: "#6b7280",
+          }}
+        >
           Отмена
         </Button>,
         <Button
@@ -107,119 +171,83 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({
           loading={isSubmitting}
           onClick={handleSubmit}
           size="large"
+          style={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            border: "none",
+            borderRadius: "8px",
+            height: "40px",
+            fontWeight: "500",
+          }}
+          icon={<SaveOutlined />}
         >
           {mode === "create" ? "Создать компанию" : "Сохранить изменения"}
         </Button>,
       ]}
-      width={700}
-      destroyOnClose
     >
       <div style={{ marginTop: 24 }}>
-        {/* Информационный блок */}
-        <Card
-          size="small"
-          style={{
-            marginBottom: 24,
-            backgroundColor: "#f6ffed",
-            border: "1px solid #b7eb8f",
-          }}
-        >
-          <Space>
-            <InfoCircleOutlined style={{ color: "#52c41a" }} />
-            <Text style={{ color: "#389e0d" }}>
-              {mode === "create"
-                ? "Создайте новую компанию для организации пользователей и управления доступом"
-                : "Обновите информацию о компании"}
-            </Text>
-          </Space>
-        </Card>
-
         <Form form={form} layout="vertical" size="large">
-          {/* Основная информация */}
-          <Card
-            title={
-              <Space>
-                <BuildOutlined />
-                <span>Основная информация</span>
-              </Space>
-            }
-            size="small"
-            style={{ marginBottom: 16 }}
+          <Form.Item
+            label="Название компании"
+            name="company_name"
+            rules={[
+              {
+                required: true,
+                message: "Пожалуйста, введите название компании",
+              },
+              { min: 3, message: "Минимум 3 символа" },
+              { max: 100, message: "Максимум 100 символов" },
+            ]}
           >
-            <Form.Item
-              label="Название компании"
-              name="company_name"
-              rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, введите название компании",
-                },
-                { min: 3, message: "Минимум 3 символа" },
-                { max: 100, message: "Максимум 100 символов" },
-              ]}
-            >
-              <Input
-                placeholder="Введите название компании"
-                prefix={<BuildOutlined style={{ color: "#bfbfbf" }} />}
-              />
-            </Form.Item>
+            <Input
+              placeholder="Введите название компании"
+              prefix={<BuildOutlined style={{ color: "#bfbfbf" }} />}
+            />
+          </Form.Item>
 
-            <Form.Item
-              label="Описание"
-              name="description"
-              rules={[
-                { min: 3, message: "Минимум 3 символа" },
-                { max: 500, message: "Максимум 500 символов" },
-              ]}
-            >
-              <Input.TextArea
-                placeholder="Введите описание компании (необязательно)"
-                rows={3}
-                showCount
-                maxLength={500}
-              />
-            </Form.Item>
-          </Card>
-
-          {/* Настройки приложения */}
-          <Card
-            title={
-              <Space>
-                <AppstoreOutlined />
-                <span>Настройки приложения</span>
-              </Space>
-            }
-            size="small"
+          <Form.Item
+            label="Описание"
+            name="description"
+            rules={[
+              { min: 3, message: "Минимум 3 символа" },
+              { max: 500, message: "Максимум 500 символов" },
+            ]}
           >
-            <Form.Item
-              label="Приложение"
-              name="application_id"
-              rules={[
-                { required: true, message: "Пожалуйста, выберите приложение" },
-              ]}
-              extra="Выберите приложение, к которому будет привязана компания"
-            >
-              <Select
-                placeholder="Выберите приложение"
-                loading={!appsData}
-                options={appsData?.applications.map((app) => ({
-                  value: app.application_id,
-                  label: (
-                    <Space>
-                      <AppstoreOutlined />
-                      {app.application_name}
-                    </Space>
-                  ),
-                }))}
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label as any)?.props?.children?.[1]
-                    ?.toLowerCase()
-                    ?.includes(input.toLowerCase()) ?? false
-                }
-              />
-            </Form.Item>
-          </Card>
+            <Input.TextArea
+              placeholder="Введите описание компании (необязательно)"
+              rows={3}
+              showCount
+              maxLength={500}
+              // prefix={<InfoCircleOutlined style={{ color: "#bfbfbf" }} />}
+            />
+          </Form.Item>
+          <Form.Item
+            label="Приложение"
+            name="application_id"
+            rules={[
+              { required: true, message: "Пожалуйста, выберите приложение" },
+            ]}
+          >
+            <Select
+              placeholder="Выберите приложение"
+              loading={!appsData}
+              suffixIcon={<AppstoreOutlined />}
+              options={appsData?.applications.map((app) => ({
+                value: app.application_id,
+                label: (
+                  <Space>
+                    <AppstoreOutlined />
+                    {app.application_name}
+                  </Space>
+                ),
+              }))}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label as any)?.props?.children?.[1]
+                  ?.toLowerCase()
+                  ?.includes(input.toLowerCase()) ?? false
+              }
+            />
+          </Form.Item>
         </Form>
       </div>
     </Modal>

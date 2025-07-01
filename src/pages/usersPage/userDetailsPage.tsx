@@ -164,17 +164,21 @@ export const UserDetailsPage: React.FC = () => {
             <Col>
               <div className="header-actions">
                 <Button
+                  size="large"
+                  type="primary"
                   onClick={() => setShowEditModal(true)}
                   icon={<EditOutlined />}
-                  className="filter-button"
+                  className="primary-button"
+                  style={{ color: "#764ba2" }}
                 >
                   Редактировать
                 </Button>
                 <Button
+                  size="large"
                   danger
                   onClick={() => setShowDeleteConfirm(true)}
                   icon={<DeleteOutlined />}
-                  className="filter-button"
+                  className="primary-button"
                   style={{
                     background: "rgba(255, 77, 79, 0.2) !important",
                     borderColor: "rgba(255, 77, 79, 0.5) !important",
@@ -192,11 +196,7 @@ export const UserDetailsPage: React.FC = () => {
           <UserDetailsCard userDetails={userDetails} />
 
           {/* Связи с компаниями */}
-          <Card className="content-card">
-            <Title level={4} style={{ marginBottom: 16 }}>
-              <TeamOutlined style={{ marginRight: 8 }} />
-              Связи с компаниями
-            </Title>
+          <Card>
             <UserCompanyRelationsTable userId={user_id} />
           </Card>
         </Space>

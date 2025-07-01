@@ -44,6 +44,7 @@ import { useRolesQuery } from "../../hooks/role/useRoleQuery";
 import { InviteFormModal } from "../../pages/invitePages/inviteFormModal";
 import { useAppsQuery } from "../../hooks/base/useBaseQuery";
 import { useAppNameById } from "../../hooks/base/useAppHelpers";
+import { getTegColorForString } from "../../utils/stringToColour";
 
 const { Text, Title } = Typography;
 
@@ -95,9 +96,11 @@ export const UserCompanyRelationsTable = ({
     applicationId,
   }) => {
     const appName = useAppNameById(applicationId);
+    const color = appName ? getTegColorForString(appName) : "orange";
+
     return (
       <Tag
-        color="purple"
+        color={color}
         icon={<AppstoreOutlined />}
         style={{ borderRadius: 6, fontSize: "12px" }}
       >
