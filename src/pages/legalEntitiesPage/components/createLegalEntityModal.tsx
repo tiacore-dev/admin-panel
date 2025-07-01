@@ -1,17 +1,42 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Steps, Form, Input, Button, message, Spin, Select } from "antd";
+"use client";
+
+import type React from "react";
+import { useState } from "react";
+import {
+  Modal,
+  Steps,
+  Form,
+  Input,
+  Button,
+  message,
+  Select,
+  Card,
+  Typography,
+  Space,
+  Alert,
+  Divider,
+} from "antd";
+import {
+  BankOutlined,
+  FileTextOutlined,
+  EnvironmentOutlined,
+  UserOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  EditOutlined,
+  SaveOutlined,
+} from "@ant-design/icons";
 import { useLegalEntityByInnKppQuery } from "../../../hooks/legalEntities/useLegalEntityQuery";
-import { useLegalEntityDetailsQuery } from "../../../hooks/legalEntities/useLegalEntityQuery";
 import {
   useCreateLegalEntity,
   useCreateLegalEntityByINN,
-  useUpdateLegalEntity,
 } from "../../../hooks/legalEntities/useLegalEntityMutation";
 import { useCreateEntityCompanyRelation } from "../../../hooks/entityCompanyRelations/useEntityCompanyRelationMutations";
 import { useCompanyQuery } from "../../../hooks/companies/useCompanyQuery";
 
 const { Step } = Steps;
 const { Option } = Select;
+const { Title, Text } = Typography;
 
 interface CreateLegalEntityModalProps {
   visible: boolean;
@@ -19,6 +44,17 @@ interface CreateLegalEntityModalProps {
   onSuccess: () => void;
   companyId?: string;
   showCompanySelect?: boolean;
+  relationTypeBeforeSelect?: "seller" | "buyer";
+}
+
+interface ApiError {
+  response?: {
+    status: number;
+    data?: {
+      message?: string;
+    };
+  };
+  message: string;
 }
 
 export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
@@ -27,21 +63,17 @@ export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
   onSuccess,
   companyId,
   showCompanySelect = false,
+  relationTypeBeforeSelect,
 }) => {
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
   const [inn, setInn] = useState("");
   const [kpp, setKpp] = useState("");
-  const [legalEntityId, setLegalEntityId] = useState("");
   const [relationType, setRelationType] = useState<"buyer" | "seller">(
-    "seller"
+    relationTypeBeforeSelect || "seller"
   );
-  const [isExistingEntity, setIsExistingEntity] = useState(false);
-  const [isCreatedByINN, setIsCreatedByINN] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<string | undefined>(
-    companyId
-  );
+  const [isManualCreation, setIsManualCreation] = useState(false);
 
   const { data: companiesData } = useCompanyQuery();
 
@@ -52,153 +84,105 @@ export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
     refetch: fetchByInnKpp,
   } = useLegalEntityByInnKppQuery(inn, kpp, { enabled: false });
 
-  const { data: entityDetails, isFetching: isFetchingDetails } =
-    useLegalEntityDetailsQuery(legalEntityId, { enabled: !!legalEntityId });
-
   const { mutate: createEntity, isPending: isCreating } =
     useCreateLegalEntity();
   const { mutate: createEntityByINN, isPending: isCreatingByINN } =
     useCreateLegalEntityByINN();
-  const { mutate: updateEntity, isPending: isUpdating } =
-    useUpdateLegalEntity();
   const { mutate: createRelation } = useCreateEntityCompanyRelation();
-
-  // Обработка результата проверки ИНН/КПП
-  useEffect(() => {
-    if (innKppData) {
-      setLegalEntityId(innKppData.legal_entity_id);
-      setIsExistingEntity(true);
-      createRelationAutomatically(innKppData.legal_entity_id);
-    } else if (innKppError && (innKppError as any).response?.status === 404) {
-      handleEntityNotFound();
-    }
-  }, [innKppData, innKppError]);
-
-  // Автоматическое создание связи для существующего юрлица
-  const createRelationAutomatically = (entityId: string) => {
-    if (!selectedCompany) {
-      message.error("Пожалуйста, выберите компанию");
-      return;
-    }
-
-    createRelation(
-      {
-        legal_entity_id: entityId,
-        company_id: selectedCompany,
-        relation_type: relationType,
-      },
-      {
-        onSuccess: () => {
-          message.success("Связь с компанией успешно создана");
-          onSuccess();
-          handleCancel();
-        },
-        onError: (error) => {
-          message.error(`Ошибка при создании связи: ${error.message}`);
-        },
-      }
-    );
-  };
-
-  // Обработка случая, когда юрлицо не найдено
-  const handleEntityNotFound = () => {
-    if (!selectedCompany) {
-      message.error("Пожалуйста, выберите компанию");
-      return;
-    }
-
-    createEntityByINN(
-      {
-        inn,
-        kpp: kpp || undefined,
-        company_id: selectedCompany,
-        relation_type: relationType,
-      },
-      {
-        onSuccess: (data) => {
-          setLegalEntityId(data.legal_entity_id);
-          setIsCreatedByINN(true);
-          message.success("Юрлицо успешно создано по ИНН");
-        },
-        onError: (error) => {
-          setShowConfirmModal(true);
-        },
-      }
-    );
-  };
-
-  // Заполнение формы данными после загрузки деталей
-  useEffect(() => {
-    if (entityDetails) {
-      form.setFieldsValue({
-        short_name: entityDetails.short_name,
-        address: entityDetails.address,
-        ogrn: entityDetails.ogrn,
-        opf: entityDetails.opf,
-        vat_rate: entityDetails.vat_rate?.toString(),
-      });
-    }
-  }, [entityDetails, form]);
 
   const handleNext = async () => {
     try {
       await form.validateFields(["inn", "kpp", "relation_type"]);
-      await fetchByInnKpp();
-      setCurrentStep(1);
+      const { data, error } = await fetchByInnKpp();
+
+      if (data) {
+        createRelation(
+          {
+            legal_entity_id: data.legal_entity_id,
+            company_id: companyId || form.getFieldValue("company_id"),
+            relation_type: relationType,
+          },
+          {
+            onSuccess: () => {
+              message.success("Связь с компанией успешно создана");
+              onSuccess();
+              handleCancel();
+            },
+            onError: (error) => {
+              message.error(`Ошибка при создании связи: ${error.message}`);
+            },
+          }
+        );
+      } else if (error) {
+        handleEntityNotFound();
+      }
     } catch (error) {
       message.error("Пожалуйста, заполните обязательные поля");
     }
   };
 
-  const handlePrev = () => {
-    setCurrentStep(currentStep - 1);
+  const handleEntityNotFound = async () => {
+    const companyIdValue = companyId || form.getFieldValue("company_id");
+    if (!companyIdValue) {
+      message.error("Пожалуйста, выберите компанию");
+      return;
+    }
+
+    try {
+      await createEntityByINN(
+        {
+          inn,
+          kpp: kpp || undefined,
+          company_id: companyIdValue,
+          relation_type: relationType,
+        },
+        {
+          onSuccess: () => {
+            message.success("Юрлицо успешно создано по ИНН");
+            onSuccess();
+            handleCancel();
+          },
+          onError: (error) => {
+            if ((error as ApiError).response?.status === 404) {
+              setShowConfirmModal(true);
+            } else {
+              setShowConfirmModal(true);
+            }
+          },
+        }
+      );
+    } catch (error) {
+      setShowConfirmModal(true);
+    }
   };
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      const companyIdValue = companyId || form.getFieldValue("company_id");
 
-      if (isCreatedByINN && legalEntityId) {
-        // Обновляем только ставку НДС для созданного по ИНН юрлица
-        updateEntity(
-          {
-            legal_entity_id: legalEntityId,
-            updatedData: {
-              vat_rate: values.vat_rate ? parseInt(values.vat_rate) : undefined,
-            },
+      createEntity(
+        {
+          ...values,
+          inn,
+          kpp: kpp || undefined,
+          company_id: companyIdValue,
+          relation_type: relationType,
+          vat_rate: values.vat_rate
+            ? Number.parseInt(values.vat_rate)
+            : undefined,
+        },
+        {
+          onSuccess: () => {
+            message.success("Юридическое лицо успешно создано");
+            onSuccess();
+            handleCancel();
           },
-          {
-            onSuccess: () => {
-              onSuccess();
-              handleCancel();
-            },
-            onError: (error) => {
-              message.error(`Ошибка при обновлении: ${error.message}`);
-            },
-          }
-        );
-      } else {
-        // Создаем новое юрлицо вручную
-        createEntity(
-          {
-            ...values,
-            inn,
-            kpp: kpp || undefined,
-            company_id: selectedCompany,
-            relation_type: relationType,
-            vat_rate: values.vat_rate ? parseInt(values.vat_rate) : undefined,
+          onError: (error) => {
+            message.error(`Ошибка при создании: ${error.message}`);
           },
-          {
-            onSuccess: () => {
-              onSuccess();
-              handleCancel();
-            },
-            onError: (error) => {
-              message.error(`Ошибка при создании: ${error.message}`);
-            },
-          }
-        );
-      }
+        }
+      );
     } catch (error) {
       message.error("Пожалуйста, заполните все обязательные поля");
     }
@@ -209,25 +193,22 @@ export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
     setCurrentStep(0);
     setInn("");
     setKpp("");
-    setLegalEntityId("");
-    setIsExistingEntity(false);
-    setIsCreatedByINN(false);
+    setIsManualCreation(false);
+    setShowConfirmModal(false);
     onCancel();
   };
 
-  // Обработчик подтверждения продолжения
   const handleConfirmContinue = () => {
     setShowConfirmModal(false);
-    setCurrentStep(1); // Переходим на следующий шаг для ручного ввода
+    setIsManualCreation(true);
+    setCurrentStep(1);
   };
 
-  // Обработчик исправления ИНН/КПП
   const handleFixInnKpp = () => {
     setShowConfirmModal(false);
-    setCurrentStep(0); // Возвращаемся на первый шаг
+    setCurrentStep(0);
   };
 
-  // Валидация ИНН/КПП
   const validateInnKpp = (_: any, value: string) => {
     if (!inn) return Promise.resolve();
 
@@ -247,23 +228,77 @@ export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
   return (
     <>
       <Modal
-        title="Добавить юридическое лицо"
-        zIndex={1001}
-        visible={visible}
+        title={
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              margin: "-24px -24px 20px -24px",
+              padding: "20px 24px",
+              color: "white",
+              borderRadius: "8px 8px 0 0",
+            }}
+          >
+            <BankOutlined style={{ fontSize: "20px" }} />
+            <span style={{ fontSize: "18px", fontWeight: "600" }}>
+              Добавить юридическое лицо
+            </span>
+          </div>
+        }
+        open={visible}
         onCancel={handleCancel}
-        footer={null}
+        centered
         width={700}
-        destroyOnClose
+        footer={[
+          <Button
+            key="back"
+            onClick={currentStep === 1 ? () => setCurrentStep(0) : handleCancel}
+            size="large"
+            style={{
+              borderRadius: "8px",
+              height: "40px",
+              fontWeight: "500",
+              borderColor: "#d1d5db",
+              color: "#6b7280",
+            }}
+          >
+            Отмена
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            size="large"
+            onClick={currentStep === 0 ? handleNext : handleSubmit}
+            loading={isFetchingInnKpp || isCreatingByINN || isCreating}
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              border: "none",
+              borderRadius: "8px",
+              height: "40px",
+              fontWeight: "500",
+            }}
+            icon={<SaveOutlined />}
+          >
+            {currentStep === 0 ? "Продолжить" : "Сохранить"}
+          </Button>,
+        ]}
+        styles={{
+          content: {
+            borderRadius: "12px",
+            overflow: "hidden",
+          },
+          footer: {
+            borderTop: "1px solid #f3f4f6",
+            marginTop: "20px",
+          },
+        }}
       >
-        <Steps current={currentStep} style={{ marginBottom: 24 }}>
-          <Step title="Основные данные" />
-          <Step title="Дополнительная информация" />
-        </Steps>
-
         <Form form={form} layout="vertical">
           {currentStep === 0 && (
-            <>
-              {showCompanySelect && (
+            <Space direction="vertical" size="small" style={{ width: "100%" }}>
+              {(showCompanySelect || !companyId) && (
                 <Form.Item
                   name="company_id"
                   label="Компания"
@@ -271,8 +306,8 @@ export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
                 >
                   <Select
                     placeholder="Выберите компанию"
-                    onChange={(value) => setSelectedCompany(value)}
-                    value={selectedCompany}
+                    showSearch
+                    optionFilterProp="children"
                   >
                     {companiesData?.companies.map((company) => (
                       <Option
@@ -286,22 +321,32 @@ export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
                 </Form.Item>
               )}
 
-              <Form.Item
-                name="relation_type"
-                label="Тип контрагента"
-                rules={[
-                  { required: true, message: "Выберите тип контрагента" },
-                ]}
-              >
-                <Select
-                  placeholder="Выберите тип"
-                  onChange={(value) => setRelationType(value)}
-                  value={relationType}
+              {!relationTypeBeforeSelect && (
+                <Form.Item
+                  name="relation_type"
+                  label="Тип юр.лица"
+                  rules={[{ required: true, message: "Выберите тип юр.лица" }]}
                 >
-                  <Option value="buyer">Контрагент</Option>
-                  <Option value="seller">Организация</Option>
-                </Select>
-              </Form.Item>
+                  <Select
+                    placeholder="Выберите тип"
+                    onChange={(value) => setRelationType(value)}
+                    value={relationType}
+                  >
+                    <Option value="buyer">
+                      <Space>
+                        <UserOutlined />
+                        Контрагент
+                      </Space>
+                    </Option>
+                    <Option value="seller">
+                      <Space>
+                        <BankOutlined />
+                        Организация
+                      </Space>
+                    </Option>
+                  </Select>
+                </Form.Item>
+              )}
 
               <Form.Item
                 name="inn"
@@ -318,6 +363,7 @@ export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
                   placeholder="Введите ИНН"
                   onChange={(e) => setInn(e.target.value)}
                   maxLength={12}
+                  prefix={<FileTextOutlined />}
                 />
               </Form.Item>
 
@@ -336,194 +382,138 @@ export const CreateLegalEntityModal: React.FC<CreateLegalEntityModalProps> = ({
                   placeholder="Введите КПП (обязательно для ИНН из 10 цифр)"
                   onChange={(e) => setKpp(e.target.value)}
                   maxLength={9}
+                  prefix={<FileTextOutlined />}
+                />
+              </Form.Item>
+            </Space>
+          )}
+
+          {currentStep === 1 && isManualCreation && (
+            <Space direction="vertical" style={{ width: "100%" }}>
+              <Form.Item
+                name="short_name"
+                label="Название"
+                rules={[{ required: true, message: "Введите название" }]}
+              >
+                <Input
+                  placeholder="Введите краткое название"
+                  prefix={<BankOutlined />}
                 />
               </Form.Item>
 
-              <div style={{ textAlign: "right" }}>
-                <Button
-                  type="primary"
-                  onClick={handleNext}
-                  loading={isFetchingInnKpp || isCreatingByINN}
-                >
-                  Продолжить
-                </Button>
-              </div>
-            </>
-          )}
+              <Form.Item name="opf" label="ОПФ">
+                <Input
+                  placeholder="Введите организационно-правовую форму"
+                  prefix={<FileTextOutlined />}
+                />
+              </Form.Item>
 
-          {currentStep === 1 && (
-            <>
-              {(isFetchingInnKpp || isFetchingDetails || isCreatingByINN) && (
-                <Spin />
-              )}
+              <Form.Item
+                name="ogrn"
+                label="ОГРН"
+                rules={[
+                  { required: true, message: "Введите ОГРН" },
+                  {
+                    pattern: /^[0-9]{13,15}$/,
+                    message: "ОГРН должен содержать 13-15 цифр",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="Введите ОГРН"
+                  maxLength={15}
+                  prefix={<FileTextOutlined />}
+                />
+              </Form.Item>
 
-              {!isFetchingDetails && entityDetails && (
-                <>
-                  <Form.Item
-                    name="short_name"
-                    label="Название"
-                    rules={[{ required: true }]}
-                  >
-                    <Input disabled />
-                  </Form.Item>
+              <Form.Item
+                name="vat_rate"
+                label="Ставка НДС"
+                rules={[{ required: true, message: "Выберите ставку НДС" }]}
+              >
+                <Select placeholder="Выберите ставку НДС">
+                  <Option value="0">НДС не облагается</Option>
+                  <Option value="5">5%</Option>
+                  <Option value="7">7%</Option>
+                  <Option value="20">20%</Option>
+                </Select>
+              </Form.Item>
 
-                  <Form.Item
-                    name="address"
-                    label="Адрес"
-                    rules={[{ required: !isCreatedByINN }]}
-                  >
-                    <Input.TextArea rows={2} disabled={isCreatedByINN} />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="ogrn"
-                    label="ОГРН"
-                    rules={[
-                      { required: true },
-                      {
-                        pattern: /^[0-9]{13,15}$/,
-                        message: "ОГРН должен содержать 13-15 цифр",
-                      },
-                    ]}
-                  >
-                    <Input maxLength={15} disabled />
-                  </Form.Item>
-
-                  <Form.Item name="opf" label="ОПФ">
-                    <Input disabled />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="vat_rate"
-                    label="Ставка НДС"
-                    rules={[{ required: true }]}
-                  >
-                    <Select placeholder="Выберите ставку НДС">
-                      <Option value="0">НДС не облагается</Option>
-                      <Option value="5">5%</Option>
-                      <Option value="7">7%</Option>
-                      <Option value="20">20%</Option>
-                    </Select>
-                  </Form.Item>
-
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <Button onClick={handlePrev}>Назад</Button>
-                    <Button
-                      type="primary"
-                      onClick={handleSubmit}
-                      loading={isCreating || isUpdating}
-                    >
-                      {isExistingEntity ? "Добавить" : "Создать"}
-                    </Button>
-                  </div>
-                </>
-              )}
-
-              {!isFetchingDetails && !entityDetails && !isCreatedByINN && (
-                <>
-                  <Form.Item
-                    name="short_name"
-                    label="Название"
-                    rules={[{ required: true, message: "Введите название" }]}
-                  >
-                    <Input placeholder="Введите краткое название" />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="address"
-                    label="Адрес"
-                    rules={[
-                      {
-                        min: 5,
-                        message: "Адрес должен содержать минимум 5 символов",
-                        required: !isCreatedByINN,
-                      },
-                    ]}
-                  >
-                    <Input.TextArea placeholder="Введите адрес" rows={2} />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="ogrn"
-                    label="ОГРН"
-                    rules={[
-                      { required: true, message: "Введите ОГРН" },
-                      {
-                        pattern: /^[0-9]{13,15}$/,
-                        message: "ОГРН должен содержать 13-15 цифр",
-                      },
-                    ]}
-                  >
-                    <Input placeholder="Введите ОГРН" maxLength={15} />
-                  </Form.Item>
-
-                  <Form.Item name="opf" label="ОПФ">
-                    <Input placeholder="Введите организационно-правовую форму" />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="vat_rate"
-                    label="Ставка НДС"
-                    rules={[{ required: true, message: "Выберите ставку НДС" }]}
-                  >
-                    <Select placeholder="Выберите ставку НДС">
-                      <Option value="0">НДС не облагается</Option>
-                      <Option value="5">5%</Option>
-                      <Option value="7">7%</Option>
-                      <Option value="20">20%</Option>
-                    </Select>
-                  </Form.Item>
-
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <Button onClick={handlePrev}>Назад</Button>
-                    <Button
-                      type="primary"
-                      onClick={handleSubmit}
-                      loading={isCreating}
-                    >
-                      Создать
-                    </Button>
-                  </div>
-                </>
-              )}
-            </>
+              <Form.Item
+                name="address"
+                label="Адрес"
+                rules={[
+                  {
+                    min: 5,
+                    message: "Адрес должен содержать минимум 5 символов",
+                    required: true,
+                  },
+                ]}
+              >
+                <Input.TextArea
+                  placeholder="Введите адрес"
+                  rows={3}
+                  showCount
+                  maxLength={255}
+                />
+              </Form.Item>
+            </Space>
           )}
         </Form>
       </Modal>
+
       <Modal
-        title="Подтверждение"
-        zIndex={1002}
+        title={
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <ExclamationCircleOutlined
+              style={{ color: "#faad14", fontSize: 24 }}
+            />
+            <span style={{ fontSize: "18px", fontWeight: "500" }}>
+              Подтверждение создания
+            </span>
+          </div>
+        }
         open={showConfirmModal}
         onCancel={() => setShowConfirmModal(false)}
         width={600}
+        centered
         footer={[
           <Button
-            key="back"
-            onClick={() => {
-              setShowConfirmModal(false);
-              handleCancel();
-            }}
+            key="fix"
+            onClick={handleFixInnKpp}
+            style={{ marginRight: "8px" }}
           >
-            Отмена
-          </Button>,
-          <Button key="fix" type="default" onClick={handleFixInnKpp}>
             Исправить ИНН и КПП
           </Button>,
-          <Button key="submit" type="primary" onClick={handleConfirmContinue}>
+          <Button
+            key="submit"
+            onClick={handleConfirmContinue}
+            icon={<CheckCircleOutlined />}
+          >
             Продолжить
           </Button>,
         ]}
-        bodyStyle={{ height: "150px", overflowY: "auto" }} // Высота контента + скролл при необходимости
       >
-        <p>
-          Введенные ИНН и КПП не найдены в общей базе. Вы уверены что хотите
-          продолжить?
-        </p>
-        <p>При продолжении вам нужно будет ввести данные вручную.</p>
+        <Alert
+          message="Организация не найдена в базе данных"
+          description="Введенные ИНН и КПП не найдены в общей базе. Вы можете продолжить и ввести данные вручную."
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+
+        <Card size="small" style={{ background: "#fafafa" }}>
+          <div style={{ display: "flex", marginBottom: "8px" }}>
+            <span style={{ width: "80px", color: "#8c8c8c" }}>ИНН:</span>
+            <span style={{ fontWeight: "500" }}>{inn}</span>
+          </div>
+          {kpp && (
+            <div style={{ display: "flex" }}>
+              <span style={{ width: "80px", color: "#8c8c8c" }}>КПП:</span>
+              <span style={{ fontWeight: "500" }}>{kpp}</span>
+            </div>
+          )}
+        </Card>
       </Modal>
     </>
   );

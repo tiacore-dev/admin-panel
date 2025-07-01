@@ -1,8 +1,29 @@
-import React, { useEffect, useState } from "react";
-import { Modal, Input, Button, Form, Select } from "antd";
-import { ICompany } from "../../../api/companiesApi";
+"use client";
+
+import type React from "react";
+import { useEffect, useState } from "react";
+import {
+  Modal,
+  Input,
+  Button,
+  Form,
+  Select,
+  Card,
+  Typography,
+  Space,
+} from "antd";
+import type { ICompany } from "../../../api/companiesApi";
 import { useCompanyMutations } from "../../../hooks/companies/useCompanyMutation";
 import { useAppsQuery } from "../../../hooks/base/useBaseQuery";
+import {
+  BuildOutlined,
+  AppstoreOutlined,
+  InfoCircleOutlined,
+  BankOutlined,
+  SaveOutlined,
+} from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 interface CompanyFormModalProps {
   visible: boolean;
@@ -66,11 +87,82 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({
 
   return (
     <Modal
-      title={mode === "create" ? "Добавить компанию" : "Редактировать компанию"}
+      title={
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            margin: "-24px -24px 20px -24px",
+            padding: "20px 24px",
+            color: "white",
+            borderRadius: "8px 8px 0 0",
+          }}
+        >
+          <BankOutlined style={{ fontSize: "20px" }} />
+          <span style={{ fontSize: "18px", fontWeight: "600" }}>
+            {mode === "create"
+              ? "Создание новой компании"
+              : "Редактирование компании"}
+          </span>
+        </div>
+      }
       open={visible}
       onCancel={onCancel}
+      centered
+      width={700}
+      okText={
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <SaveOutlined />
+          {mode === "create" ? "Создать компанию" : "Сохранить изменения"}
+        </span>
+      }
+      cancelText="Отмена"
+      okButtonProps={{
+        size: "large",
+        style: {
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          border: "none",
+          borderRadius: "8px",
+          height: "40px",
+          fontWeight: "500",
+        },
+        disabled: isSubmitting,
+      }}
+      cancelButtonProps={{
+        size: "large",
+        style: {
+          borderRadius: "8px",
+          height: "40px",
+          fontWeight: "500",
+          borderColor: "#d1d5db",
+          color: "#6b7280",
+        },
+      }}
+      styles={{
+        content: {
+          borderRadius: "12px",
+          overflow: "hidden",
+        },
+        footer: {
+          borderTop: "1px solid #f3f4f6",
+          marginTop: "20px",
+        },
+      }}
       footer={[
-        <Button key="back" onClick={onCancel}>
+        <Button
+          key="cancel"
+          size="large"
+          onClick={onCancel}
+          style={{
+            borderRadius: "8px",
+            height: "40px",
+            fontWeight: "500",
+            borderColor: "#d1d5db",
+            color: "#6b7280",
+          }}
+        >
           Отмена
         </Button>,
         <Button
@@ -78,50 +170,58 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({
           type="primary"
           loading={isSubmitting}
           onClick={handleSubmit}
+          size="large"
+          style={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            border: "none",
+            borderRadius: "8px",
+            height: "40px",
+            fontWeight: "500",
+          }}
+          icon={<SaveOutlined />}
         >
-          {mode === "create" ? "Создать" : "Сохранить"}
+          {mode === "create" ? "Создать компанию" : "Сохранить изменения"}
         </Button>,
       ]}
-      width={700}
     >
-      <Form form={form} layout="vertical">
-        <Form.Item
-          label="Название компании"
-          name="company_name"
-          rules={[
-            {
-              required: true,
-              message: "Пожалуйста, введите название компании",
-            },
-            { min: 3, message: "Минимум 3 символа" },
-          ]}
-        >
-          <Input placeholder="Введите название компании" />
-        </Form.Item>
-        <Form.Item
-          label="Описание"
-          name="description"
-          rules={[{ min: 3, message: "Минимум 3 символа" }]}
-        >
-          <Input placeholder="Введите описание (необязательно)" />
-        </Form.Item>
-        <Form.Item
-          label="Приложение"
-          name="application_id"
-          rules={[
-            { required: true, message: "Пожалуйста, выберите приложение" },
-          ]}
-        >
-          <Select
-            placeholder="Выберите приложение"
-            loading={!appsData}
-            options={appsData?.applications.map((app) => ({
-              value: app.application_id,
-              label: app.application_name,
-            }))}
-          />
-        </Form.Item>
-      </Form>
+      <div style={{ marginTop: 24 }}>
+        <Form form={form} layout="vertical" size="large">
+          <Form.Item
+            label="Название компании"
+            name="company_name"
+            rules={[
+              {
+                required: true,
+                message: "Пожалуйста, введите название компании",
+              },
+              { min: 3, message: "Минимум 3 символа" },
+              { max: 100, message: "Максимум 100 символов" },
+            ]}
+          >
+            <Input
+              placeholder="Введите название компании"
+              prefix={<BuildOutlined style={{ color: "#bfbfbf" }} />}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Описание"
+            name="description"
+            rules={[
+              { min: 3, message: "Минимум 3 символа" },
+              { max: 500, message: "Максимум 500 символов" },
+            ]}
+          >
+            <Input.TextArea
+              placeholder="Введите описание компании (необязательно)"
+              rows={3}
+              showCount
+              maxLength={500}
+              // prefix={<InfoCircleOutlined style={{ color: "#bfbfbf" }} />}
+            />
+          </Form.Item>
+        </Form>
+      </div>
     </Modal>
   );
 };

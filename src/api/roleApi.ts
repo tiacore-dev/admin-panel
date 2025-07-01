@@ -5,8 +5,13 @@ import { axiosInstance } from "../axiosConfig";
 export interface IRole {
   role_id: string;
   role_name: string;
+  application_id: string;
 }
-
+export interface CreateRoleRequest {
+  role_name: string;
+  permissions: string[];
+  application_id: string;
+}
 // Функция для получения списка с параметрами
 export const fetchRoles = async () => {
   const url = process.env.REACT_APP_AUTH_API_URL;

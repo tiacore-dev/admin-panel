@@ -3,20 +3,16 @@ import { RootState } from "../store";
 
 interface UsersState {
   email: string;
-  full_name: string;
-  position: string;
   page: number;
   page_size: number;
-  is_verified: boolean | null; // Добавили поле для статуса
+  is_verified: boolean | "all"; // Добавили поле для статуса
 }
 
 const initialState: UsersState = {
   email: "",
-  full_name: "",
-  position: "",
   page: 1,
   page_size: 10,
-  is_verified: null, // Изначально фильтр не применен
+  is_verified: "all", // Изначально фильтр не применен
 };
 
 export const usersSlice = createSlice({
@@ -30,19 +26,11 @@ export const usersSlice = createSlice({
       state.page_size = action.payload;
       state.page = 1;
     },
-    setEmail: (state, action: PayloadAction<string>) => {
+    setSearch: (state, action: PayloadAction<string>) => {
       state.email = action.payload;
       state.page = 1;
     },
-    setFullName: (state, action: PayloadAction<string>) => {
-      state.full_name = action.payload;
-      state.page = 1;
-    },
-    setPosition: (state, action: PayloadAction<string>) => {
-      state.position = action.payload;
-      state.page = 1;
-    },
-    setIsVerified: (state, action: PayloadAction<boolean | null>) => {
+    setIsVerified: (state, action: PayloadAction<boolean | "all">) => {
       state.is_verified = action.payload;
       state.page = 1;
     },
@@ -50,15 +38,8 @@ export const usersSlice = createSlice({
   },
 });
 
-export const {
-  setPage,
-  setPageSize,
-  setEmail,
-  setFullName,
-  setPosition,
-  setIsVerified,
-  resetState,
-} = usersSlice.actions;
+export const { setPage, setPageSize, setSearch, setIsVerified, resetState } =
+  usersSlice.actions;
 
 export const usersReducer = usersSlice.reducer;
 

@@ -1,18 +1,16 @@
-import { IUser } from "../../../api/usersApi";
-import React from "react";
+"use client";
+
+import type { IUser } from "../../../api/usersApi";
+import type React from "react";
 import type { TableColumnsType } from "antd";
-import { Button, Input, Table, Tag, Typography, Radio, Space } from "antd";
-import {
-  setFullName,
-  setPage,
-  setPageSize,
-  setEmail,
-  setIsVerified,
-} from "../../../redux/slices/usersSlice";
+import { Button, Table, Tag, Typography, Avatar, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { SearchOutlined } from "@ant-design/icons";
-import { RootState } from "../../../redux/store";
+import {
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  MailOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 
 interface UsersTableProps {
   data: {
@@ -27,56 +25,68 @@ export const UsersTable: React.FC<UsersTableProps> = ({
   loading,
 }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { email, full_name, page, page_size, is_verified } = useSelector(
-    (state: RootState) => state.users
-  );
 
-  // Фильтрация данных
-  const filteredData = data.users.filter((user) => {
-    const matchesEmail = email
-      ? user.email.toLowerCase().includes(email.toLowerCase())
-      : true;
-    const matchesFullName = full_name
-      ? user.full_name.toLowerCase().includes(full_name.toLowerCase())
-      : true;
-    const matchesStatus =
-      is_verified !== null ? user.is_verified === is_verified : true;
+  // Функция для получения инициалов
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
-    return matchesEmail && matchesFullName && matchesStatus;
-  });
+  // Функция для получения цвета аватара
+  const getAvatarColor = (name: string) => {
+    const colors = ["#f56a00", "#7265e6", "#ffbf00", "#00a2ae", "#87d068"];
+    const index = name.length % colors.length;
+    return colors[index];
+  };
 
   const columns: TableColumnsType<IUser> = [
     {
-      title: "Имя",
+      title: "Пользователь",
       dataIndex: "full_name",
       key: "full_name",
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
       sorter: (a: IUser, b: IUser) => a.full_name.localeCompare(b.full_name),
       sortDirections: ["ascend", "descend"],
       render: (text: string, record: IUser) => (
-        <Button
-          type="link"
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            cursor: "pointer",
+          }}
           onClick={() =>
             navigate(`/users/${record.user_id}`, {
               state: { from: "usersPage" },
             })
           }
         >
-          {text}
-        </Button>
-      ),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder="Поиск по имени"
-            value={full_name}
-            onChange={(e) => dispatch(setFullName(e.target.value))}
-            style={{ width: 200 }}
-            allowClear
-          />
+          <Avatar
+            size={40}
+            style={{
+              backgroundColor: getAvatarColor(text),
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+            icon={!text ? <UserOutlined /> : null}
+          >
+            {text ? getInitials(text) : null}
+          </Avatar>
+          <div
+            style={{
+              fontWeight: 600,
+              color: "#1890ff",
+              marginBottom: 2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {text}
+          </div>
         </div>
       ),
     },
@@ -84,64 +94,34 @@ export const UsersTable: React.FC<UsersTableProps> = ({
       title: "Email",
       dataIndex: "email",
       key: "email",
-      filterIcon: (filtered) => (
-        <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-      ),
       sorter: (a: IUser, b: IUser) => a.email.localeCompare(b.email),
       sortDirections: ["ascend", "descend"],
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Input
-            placeholder="Поиск по email"
-            value={email}
-            onChange={(e) => dispatch(setEmail(e.target.value))}
-            style={{ width: 200 }}
-            allowClear
-          />
-        </div>
+      render: (email: string) => (
+        <Tooltip title="Нажмите, чтобы скопировать">
+          <Button
+            type="text"
+            style={{ padding: 0 }}
+            onClick={() => navigator.clipboard.writeText(email)}
+          >
+            <MailOutlined style={{ marginRight: 4 }} />
+            {email}
+          </Button>
+        </Tooltip>
       ),
     },
     {
       title: "Статус",
       dataIndex: "is_verified",
       key: "is_verified",
+      width: 300,
       render: (isVerified: boolean) => (
-        <Tag color={isVerified ? "green" : "orange"}>
-          {isVerified ? "Верифицирован" : "Не верифицирован"}
+        <Tag
+          color={isVerified ? "success" : "warning"}
+          icon={isVerified ? <CheckCircleOutlined /> : <ClockCircleOutlined />}
+          style={{ fontSize: 14 }}
+        >
+          {isVerified ? "Верифицирован" : "Ожидает верификации"}
         </Tag>
-      ),
-      filterDropdown: () => (
-        <div style={{ padding: 8 }}>
-          <Radio.Group
-            value={is_verified}
-            onChange={(e) => dispatch(setIsVerified(e.target.value))}
-          >
-            <Space direction="vertical">
-              <Radio value={null}>Все статусы</Radio>
-              <Radio value={true}>Верифицированные</Radio>
-              <Radio value={false}>Не верифицированные</Radio>
-            </Space>
-          </Radio.Group>
-        </div>
-      ),
-      filterIcon: (filtered) => (
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <SearchOutlined
-            style={{
-              color: filtered ? "#1890ff" : undefined,
-              marginRight: 4,
-            }}
-          />
-          {filtered && (
-            <span style={{ color: "#1890ff" }}>
-              {is_verified === true
-                ? "Верифицированные"
-                : is_verified === false
-                ? "Не верифицированные"
-                : "Все статусы"}
-            </span>
-          )}
-        </div>
       ),
     },
   ];
@@ -149,22 +129,16 @@ export const UsersTable: React.FC<UsersTableProps> = ({
   return (
     <Table
       columns={columns}
-      dataSource={filteredData}
+      dataSource={data.users}
       rowKey="user_id"
       loading={loading}
+      size="middle"
       pagination={{
-        current: page,
-        pageSize: page_size,
-        total: filteredData.length,
-        showSizeChanger: true,
         pageSizeOptions: ["10", "20", "50", "100"],
-        showTotal: (total) => <Typography.Text>Всего: {total}</Typography.Text>,
-        onChange: (newPage, newPageSize) => {
-          if (newPageSize !== page_size) {
-            dispatch(setPageSize(newPageSize));
-          }
-          dispatch(setPage(newPage));
-        },
+        showSizeChanger: true,
+        showTotal: (total, range) => (
+          <Typography.Text>{`${range[0]}-${range[1]} из ${total} пользователей`}</Typography.Text>
+        ),
       }}
     />
   );

@@ -1,4 +1,19 @@
-import { Table, Tag, Typography, Spin, Space, Dropdown, Button } from "antd";
+"use client";
+
+import type React from "react";
+
+import {
+  Table,
+  Tag,
+  Typography,
+  Spin,
+  Space,
+  Dropdown,
+  Button,
+  Avatar,
+  Tooltip,
+  message,
+} from "antd";
 import {
   useUserRelationsQuery,
   useCompanyRelationsQuery,
@@ -15,6 +30,11 @@ import {
   DeleteOutlined,
   MoreOutlined,
   PlusOutlined,
+  BuildOutlined,
+  SafetyCertificateOutlined,
+  AppstoreOutlined,
+  CopyOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
 import { useUserCompanyRelationsMutations } from "../../hooks/userCompanyRelations/useUserCompanyRelationsMutations";
@@ -23,8 +43,10 @@ import { RelationFormModal } from "./userCompanyRelationFormModal";
 import { useRolesQuery } from "../../hooks/role/useRoleQuery";
 import { InviteFormModal } from "../../pages/invitePages/inviteFormModal";
 import { useAppsQuery } from "../../hooks/base/useBaseQuery";
+import { useAppNameById } from "../../hooks/base/useAppHelpers";
+import { getTegColorForString } from "../../utils/stringToColour";
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
 interface UserCompanyRelationsTableProps {
   userId?: string;
@@ -68,6 +90,55 @@ export const UserCompanyRelationsTable = ({
     "",
     () => {}
   );
+
+  // Компонент для отображения названия приложения
+  const AppNameDisplay: React.FC<{ applicationId: string }> = ({
+    applicationId,
+  }) => {
+    const appName = useAppNameById(applicationId);
+    const color = appName ? getTegColorForString(appName) : "orange";
+
+    return (
+      <Tag
+        color={color}
+        icon={<AppstoreOutlined />}
+        style={{ borderRadius: 6, fontSize: "12px" }}
+      >
+        {appName || applicationId}
+      </Tag>
+    );
+  };
+
+  // Функция для получения инициалов
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Функция для получения цвета аватара
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      "#f56a00",
+      "#7265e6",
+      "#ffbf00",
+      "#00a2ae",
+      "#87d068",
+      "#108ee9",
+    ];
+    const index = name.length % colors.length;
+    return colors[index];
+  };
+
+  // Функция копирования в буфер обмена
+  const copyToClipboard = (text: string, type: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      message.success(`${type} скопирован в буфер обмена`);
+    });
+  };
 
   const handleInvite = () => {
     if (companyId) {
@@ -133,31 +204,117 @@ export const UserCompanyRelationsTable = ({
       title: userId ? "Компания" : "Пользователь",
       dataIndex: userId ? "company_id" : "user_id",
       key: userId ? "company" : "user",
-      render: (id: string) => (
-        <Space>
-          <Link
-            to={`/users/${id}`}
-            state={{ from: "companyDetails", companyId: companyId }}
-          >
-            <ExportOutlined />
-          </Link>
-          {userId
-            ? getCompanyName(id)
-            : getEmailById(id, usersData?.users) || id}
-        </Space>
-      ),
+      render: (id: string, record: IUserCompanyRelation) => {
+        if (userId) {
+          // Отображение компании
+          const companyName = getCompanyName(id);
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Avatar
+                style={{
+                  backgroundColor: getAvatarColor(companyName),
+                  fontSize: "14px",
+                }}
+                size={32}
+                icon={<BuildOutlined />}
+              >
+                {getInitials(companyName)}
+              </Avatar>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Link
+                    to={`/companies/${id}`}
+                    state={{ from: "userDetails", userId: userId }}
+                    style={{ fontWeight: 500, color: "#1890ff" }}
+                  >
+                    {companyName}
+                  </Link>
+                  <ExportOutlined
+                    style={{ color: "#8c8c8c", fontSize: "12px" }}
+                  />
+                </div>
+                <Text type="secondary" style={{ fontSize: "12px" }}>
+                  ID: {id.substring(0, 8)}...
+                </Text>
+              </div>
+            </div>
+          );
+        } else {
+          // Отображение пользователя
+          const userEmail = getEmailById(id, usersData?.users) || id;
+          const user = usersData?.users.find((u) => u.user_id === id);
+          const userName = user?.full_name || "Без имени";
+
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <Avatar
+                style={{
+                  backgroundColor: getAvatarColor(userName),
+                  fontSize: "14px",
+                }}
+                size={32}
+              >
+                {getInitials(userName)}
+              </Avatar>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Link
+                    to={`/users/${id}`}
+                    state={{ from: "companyDetails", companyId: companyId }}
+                    style={{ fontWeight: 500, color: "#1890ff" }}
+                  >
+                    {userName}
+                  </Link>
+                  <ExportOutlined
+                    style={{ color: "#8c8c8c", fontSize: "12px" }}
+                  />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <Text type="secondary" style={{ fontSize: "12px" }}>
+                    {userEmail}
+                  </Text>
+                  <Tooltip title="Копировать email">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<CopyOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        copyToClipboard(userEmail, "Email");
+                      }}
+                      style={{
+                        padding: "0 2px",
+                        height: "auto",
+                        minWidth: "auto",
+                      }}
+                    />
+                  </Tooltip>
+                </div>
+              </div>
+            </div>
+          );
+        }
+      },
     },
     {
       title: "Роль",
       dataIndex: "role_id",
       key: "role",
-      render: (roleId: string) => <Tag color="blue">{getRoleName(roleId)}</Tag>,
+      render: (roleId: string) => (
+        <Tag
+          color="blue"
+          icon={<SafetyCertificateOutlined />}
+          style={{ borderRadius: 6, fontSize: "12px" }}
+        >
+          {getRoleName(roleId)}
+        </Tag>
+      ),
     },
     {
       title: "Приложение",
       dataIndex: "application_id",
       key: "application",
-      render: (appId: string) => getApplicationName(appId),
+      render: (appId: string) => <AppNameDisplay applicationId={appId} />,
     },
     {
       title: "",
@@ -189,13 +346,6 @@ export const UserCompanyRelationsTable = ({
     return getCompanyNameById(companyId, companiesData?.companies) || companyId;
   };
 
-  const getApplicationName = (appId: string) => {
-    const app = applicationsData?.applications.find(
-      (a) => a.application_id === appId
-    );
-    return app ? app.application_name : appId;
-  };
-
   const isTotalLoading =
     isLoading ||
     rolesLoading ||
@@ -205,8 +355,13 @@ export const UserCompanyRelationsTable = ({
 
   const getHeaderTitle = () => {
     if (fromAccount) return "Компании";
-    if (userId) return "Компании";
-    return "Пользователи";
+    if (userId) return "Компании пользователя";
+    return "Пользователи компании";
+  };
+
+  const getHeaderIcon = () => {
+    if (userId) return <BuildOutlined />;
+    return <TeamOutlined />;
   };
 
   const showInviteButton = () => {
@@ -229,39 +384,81 @@ export const UserCompanyRelationsTable = ({
   return (
     <>
       {isTotalLoading ? (
-        <Spin size="large" />
+        <div style={{ textAlign: "center", padding: "40px 0" }}>
+          <Spin size="large" />
+        </div>
       ) : isError ? (
         <Text type="danger">Ошибка при загрузке данных</Text>
       ) : (
         <>
-          <div style={{ display: "flex", marginTop: 16 }}>
-            <Typography.Title level={4} style={{ marginRight: 16 }}>
-              {getHeaderTitle()}
-            </Typography.Title>
-            {showInviteButton() && (
-              <Button
-                icon={<PlusOutlined />}
-                onClick={handleInvite}
-                style={{ marginBottom: 16 }}
-              >
-                {isSuperadmin ? "Пригласить" : "Добавить"}
-              </Button>
-            )}
-            {showAddButton() && (
-              <Button
-                icon={<PlusOutlined />}
-                onClick={handleCreate}
-                style={{ marginLeft: 8 }}
-              >
-                Добавить
-              </Button>
-            )}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 16,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {getHeaderIcon()}
+              <Title level={5} style={{ margin: 0 }}>
+                {getHeaderTitle()}
+              </Title>
+            </div>
+
+            <Space>
+              {showInviteButton() && (
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleInvite}
+                >
+                  {isSuperadmin ? "Пригласить" : "Добавить"}
+                </Button>
+              )}
+              {showAddButton() && (
+                <Button icon={<PlusOutlined />} onClick={handleCreate}>
+                  Добавить
+                </Button>
+              )}
+            </Space>
           </div>
+
           <Table
             columns={columns}
             dataSource={data?.relations || []}
             rowKey="user_company_id"
             pagination={false}
+            locale={{
+              emptyText: (
+                <div style={{ textAlign: "center", padding: "40px 0" }}>
+                  <TeamOutlined
+                    style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }}
+                  />
+                  <div>
+                    <Text type="secondary" style={{ fontSize: 16 }}>
+                      {userId
+                        ? "Пользователь не связан ни с одной компанией"
+                        : "В компании нет пользователей"}
+                    </Text>
+                  </div>
+                  <div style={{ marginTop: 8 }}>
+                    <Text type="secondary" style={{ fontSize: 14 }}>
+                      {userId
+                        ? "Добавьте связь с компанией"
+                        : "Пригласите пользователей в компанию"}
+                    </Text>
+                  </div>
+                </div>
+              ),
+            }}
+            style={{
+              backgroundColor: "white",
+              borderRadius: 8,
+              overflow: "hidden",
+              boxShadow:
+                "0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02)",
+            }}
           />
         </>
       )}

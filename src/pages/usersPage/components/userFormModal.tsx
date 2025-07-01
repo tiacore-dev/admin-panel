@@ -1,9 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, Button, Checkbox, Select } from "antd";
+"use client";
+
+import type React from "react";
+import { useEffect, useState } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Button,
+  Checkbox,
+  Select,
+  Card,
+  Space,
+  Typography,
+  Alert,
+} from "antd";
 import { useUserMutations } from "../../../hooks/users/useUserMutation";
-import { IUser } from "../../../api/usersApi";
+import type { IUser } from "../../../api/usersApi";
 import { useCompaniesForSelection } from "../../../hooks/companies/useCompanyQuery";
 import { useAppsQuery } from "../../../hooks/base/useBaseQuery";
+import {
+  UserOutlined,
+  MailOutlined,
+  LockOutlined,
+  IdcardOutlined,
+  BankOutlined,
+  AppstoreOutlined,
+  CheckCircleOutlined,
+  SaveOutlined,
+} from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 interface UserCreateModalProps {
   visible: boolean;
@@ -112,30 +138,84 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
     }
   };
 
+  const getSubmitButtonText = () => {
+    switch (mode) {
+      case "registration":
+        return "Зарегистрироваться";
+      case "create":
+        return "Создать пользователя";
+      case "edit":
+        return "Сохранить изменения";
+      default:
+        return "Создать";
+    }
+  };
+
   return (
     <Modal
-      title={getModalTitle()}
-      open={visible}
-      onCancel={onCancel}
-      footer={[
-        <Button key="back" onClick={onCancel}>
-          Отмена
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          loading={isSubmitting}
-          onClick={handleSubmit}
+      title={
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            margin: "-24px -24px 20px -24px",
+            padding: "20px 24px",
+            color: "white",
+            borderRadius: "8px 8px 0 0",
+          }}
         >
-          {mode === "registration"
-            ? "Зарегистрироваться"
-            : mode === "create"
-            ? "Создать"
-            : "Сохранить"}
-        </Button>,
-      ]}
+          <UserOutlined style={{ fontSize: "20px" }} />
+
+          <span style={{ fontSize: "18px", fontWeight: "600" }}>
+            {getModalTitle()}
+          </span>
+        </div>
+      }
+      open={visible}
+      onOk={handleSubmit}
+      onCancel={onCancel}
+      centered
       width={700}
-      destroyOnClose
+      okText={
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <SaveOutlined />
+          {getSubmitButtonText()}
+        </span>
+      }
+      cancelText="Отмена"
+      okButtonProps={{
+        size: "large",
+        style: {
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          border: "none",
+          borderRadius: "8px",
+          height: "40px",
+          fontWeight: "500",
+        },
+        disabled: isSubmitting,
+      }}
+      cancelButtonProps={{
+        size: "large",
+        style: {
+          borderRadius: "8px",
+          height: "40px",
+          fontWeight: "500",
+          borderColor: "#d1d5db",
+          color: "#6b7280",
+        },
+      }}
+      styles={{
+        content: {
+          borderRadius: "12px",
+          overflow: "hidden",
+        },
+        footer: {
+          borderTop: "1px solid #f3f4f6",
+          marginTop: "20px",
+        },
+      }}
     >
       <Form form={form} layout="vertical">
         <Form.Item
@@ -156,14 +236,31 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
                   return Promise.resolve();
                 }
                 return Promise.reject(
-                  new Error('Введите корректный email адрес или "admin"')
+                  new Error("Введите корректный email адрес")
                 );
               },
             },
             { min: 3, message: "Минимум 3 символа" },
           ]}
         >
-          <Input placeholder="Введите email пользователя или 'admin'" />
+          <Input
+            prefix={<MailOutlined />}
+            placeholder="Введите email пользователя"
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="Ф.И.О."
+          name="full_name"
+          rules={[
+            {
+              required: mode !== "edit",
+              message: "Пожалуйста, введите Ф.И.О.",
+            },
+            { min: 3, message: "Минимум 3 символа" },
+          ]}
+        >
+          <Input prefix={<UserOutlined />} placeholder="Введите Ф.И.О." />
         </Form.Item>
 
         <Form.Item
@@ -178,6 +275,7 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
           ]}
         >
           <Input.Password
+            prefix={<LockOutlined />}
             placeholder={
               mode === "edit"
                 ? "Оставьте пустым, чтобы не изменять"
@@ -206,36 +304,13 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
             }),
           ]}
         >
-          <Input.Password placeholder="Повторите пароль" />
-        </Form.Item>
-        <Form.Item
-          label="Ф.И.О."
-          name="full_name"
-          rules={[
-            {
-              required: mode !== "edit",
-              message: "Пожалуйста, введите Ф.И.О.",
-            },
-            { min: 3, message: "Минимум 3 символа" },
-          ]}
-        >
-          <Input placeholder="Введите Ф.И.О." />
+          <Input.Password
+            prefix={<LockOutlined />}
+            placeholder="Повторите пароль"
+          />
         </Form.Item>
 
-        {/* <Form.Item
-          label="Должность"
-          name="position"
-          rules={[
-            {
-              required: mode !== "edit",
-              message: "Пожалуйста, введите должность",
-            },
-          ]}
-        >
-          <Input placeholder="Введите должность" />
-        </Form.Item> */}
-
-        {isSuperadmin && mode === "create" && (
+        {mode === "create" && (
           <>
             <Form.Item
               label="Компания"
@@ -244,7 +319,10 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
                 { required: true, message: "Пожалуйста, выберите компанию" },
               ]}
             >
-              <Select placeholder="Выберите компанию">
+              <Select
+                placeholder="Выберите компанию"
+                suffixIcon={<BankOutlined />}
+              >
                 {companies.map((company) => (
                   <Select.Option
                     key={company.company_id}
@@ -260,10 +338,16 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
               label="Приложение"
               name="application_id"
               rules={[
-                { required: true, message: "Пожалуйста, выберите приложение" },
+                {
+                  required: true,
+                  message: "Пожалуйста, выберите приложение",
+                },
               ]}
             >
-              <Select placeholder="Выберите приложение">
+              <Select
+                placeholder="Выберите приложение"
+                suffixIcon={<AppstoreOutlined />}
+              >
                 {apps.map((app) => (
                   <Select.Option
                     key={app.application_id}
@@ -276,10 +360,11 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
             </Form.Item>
           </>
         )}
-
         {isSuperadmin && mode === "edit" && (
           <Form.Item name="is_verified" valuePropName="checked">
-            <Checkbox>Верифицировать пользователя</Checkbox>
+            <Checkbox>
+              <Space>Верификация</Space>
+            </Checkbox>
           </Form.Item>
         )}
       </Form>
