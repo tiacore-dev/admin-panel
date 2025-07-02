@@ -49,7 +49,7 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
       onOk={onConfirm}
       onCancel={onCancel}
       centered
-      width={420}
+      width={500}
       maskClosable={!isDeleteLoading}
       closable={!isDeleteLoading}
       style={{

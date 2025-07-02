@@ -207,59 +207,75 @@ export const LegalEntityDetailsPage: React.FC = () => {
     <div className="page-container">
       <div className="page-content">
         {/* Header Card с контекстной навигацией */}
-        <Card className="content-card">
-          <Row align="middle" justify="space-between">
+        <Card
+          className="gradient-header"
+          style={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            border: "none",
+            borderRadius: "12px",
+            color: "white",
+            marginBottom: "24px",
+          }}
+        >
+          <Row justify="space-between" align="middle">
             <Col>
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <Avatar
-                  size={64}
-                  style={{
-                    backgroundColor: getEntityColor(legalEntity.inn),
-                    fontSize: 24,
-                    fontWeight: 600,
-                  }}
-                  icon={!legalEntity.short_name ? <BankOutlined /> : null}
-                >
-                  {legalEntity.short_name
-                    ? getEntityInitials(legalEntity.short_name)
-                    : null}
-                </Avatar>
-                <div>
-                  <ContextualNavigation
-                    textColor="#8c8c8c"
-                    size="small"
-                    showIcon={true}
-                  />
-                  <Title level={2} style={{ margin: "4px 0 0 0" }}>
-                    {legalEntity.short_name}
-                  </Title>
-                  <Space size="middle" style={{ marginTop: 8 }}>
-                    <Text type="secondary">
-                      {legalEntity.opf || "Организация"}
+              <Space direction="vertical" size="small">
+                <ContextualNavigation
+                  textColor="rgba(255, 255, 255, 0.8)"
+                  size="small"
+                  showIcon={true}
+                />
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <Avatar
+                    size={64}
+                    style={{
+                      backgroundColor: getEntityColor(legalEntity.inn),
+                      fontSize: 24,
+                      fontWeight: 600,
+                    }}
+                    icon={!legalEntity.short_name ? <BankOutlined /> : null}
+                  >
+                    {legalEntity.short_name
+                      ? getEntityInitials(legalEntity.short_name)
+                      : null}
+                  </Avatar>
+                  <div>
+                    <Title level={2} style={{ margin: 0, color: "white" }}>
+                      {legalEntity.short_name}
+                    </Title>
+                    <Text style={{ color: "rgba(255, 255, 255, 0.8)" }}>
+                      Юридическое лицо
                     </Text>
-                    {getVatRateTag(legalEntity.vat_rate)}
-                  </Space>
+                  </div>
                 </div>
-              </div>
+              </Space>
             </Col>
             <Col>
               <Space size="middle">
-                <Button
-                  type="primary"
-                  icon={<EditOutlined />}
-                  onClick={() => setEditModalVisible(true)}
-                  size="large"
-                >
-                  Редактировать
-                </Button>
-                <Button
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() => setDeleteModalVisible(true)}
-                  size="large"
-                >
-                  Удалить
-                </Button>
+                <div className="header-actions">
+                  <Button
+                    size="large"
+                    type="primary"
+                    onClick={() => setEditModalVisible(true)}
+                    icon={<EditOutlined />}
+                    className="primary-button"
+                    style={{ color: "#764ba2" }}
+                  >
+                    Редактировать
+                  </Button>
+                  <Button
+                    size="large"
+                    danger
+                    onClick={() => setDeleteModalVisible(true)}
+                    icon={<DeleteOutlined />}
+                    style={{
+                      background: "rgba(255, 77, 79, 0.2) !important",
+                      borderColor: "rgba(255, 77, 79, 0.5) !important",
+                    }}
+                  >
+                    Удалить
+                  </Button>
+                </div>
               </Space>
             </Col>
           </Row>
@@ -320,94 +336,6 @@ export const LegalEntityDetailsPage: React.FC = () => {
                 <Descriptions.Item label="ОПФ">
                   <Text>{legalEntity.opf || "—"}</Text>
                 </Descriptions.Item>
-              </Descriptions>
-            </Card>
-          </Col>
-
-          {/* Tax Information */}
-          <Col xs={24} lg={12}>
-            <Card
-              className="content-card"
-              title={
-                <Space>
-                  <FileTextOutlined />
-                  <span>Налоговая информация</span>
-                </Space>
-              }
-            >
-              <Descriptions column={1} size="small">
-                <Descriptions.Item label="ИНН">
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <Text code strong>
-                      {legalEntity.inn}
-                    </Text>
-                    <Tooltip title="Копировать ИНН">
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<CopyOutlined />}
-                        onClick={() => copyToClipboard(legalEntity.inn, "ИНН")}
-                      />
-                    </Tooltip>
-                  </div>
-                </Descriptions.Item>
-                <Descriptions.Item label="КПП">
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <Text code>{legalEntity.kpp || "—"}</Text>
-                    {legalEntity.kpp && (
-                      <Tooltip title="Копировать КПП">
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<CopyOutlined />}
-                          onClick={() =>
-                            copyToClipboard(legalEntity.kpp!, "КПП")
-                          }
-                        />
-                      </Tooltip>
-                    )}
-                  </div>
-                </Descriptions.Item>
-                <Descriptions.Item label="ОГРН">
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <Text code>{legalEntity.ogrn}</Text>
-                    <Tooltip title="Копировать ОГРН">
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<CopyOutlined />}
-                        onClick={() =>
-                          copyToClipboard(legalEntity.ogrn, "ОГРН")
-                        }
-                      />
-                    </Tooltip>
-                  </div>
-                </Descriptions.Item>
-                <Descriptions.Item label="Ставка НДС">
-                  {getVatRateTag(legalEntity.vat_rate)}
-                </Descriptions.Item>
-              </Descriptions>
-            </Card>
-          </Col>
-
-          {/* Address Information */}
-          <Col xs={24} lg={12}>
-            <Card
-              className="content-card"
-              title={
-                <Space>
-                  <EnvironmentOutlined />
-                  <span>Адресная информация</span>
-                </Space>
-              }
-            >
-              <Descriptions column={1} size="small">
                 <Descriptions.Item label="Адрес">
                   <div
                     style={{
@@ -429,22 +357,6 @@ export const LegalEntityDetailsPage: React.FC = () => {
                     </Tooltip>
                   </div>
                 </Descriptions.Item>
-              </Descriptions>
-            </Card>
-          </Col>
-
-          {/* Contact Information */}
-          <Col xs={24} lg={12}>
-            <Card
-              className="content-card"
-              title={
-                <Space>
-                  <UserOutlined />
-                  <span>Контактная информация</span>
-                </Space>
-              }
-            >
-              <Descriptions column={1} size="small">
                 <Descriptions.Item label="Подписант">
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
@@ -463,6 +375,76 @@ export const LegalEntityDetailsPage: React.FC = () => {
                       </Tooltip>
                     )}
                   </div>
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+          </Col>
+
+          {/* Tax Information */}
+          <Col xs={24} lg={12}>
+            <Card
+              className="content-card"
+              title={
+                <Space>
+                  <FileTextOutlined />
+                  <span>Налоговая информация</span>
+                </Space>
+              }
+            >
+              <Descriptions column={1} size="small">
+                <Descriptions.Item label="ИНН">
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <Text strong>{legalEntity.inn}</Text>
+                    <Tooltip title="Копировать ИНН">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<CopyOutlined />}
+                        onClick={() => copyToClipboard(legalEntity.inn, "ИНН")}
+                      />
+                    </Tooltip>
+                  </div>
+                </Descriptions.Item>
+                <Descriptions.Item label="КПП">
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <Text>{legalEntity.kpp || "—"}</Text>
+                    {legalEntity.kpp && (
+                      <Tooltip title="Копировать КПП">
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<CopyOutlined />}
+                          onClick={() =>
+                            copyToClipboard(legalEntity.kpp!, "КПП")
+                          }
+                        />
+                      </Tooltip>
+                    )}
+                  </div>
+                </Descriptions.Item>
+                <Descriptions.Item label="ОГРН">
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <Text>{legalEntity.ogrn}</Text>
+                    <Tooltip title="Копировать ОГРН">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<CopyOutlined />}
+                        onClick={() =>
+                          copyToClipboard(legalEntity.ogrn, "ОГРН")
+                        }
+                      />
+                    </Tooltip>
+                  </div>
+                </Descriptions.Item>
+                <Descriptions.Item label="Ставка НДС">
+                  {getVatRateTag(legalEntity.vat_rate)}
                 </Descriptions.Item>
               </Descriptions>
             </Card>

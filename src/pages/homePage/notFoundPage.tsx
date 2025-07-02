@@ -13,7 +13,6 @@ export const NotFoundPage: React.FC = () => {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "calc(100vh - 64px)", // Учитываем высоту навбара
-        marginTop: "-24px", // Компенсируем стандартные отступы
         // padding: "16px", // Добавляем небольшой внутренний отступ
       }}
     >
