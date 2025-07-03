@@ -10,14 +10,19 @@ import {
   Tooltip,
   message,
   Tag,
+  Descriptions,
+  Row,
+  Col,
+  Spin,
 } from "antd";
 import type { ICompany } from "../../../api/companiesApi";
 import {
   BuildOutlined,
   FileTextOutlined,
-  AppstoreOutlined,
   CopyOutlined,
   IdcardOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import { useAppNameById } from "../../../hooks/base/useAppHelpers";
 
@@ -34,7 +39,6 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
 }) => {
   const appName = useAppNameById(data.application_id);
 
-  // Функция для получения инициалов компании
   const getCompanyInitials = (name: string) => {
     return name
       .split(" ")
@@ -44,7 +48,6 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
       .slice(0, 2);
   };
 
-  // Функция для получения цвета аватара
   const getAvatarColor = (name: string) => {
     const colors = [
       "#f56a00",
@@ -58,169 +61,137 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
     return colors[index];
   };
 
-  // Функция копирования в буфер обмена
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text).then(() => {
       message.success(`${type} скопирован в буфер обмена`);
     });
   };
 
-  return (
-    <Card
-      style={{
-        width: "100%",
-        maxWidth: 800,
-        marginBottom: 24,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-      }}
-      loading={loading}
-    >
-      {/* Заголовок с аватаром */}
-      <div
+  if (loading) {
+    return (
+      <Card
         style={{
-          display: "flex",
-          alignItems: "center",
-          marginBottom: 24,
-          paddingBottom: 16,
-          borderBottom: "1px solid #f0f0f0",
+          width: "100%",
+          maxWidth: 800,
+          textAlign: "center",
+          padding: "40px",
         }}
       >
-        <Avatar
-          style={{
-            backgroundColor: getAvatarColor(data.company_name),
-            fontSize: "24px",
-            fontWeight: 600,
-            marginRight: 16,
-          }}
-          size={64}
-        >
-          {getCompanyInitials(data.company_name)}
-        </Avatar>
-        <div style={{ flex: 1 }}>
-          <Title level={3} style={{ margin: 0, color: "#262626" }}>
-            {data.company_name}
+        <Spin size="large" />
+        <div style={{ marginTop: 16 }}>
+          <Text type="secondary">Загрузка информации о компании...</Text>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!data) {
+    return (
+      <Card
+        style={{
+          width: "100%",
+          maxWidth: 800,
+          textAlign: "center",
+          padding: "40px",
+        }}
+      >
+        <BuildOutlined
+          style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }}
+        />
+        <div>
+          <Title level={4} type="secondary">
+            Информация о компании недоступна
           </Title>
-          <Text type="secondary" style={{ fontSize: 16 }}>
-            Информация о компании
-          </Text>
+          <Text type="secondary">Не удалось загрузить данные компании</Text>
         </div>
-      </div>
+      </Card>
+    );
+  }
 
-      {/* Основная информация */}
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        {/* Название компании */}
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 8,
-            }}
-          >
-            <BuildOutlined style={{ color: "#1890ff", marginRight: 8 }} />
-            <Title level={5} style={{ margin: 0 }}>
-              Название компании
-            </Title>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "8px 12px",
-              backgroundColor: "#fafafa",
-              borderRadius: 6,
-              border: "1px solid #f0f0f0",
-            }}
-          >
-            <Text style={{ fontSize: 16, fontWeight: 500 }}>
-              {data.company_name}
-            </Text>
-            <Tooltip title="Копировать название">
-              <Button
-                type="text"
-                size="small"
-                icon={<CopyOutlined />}
-                onClick={() =>
-                  copyToClipboard(data.company_name, "Название компании")
-                }
-              />
-            </Tooltip>
-          </div>
-        </div>
+  return (
+    <Card
+      style={{ width: "100%", maxWidth: 800 }}
+      title={
+        <Space>
+          <BuildOutlined />
+          <span>Информация о компании</span>
+        </Space>
+      }
+    >
+      <Row gutter={[24, 24]} align="top">
+        {/* Аватар и основная информация */}
+        <Col xs={24} sm={8} style={{ textAlign: "center" }}>
+          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+            <Avatar
+              size={80}
+              style={{
+                backgroundColor: getAvatarColor(data.company_name),
+                color: "white",
+                fontSize: 24,
+                fontWeight: "bold",
+              }}
+            >
+              {getCompanyInitials(data.company_name)}
+            </Avatar>
 
-        {/* Описание */}
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 8,
-            }}
+            <div>
+              <Title level={4} style={{ margin: 0, marginBottom: 4 }}>
+                {data.company_name || "Не указано"}
+              </Title>
+            </div>
+          </Space>
+        </Col>
+
+        {/* Детальная информация */}
+        <Col xs={24} sm={16}>
+          <Descriptions
+            column={1}
+            size="middle"
+            labelStyle={{ fontWeight: 500, color: "#595959" }}
           >
-            <FileTextOutlined style={{ color: "#52c41a", marginRight: 8 }} />
-            <Title level={5} style={{ margin: 0 }}>
-              Описание
-            </Title>
-          </div>
-          <div
-            style={{
-              padding: "12px",
-              backgroundColor: "#fafafa",
-              borderRadius: 6,
-              border: "1px solid #f0f0f0",
-              minHeight: 60,
-            }}
-          >
-            <Text style={{ fontSize: 14, lineHeight: 1.6 }}>
+            <Descriptions.Item
+              label={
+                <Space>
+                  <IdcardOutlined />
+                  <span>ID компании</span>
+                </Space>
+              }
+            >
+              <Text code copyable={{ text: data.company_id }}>
+                {data.company_id}
+              </Text>
+            </Descriptions.Item>
+
+            <Descriptions.Item
+              label={
+                <Space>
+                  <BuildOutlined />
+                  <span>Название компании</span>
+                </Space>
+              }
+            >
+              <Text copyable={{ text: data.company_name }}>
+                {data.company_name}
+              </Text>
+            </Descriptions.Item>
+
+            <Descriptions.Item
+              label={
+                <Space>
+                  <FileTextOutlined />
+                  <span>Описание</span>
+                </Space>
+              }
+            >
               {data.description || (
                 <Text type="secondary" italic>
                   Описание не указано
                 </Text>
               )}
-            </Text>
-          </div>
-        </div>
-
-        {/* ID компании */}
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 8,
-            }}
-          >
-            <IdcardOutlined style={{ color: "#fa8c16", marginRight: 8 }} />
-            <Title level={5} style={{ margin: 0 }}>
-              ID компании
-            </Title>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "8px 12px",
-              backgroundColor: "#fafafa",
-              borderRadius: 6,
-              border: "1px solid #f0f0f0",
-            }}
-          >
-            <Text code style={{ fontSize: 12, margin: 0 }}>
-              {data.company_id}
-            </Text>
-            <Tooltip title="Копировать ID">
-              <Button
-                type="text"
-                size="small"
-                icon={<CopyOutlined />}
-                onClick={() => copyToClipboard(data.company_id, "ID компании")}
-              />
-            </Tooltip>
-          </div>
-        </div>
-      </Space>
+            </Descriptions.Item>
+          </Descriptions>
+        </Col>
+      </Row>
     </Card>
   );
 };

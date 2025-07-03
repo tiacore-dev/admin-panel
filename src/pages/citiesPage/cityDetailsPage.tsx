@@ -4,87 +4,62 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useUserDetailsQuery } from "../../hooks/users/useUserQuery";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { Button, Space, Spin, Card, Typography, Row, Col } from "antd";
 import { BackButton } from "../../components/buttons/backButton";
 import { ConfirmDeleteModal } from "../../components/modals/confirmDeleteModal";
-import { useUserMutations } from "../../hooks/users/useUserMutation";
-import { UserDetailsCard } from "./components/userDetails";
-import { DeleteOutlined, EditOutlined, UserOutlined } from "@ant-design/icons";
-import { UserFormModal } from "./components/userFormModal";
-import { UserCompanyRelationsTable } from "../../components/userCompanyRelations/userCompanyRelationsTable";
-import { useCompanyDetailsQuery } from "../../hooks/companies/useCompanyQuery";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EnvironmentOutlined,
+} from "@ant-design/icons";
 import { ContextualNavigation } from "../../components/contextualNavigation/contextualNavigation";
+import { useCityDetailsQuery } from "../../hooks/cities/useCitiesQuery";
+import { useCityMutations } from "../../hooks/cities/useCityMutation";
+import { CityFormModal } from "./cityFormModal";
+import { CityDetailsCard } from "./cityDetails";
 
 const { Title, Text } = Typography;
 
-export const UserDetailsPage: React.FC = () => {
-  const { user_id } = useParams<{ user_id: string }>();
+export const CityDetailsPage: React.FC = () => {
+  const { city_id } = useParams<{ city_id: string }>();
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  const { data: companyDetails } = useCompanyDetailsQuery(
-    location.state?.companyId || "",
-    {
-      enabled: !!location.state?.companyId,
-    }
-  );
-
   const {
-    data: userDetails,
+    data: cityDetails,
     isLoading,
     isError,
-  } = useUserDetailsQuery(user_id!);
+  } = useCityDetailsQuery(city_id!);
 
   useEffect(() => {
-    if (userDetails) {
-      if (
-        location.state?.from === "companyDetails" &&
-        location.state?.companyId
-      ) {
-        dispatch(
-          setBreadcrumbs([
-            { label: "Главная страница", to: "/home" },
-            { label: "Компании", to: "/companies" },
-            {
-              label: companyDetails?.company_name || "Компания",
-              to: `/companies/${location.state.companyId}`,
-            },
-            {
-              label: userDetails.full_name,
-              to: `/users/${user_id}`,
-            },
-          ])
-        );
-      } else {
-        dispatch(
-          setBreadcrumbs([
-            { label: "Главная страница", to: "/home" },
-            { label: "Пользователи", to: "/users" },
-            { label: userDetails.full_name, to: `/users/${user_id}` },
-          ])
-        );
-      }
+    if (cityDetails) {
+      dispatch(
+        setBreadcrumbs([
+          { label: "Главная страница", to: "/home" },
+          { label: "Города", to: "/cities" },
+          { label: cityDetails.city_name, to: `/cities/${city_id}` },
+        ])
+      );
     }
-  }, [dispatch, userDetails, user_id, location.state, companyDetails]);
+  }, [dispatch, cityDetails, city_id, location.state]);
 
-  const { deleteMutation } = useUserMutations(
-    user_id || "",
-    userDetails?.email || "",
-    userDetails?.full_name || "",
-    userDetails?.password || "",
-    userDetails?.position || ""
+  const { updateMutation, deleteMutation } = useCityMutations(
+    city_id || "",
+    cityDetails?.city_name || "",
+    cityDetails?.code || "",
+    cityDetails?.region || "",
+    cityDetails?.external_id || ""
   );
 
   const handleDelete = () => {
     deleteMutation.mutate(undefined, {
       onSuccess: () => {
         setShowDeleteConfirm(false);
-        navigate("/users");
+        navigate("/cities");
       },
     });
   };
@@ -109,7 +84,7 @@ export const UserDetailsPage: React.FC = () => {
     );
   }
 
-  if (!userDetails) {
+  if (!cityDetails) {
     return (
       <div className="page-container">
         <div className="page-content">
@@ -143,14 +118,16 @@ export const UserDetailsPage: React.FC = () => {
                 />
                 <div className="header-content">
                   <div className="header-icon">
-                    <UserOutlined style={{ fontSize: 24, color: "white" }} />
+                    <EnvironmentOutlined
+                      style={{ fontSize: 24, color: "white" }}
+                    />
                   </div>
                   <div className="header-text">
                     <Title level={2} style={{ margin: 0, color: "white" }}>
-                      {userDetails.full_name}
+                      {cityDetails.city_name}
                     </Title>
                     <Text className="header-description">
-                      Подробная информация о пользователе
+                      Подробная информация о городе
                     </Text>
                   </div>
                 </div>
@@ -188,21 +165,16 @@ export const UserDetailsPage: React.FC = () => {
 
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           {/* Основная информация */}
-          <UserDetailsCard userDetails={userDetails} />
-
-          {/* Связи с компаниями */}
-          <Card>
-            <UserCompanyRelationsTable userId={user_id} />
-          </Card>
+          <CityDetailsCard cityDetails={cityDetails} />
         </Space>
 
         {/* Модальные окна */}
         {showEditModal && (
-          <UserFormModal
+          <CityFormModal
             visible={showEditModal}
             onCancel={() => setShowEditModal(false)}
             mode="edit"
-            initialData={userDetails}
+            initialData={cityDetails}
             onSuccess={() => setShowEditModal(false)}
           />
         )}

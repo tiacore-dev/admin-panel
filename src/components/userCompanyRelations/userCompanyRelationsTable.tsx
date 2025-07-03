@@ -269,27 +269,6 @@ export const UserCompanyRelationsTable = ({
                     style={{ color: "#8c8c8c", fontSize: "12px" }}
                   />
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <Text type="secondary" style={{ fontSize: "12px" }}>
-                    {userEmail}
-                  </Text>
-                  <Tooltip title="Копировать email">
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<CopyOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        copyToClipboard(userEmail, "Email");
-                      }}
-                      style={{
-                        padding: "0 2px",
-                        height: "auto",
-                        minWidth: "auto",
-                      }}
-                    />
-                  </Tooltip>
-                </div>
               </div>
             </div>
           );
@@ -409,7 +388,7 @@ export const UserCompanyRelationsTable = ({
             <Space>
               {showInviteButton() && (
                 <Button
-                  type="primary"
+                  // type="primary"
                   icon={<PlusOutlined />}
                   onClick={handleInvite}
                 >

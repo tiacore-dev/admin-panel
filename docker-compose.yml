@@ -1,14 +1,12 @@
-
 services:
   frontend:
     container_name: admin-panel-${CONFIG_NAME}
     image: ${DOCKERHUB_USERNAME}/admin-panel:${TAG}
     ports:
-      - "${PORT}:80"  # Вы можете оставить это, чтобы тестировать приложение отдельно, но Nginx будет использовать внутреннюю связь
+      - "${PORT}:80" # Вы можете оставить это, чтобы тестировать приложение отдельно, но Nginx будет использовать внутреннюю связь
     restart: always
     networks:
       - auth_network
-
 
 networks:
   auth_network:

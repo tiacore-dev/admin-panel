@@ -34,6 +34,8 @@ import { InviteRegistrationPage } from "./pages/invitePages/inviteRegistrationPa
 import { LegalEntitiesPage } from "./pages/legalEntitiesPage/legalEntitiesPage";
 import { LegalEntityDetailsPage } from "./pages/legalEntitiesPage/legalEntityDetailsPage";
 import { NotFoundPage } from "./pages/homePage/notFoundPage";
+import { CitiesPage } from "./pages/citiesPage/citiesPage";
+import { CityDetailsPage } from "./pages/citiesPage/cityDetailsPage";
 
 dayjs.extend(updateLocale);
 dayjs.extend(weekday);
@@ -65,6 +67,8 @@ const ProtectedRoutes: React.FC = () => {
         <Route path="/users/:user_id" element={<UserDetailsPage />} />
         <Route path="/companies" element={<CompaniesPage />} />
         <Route path="/companies/:company_id" element={<CompanyDetailsPage />} />
+        <Route path="/cities" element={<CitiesPage />} />
+        <Route path="/cities/:city_id" element={<CityDetailsPage />} />
         <Route path="/legal-entities" element={<LegalEntitiesPage />} />
         <Route
           path="/legal-entities/:legal_entity_id"

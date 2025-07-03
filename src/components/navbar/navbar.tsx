@@ -13,6 +13,7 @@ import {
   ShopOutlined,
   UsergroupAddOutlined,
   SafetyOutlined,
+  EnvironmentOutlined,
   // RocketOutlined,
 } from "@ant-design/icons";
 import "./navbar.css";
@@ -69,6 +70,15 @@ export const Navbar: React.FC = () => {
         </span>
       ),
       key: "/role_permissions_relations",
+    },
+    {
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <EnvironmentOutlined style={{ fontSize: "16px" }} />
+          Города
+        </span>
+      ),
+      key: "/cities",
     },
   ];
 

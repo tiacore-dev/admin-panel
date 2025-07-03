@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useCompanyDetailsQuery } from "../../hooks/companies/useCompanyQuery";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
-import { Button, Space, Spin, Typography, Card } from "antd";
+import { Button, Space, Spin, Typography, Card, Row, Col } from "antd";
 import { BackButton } from "../../components/buttons/backButton";
 import { ConfirmDeleteModal } from "../../components/modals/confirmDeleteModal";
 import { useCompanyMutations } from "../../hooks/companies/useCompanyMutation";
@@ -21,10 +21,9 @@ import {
   BankOutlined,
 } from "@ant-design/icons";
 import { UserCompanyRelationsTable } from "../../components/userCompanyRelations/userCompanyRelationsTable";
-// import { EntityCompanyRelationsTable } from "../../components/entityCompanyRelations";
-import { CreateLegalEntityModal } from "../legalEntitiesPage/components/createLegalEntityModal";
 import { useUserDetailsQuery } from "../../hooks/users/useUserQuery";
 import { ContextualNavigation } from "../../components/contextualNavigation/contextualNavigation";
+import { CreateLegalEntityModal } from "../legalEntitiesPage/components/createLegalEntityModal";
 
 const { Title, Text } = Typography;
 
@@ -147,110 +146,116 @@ export const CompanyDetailsPage: React.FC = () => {
   return (
     <div className="page-container">
       <div className="page-content">
-        {/* Заголовок страницы с контекстной навигацией */}
-        <Card className="content-card">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <BuildOutlined
-                style={{ fontSize: 24, color: "#1890ff", marginRight: 12 }}
-              />
-              <div>
+        {/* Градиентный заголовок */}
+        <Card
+          className="gradient-header"
+          style={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            border: "none",
+            borderRadius: "12px",
+            color: "white",
+            marginBottom: "24px",
+          }}
+        >
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Space direction="vertical" size="small">
                 <ContextualNavigation
-                  textColor="#8c8c8c"
+                  textColor="rgba(255, 255, 255, 0.8)"
                   size="small"
                   showIcon={true}
                 />
-                <Title
-                  level={2}
-                  style={{ margin: "4px 0 0 0", color: "#262626" }}
-                >
-                  {companyDetails.company_name}
-                </Title>
-                <Text type="secondary" style={{ fontSize: 16 }}>
-                  Детальная информация о компании
-                </Text>
-              </div>
-            </div>
-
-            <Space>
-              <Button
-                type="primary"
-                onClick={() => setShowEditModal(true)}
-                icon={<EditOutlined />}
-                size="large"
-              >
-                Редактировать
-              </Button>
-
-              <Button
-                danger
-                onClick={() => setShowDeleteConfirm(true)}
-                icon={<DeleteOutlined />}
-                size="large"
-              >
-                Удалить
-              </Button>
-            </Space>
-          </div>
-        </Card>
-
-        {/* Карточка с информацией о компании */}
-        <CompanyCard data={companyDetails} loading={isLoading} />
-
-        {/* Таблица пользователей компании */}
-        <Card className="content-card">
-          <UserCompanyRelationsTable companyId={company_id} />
-        </Card>
-
-        {/* Таблица организаций (sellers) */}
-        {/* <Card className="content-card"> */}
-        {/* <EntityCompanyRelationsTable
-          companyId={company_id!}
-          relationType="seller"
-          title="Организации"
-          companyName={companyDetails?.company_name}
-        /> */}
-        {/* </Card> */}
-
-        {/* Таблица контрагентов (buyers) */}
-        {/* <Card
-          className="content-card"
-          title={
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Space>
-                <BankOutlined style={{ color: "#fa8c16" }} />
-                <span>Контрагенты</span>
+                <div className="header-content">
+                  <div className="header-icon">
+                    <BuildOutlined style={{ fontSize: 24, color: "white" }} />
+                  </div>
+                  <div className="header-text">
+                    <Title level={2} style={{ margin: 0, color: "white" }}>
+                      {companyDetails.company_name}
+                    </Title>
+                    <Text className="header-description">
+                      Подробная информация о компании
+                    </Text>
+                  </div>
+                </div>
               </Space>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => setShowBuyerModal(true)}
-              >
-                Добавить контрагента
-              </Button>
-            </div>
-          }
-        > */}
-        {/* <EntityCompanyRelationsTable
-          companyId={company_id!}
-          relationType="buyer"
-          title="Контрагенты"
-          companyName={companyDetails?.company_name}
-        /> */}
-        {/* </Card> */}
+            </Col>
+            <Col>
+              <div className="header-actions">
+                <Button
+                  size="large"
+                  type="primary"
+                  onClick={() => setShowEditModal(true)}
+                  icon={<EditOutlined />}
+                  className="primary-button"
+                  style={{ color: "#764ba2" }}
+                >
+                  Редактировать
+                </Button>
+                <Button
+                  size="large"
+                  danger
+                  onClick={() => setShowDeleteConfirm(true)}
+                  icon={<DeleteOutlined />}
+                  className="primary-button"
+                  style={{
+                    background: "rgba(255, 77, 79, 0.2)",
+                    borderColor: "rgba(255, 77, 79, 0.5)",
+                  }}
+                >
+                  Удалить
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </Card>
 
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          {/* Карточка с информацией о компании */}
+          <CompanyCard data={companyDetails} />
+
+          {/* Таблица пользователей компании */}
+          <Card>
+            <UserCompanyRelationsTable companyId={company_id} />
+          </Card>
+
+          {/* Закомментированные таблицы организаций и контрагентов */}
+          {/* <Card>
+            <EntityCompanyRelationsTable
+              companyId={company_id!}
+              relationType="seller"
+              title="Организации"
+              companyName={companyDetails?.company_name}
+            />
+          </Card>
+
+          <Card
+            title={
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Space>
+                  <BankOutlined style={{ color: "#fa8c16" }} />
+                  <span>Контрагенты</span>
+                </Space>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setShowBuyerModal(true)}
+                >
+                  Добавить контрагента
+                </Button>
+              </div>
+            }
+          >
+            <EntityCompanyRelationsTable
+              companyId={company_id!}
+              relationType="buyer"
+              title="Контрагенты"
+              companyName={companyDetails?.company_name}
+            />
+          </Card> */}
+        </Space>
+
+        {/* Модальные окна */}
         {showEditModal && (
           <CompanyFormModal
             visible={showEditModal}

@@ -13,6 +13,7 @@ import {
   SafetyOutlined,
   RocketOutlined,
   ArrowRightOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { ContextualNavigation } from "../../components/contextualNavigation/contextualNavigation";
@@ -56,6 +57,13 @@ export const HomePage = () => {
       path: "/role_permissions_relations",
       color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     },
+    {
+      title: "Города",
+      description: "Справочник Городов",
+      icon: <EnvironmentOutlined style={{ fontSize: 24, color: "#667eea" }} />,
+      path: "/cities",
+      color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    },
   ];
 
   return (
@@ -93,61 +101,63 @@ export const HomePage = () => {
         </Card>
 
         {/* Быстрые действия */}
-        <Card className="content-card" title="Быстрые действия">
-          <Row gutter={[16, 16]}>
-            {quickActions.map((action, index) => (
-              <Col xs={24} sm={12} lg={6} key={index}>
-                <Card
-                  hoverable
-                  style={{
-                    borderRadius: 12,
-                    border: "1px solid #e2e8f0",
-                    transition: "all 0.3s ease",
-                  }}
-                  bodyStyle={{ padding: 20 }}
-                  onClick={() => navigate(action.path)}
+        {/* <Card className="content-card" title="Быстрые действия"> */}
+        <Row gutter={[16, 16]}>
+          {quickActions.map((action, index) => (
+            <Col xs={24} sm={12} lg={8} key={index}>
+              {" "}
+              {/* 3 колонки на lg */}
+              <Card
+                hoverable
+                style={{
+                  borderRadius: 12,
+                  border: "1px solid #e2e8f0",
+                  transition: "all 0.3s ease",
+                }}
+                bodyStyle={{ padding: 20 }}
+                onClick={() => navigate(action.path)}
+              >
+                <Space
+                  direction="vertical"
+                  size="middle"
+                  style={{ width: "100%" }}
                 >
-                  <Space
-                    direction="vertical"
-                    size="middle"
-                    style={{ width: "100%" }}
+                  <div
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 12,
+                      background: action.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
-                    <div
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 12,
-                        background: action.color,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {React.cloneElement(action.icon, {
-                        style: { fontSize: 24, color: "white" },
-                      })}
-                    </div>
-                    <div>
-                      <Title level={4} style={{ margin: 0, fontSize: 16 }}>
-                        {action.title}
-                      </Title>
-                      <Text type="secondary" style={{ fontSize: 14 }}>
-                        {action.description}
-                      </Text>
-                    </div>
-                    <Button
-                      type="link"
-                      icon={<ArrowRightOutlined />}
-                      style={{ padding: 0, height: "auto", color: "#0f00df" }}
-                    >
-                      Перейти
-                    </Button>
-                  </Space>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </Card>
+                    {React.cloneElement(action.icon, {
+                      style: { fontSize: 24, color: "white" },
+                    })}
+                  </div>
+                  <div>
+                    <Title level={4} style={{ margin: 0, fontSize: 16 }}>
+                      {action.title}
+                    </Title>
+                    <Text type="secondary" style={{ fontSize: 14 }}>
+                      {action.description}
+                    </Text>
+                  </div>
+                  <Button
+                    type="link"
+                    icon={<ArrowRightOutlined />}
+                    style={{ padding: 0, height: "auto", color: "#0f00df" }}
+                  >
+                    Перейти
+                  </Button>
+                </Space>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+        {/* </Card> */}
       </div>
     </div>
   );
