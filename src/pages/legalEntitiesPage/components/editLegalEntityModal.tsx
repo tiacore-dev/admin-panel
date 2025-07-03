@@ -21,7 +21,7 @@ import type { ILegalEntityEdit } from "../../../api/legalEntitiesApi";
 
 const { Title } = Typography;
 const { Option } = Select;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface EditLegalEntityModalProps {
   visible: boolean;
