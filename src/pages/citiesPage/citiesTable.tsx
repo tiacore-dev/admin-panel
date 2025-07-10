@@ -32,13 +32,13 @@ const { Text } = Typography;
 interface CitiesTableProps {
   data: {
     total: number;
-    citys: ICity[] | undefined;
+    cities: ICity[] | undefined;
   };
   loading: boolean;
 }
 
 export const CitiesTable: React.FC<CitiesTableProps> = ({
-  data = { total: 0, citys: [] },
+  data = { total: 0, cities: [] },
   loading,
 }) => {
   const navigate = useNavigate();
@@ -151,7 +151,7 @@ export const CitiesTable: React.FC<CitiesTableProps> = ({
       render: (id: string) => (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Text>{id}</Text>
-          <Tooltip title="Копировать индекс">
+          {/* <Tooltip title="Копировать индекс">
             <Button
               type="text"
               size="small"
@@ -162,12 +162,12 @@ export const CitiesTable: React.FC<CitiesTableProps> = ({
               }}
               style={{ padding: "2px 4px", height: "auto" }}
             />
-          </Tooltip>
+          </Tooltip> */}
         </div>
       ),
     },
     {
-      title: "external_id",
+      title: "Внешний код",
       dataIndex: "external_id",
       key: "external_id",
     },
@@ -191,7 +191,7 @@ export const CitiesTable: React.FC<CitiesTableProps> = ({
     <div>
       <Table
         columns={columns}
-        dataSource={data.citys}
+        dataSource={data.cities}
         rowKey="city_id"
         loading={loading}
         pagination={
