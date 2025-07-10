@@ -136,7 +136,13 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
       setIsSubmitting(false);
     }
   };
+  const handleCompanyChange = () => {
+    form.validateFields(["application_id"]);
+  };
 
+  const handleAppChange = () => {
+    form.validateFields(["company_id"]);
+  };
   const getModalTitle = () => {
     switch (mode) {
       case "create":
@@ -328,12 +334,28 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
               label="Компания"
               name="company_id"
               rules={[
-                { required: true, message: "Пожалуйста, выберите компанию" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value && !getFieldValue("application_id")) {
+                      return Promise.resolve();
+                    }
+                    if (value && getFieldValue("application_id")) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error(
+                        "Если выбрана компания, нужно выбрать приложение"
+                      )
+                    );
+                  },
+                }),
               ]}
             >
               <Select
-                placeholder="Выберите компанию"
+                placeholder="Выберите компанию (необязательно)"
                 suffixIcon={<BankOutlined />}
+                allowClear
+                onChange={handleCompanyChange}
               >
                 {companies.map((company) => (
                   <Select.Option
@@ -350,15 +372,28 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
               label="Приложение"
               name="application_id"
               rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, выберите приложение",
-                },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value && !getFieldValue("company_id")) {
+                      return Promise.resolve();
+                    }
+                    if (value && getFieldValue("company_id")) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error(
+                        "Если выбрано приложение, нужно выбрать компанию"
+                      )
+                    );
+                  },
+                }),
               ]}
             >
               <Select
-                placeholder="Выберите приложение"
+                placeholder="Выберите приложение (необязательно)"
                 suffixIcon={<AppstoreOutlined />}
+                allowClear
+                onChange={handleAppChange}
               >
                 {apps.map((app) => (
                   <Select.Option
