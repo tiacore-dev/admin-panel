@@ -4,7 +4,7 @@ import { fetchCities, fetchCityDetails, ICity } from "../../api/citiesApi";
 
 export interface useCitiesQueryResponse {
   total: number;
-  citys: ICity[];
+  cities: ICity[];
 }
 
 export const useCitiesQuery = () => {

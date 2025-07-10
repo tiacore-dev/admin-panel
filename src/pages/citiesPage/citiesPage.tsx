@@ -4,7 +4,6 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { setBreadcrumbs } from "../../redux/slices/breadcrumbsSlice";
 import { BackButton } from "../../components/buttons/backButton";
-// import { useCompanyQuery } from "../../hooks/companies/useCompanyQuery";
 import {
   Spin,
   Button,
@@ -17,7 +16,6 @@ import {
   Select,
 } from "antd";
 import { CityFormModal } from "./cityFormModal";
-// import { CompaniesTable } from "./components/companiesTable";
 import { useDispatch, useSelector } from "react-redux";
 import {
   PlusOutlined,
@@ -46,8 +44,7 @@ const { Option } = Select;
 export const CitiesPage: React.FC = () => {
   const dispatch = useDispatch();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { city_name } = useSelector((state: RootState) => state.cities);
-  const { region } = useSelector((state: RootState) => state.cities);
+  const { city_name, region } = useSelector((state: RootState) => state.cities);
 
   useEffect(() => {
     dispatch(
@@ -64,20 +61,21 @@ export const CitiesPage: React.FC = () => {
     dispatch(resetState());
   };
 
-  // Фильтрация компаний
-  const filteredData = cities_data?.citys.filter((entity) => {
-    const matchesCityName = city_name
-      ? entity.city_name.toLowerCase().includes(city_name.toLowerCase())
-      : true;
-    const matchesRegion = region
-      ? entity.region.toLowerCase().includes(region.toLowerCase())
-      : true;
-    return matchesCityName && matchesRegion;
-  });
+  // Безопасная фильтрация данных
+  const filteredData =
+    cities_data?.cities?.filter((city) => {
+      const matchesCityName = city_name
+        ? city.city_name.toLowerCase().includes(city_name.toLowerCase())
+        : true;
+      const matchesRegion = region
+        ? city.region.toLowerCase().includes(region.toLowerCase())
+        : true;
+      return matchesCityName && matchesRegion;
+    }) || [];
 
-  // Статистика
-  const totalCities = cities_data?.citys?.length || 0;
-  const hasActiveFilters = city_name || region !== "";
+  // Статистика с проверкой на наличие данных
+  const totalCities = cities_data?.cities?.length || 0;
+  const hasActiveFilters = Boolean(city_name) || Boolean(region);
 
   if (isLoading) {
     return (
@@ -155,7 +153,7 @@ export const CitiesPage: React.FC = () => {
               <Input
                 placeholder="Поиск по названию города"
                 prefix={<SearchOutlined />}
-                value={city_name}
+                value={city_name || ""}
                 onChange={(e) => {
                   dispatch(setCityName(e.target.value));
                 }}
@@ -166,7 +164,7 @@ export const CitiesPage: React.FC = () => {
               <Input
                 placeholder="Поиск по региону"
                 prefix={<SearchOutlined />}
-                value={region}
+                value={region || ""}
                 onChange={(e) => {
                   dispatch(setRegion(e.target.value));
                 }}
@@ -183,14 +181,12 @@ export const CitiesPage: React.FC = () => {
               </Button>
             </Col>
           </Row>
-          {/* </Card> */}
 
-          {/* Таблица компаний */}
-          {/* <Card className="content-card"> */}
+          {/* Таблица городов */}
           <CitiesTable
             data={{
-              total: filteredData?.length || 0,
-              citys: filteredData,
+              total: filteredData.length,
+              cities: filteredData,
             }}
             loading={isLoading}
           />
