@@ -94,18 +94,30 @@ export const UserFormModal: React.FC<UserCreateModalProps> = ({
       setIsSubmitting(true);
       const values = await form.validateFields();
 
-      const dataToSend = {
-        email: values.email,
-        password: values.password,
-        full_name: values.full_name,
-        position: values.position,
-        company_id: values.company_id,
-        application_id: values.application_id,
+      // Создаем объект для отправки, исключая пустые, null или undefined поля
+      const dataToSend: any = {
+        ...(values.email && { email: values.email }),
+        ...(values.full_name && { full_name: values.full_name }),
+        ...(values.position && { position: values.position }),
+        ...(values.company_id && { company_id: values.company_id }),
+        ...(values.application_id && { application_id: values.application_id }),
         ...(mode === "edit" &&
           isSuperadmin && {
             is_verified: values.is_verified || false,
           }),
       };
+
+      // Добавляем пароль только если он был изменен (для режима редактирования)
+      if (mode === "edit") {
+        if (values.password && isPasswordChanged) {
+          dataToSend.password = values.password;
+        }
+      } else {
+        // Для создания или регистрации пароль обязателен
+        if (values.password) {
+          dataToSend.password = values.password;
+        }
+      }
 
       if (mode === "create") {
         await createMutation.mutateAsync(dataToSend);
