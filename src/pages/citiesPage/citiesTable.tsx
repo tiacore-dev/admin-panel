@@ -117,10 +117,10 @@ export const CitiesTable: React.FC<CitiesTableProps> = ({
             style={{
               fontWeight: 600,
               color: "#1890ff",
-              cursor: "pointer",
+              // cursor: "pointer",
               marginBottom: 2,
             }}
-            onClick={() => navigate(`/cities/${record.city_id}`)}
+            // onClick={() => navigate(`/cities/${record.city_id}`)}
           >
             <EnvironmentOutlined /> {name}
           </div>
@@ -142,6 +142,12 @@ export const CitiesTable: React.FC<CitiesTableProps> = ({
           )}
         </div>
       ),
+    },
+    {
+      title: "Часовой пояс",
+      dataIndex: "timezone",
+      key: "timezone",
+      render: (tz: number) => <Text>{tz >= 0 ? `UTC+${tz}` : `UTC${tz}`}</Text>,
     },
     {
       title: "Индекс",

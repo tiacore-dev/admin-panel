@@ -11,6 +11,7 @@ export const useCityMutations = (
   region?: string,
   code?: string,
   external_id?: string,
+  timezone?: number,
 
   setIsEditing?: (val: boolean) => void
 ) => {

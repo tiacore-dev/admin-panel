@@ -6,6 +6,7 @@ export interface ICity {
   region: string;
   code: string;
   external_id: string;
+  timezone: number;
 }
 // /api/cities/all
 export const fetchCities = async () => {
@@ -43,6 +44,7 @@ export const createCity = async (newCity: {
   region: string;
   code: string;
   external_id: string;
+  timezone: number;
 }): Promise<ICity> => {
   const url = process.env.REACT_APP_REFERENCE_API_URL;
   const accessToken = localStorage.getItem("access_token");

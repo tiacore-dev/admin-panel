@@ -42,12 +42,20 @@ export const CityFormModal: React.FC<CityFormModalProps> = ({
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const timezoneOptions = Array.from({ length: 25 }, (_, i) => i - 12).map(
+    (tz) => ({
+      value: tz,
+      label: tz >= 0 ? `UTC+${tz}` : `UTC${tz}`,
+    })
+  );
+
   const { createMutation, updateMutation } = useCityMutations(
     initialData?.city_id || "",
     initialData?.city_name || "",
     initialData?.region || "",
     initialData?.code || "",
-    initialData?.external_id || ""
+    initialData?.external_id || "",
+    initialData?.timezone || 0
   );
 
   useEffect(() => {
@@ -59,6 +67,7 @@ export const CityFormModal: React.FC<CityFormModalProps> = ({
           region: initialData.region,
           code: initialData.code,
           external_id: initialData.external_id,
+          timezone: initialData.timezone,
         });
       } else {
         form.resetFields();
@@ -215,6 +224,23 @@ export const CityFormModal: React.FC<CityFormModalProps> = ({
             ]}
           >
             <Input placeholder="Введите регион" />
+          </Form.Item>
+          <Form.Item
+            label="Часовой пояс"
+            name="timezone"
+            rules={[
+              {
+                required: true,
+                message: "Пожалуйста, выберите часовой пояс",
+              },
+            ]}
+          >
+            <Select
+              placeholder="Выберите часовой пояс"
+              options={timezoneOptions}
+              showSearch
+              optionFilterProp="label"
+            />
           </Form.Item>
           <Form.Item
             label="Индекс"
