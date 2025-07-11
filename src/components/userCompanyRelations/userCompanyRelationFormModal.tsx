@@ -10,6 +10,7 @@ import {
   Space,
   Typography,
   Avatar,
+  Alert,
 } from "antd";
 import { useUserCompanyRelationsMutations } from "../../hooks/userCompanyRelations/useUserCompanyRelationsMutations";
 import type { IUserCompanyRelation } from "../../api/userCompanyRelationsApi";
@@ -24,6 +25,7 @@ import {
   SaveOutlined,
 } from "@ant-design/icons";
 import { useAppNameById } from "../../hooks/base/useAppHelpers";
+import { useRolesQuery } from "../../hooks/role/useRoleQuery";
 
 const { Title, Text } = Typography;
 
@@ -33,7 +35,7 @@ interface RelationFormModalProps {
   onSuccess?: () => void;
   mode?: "create" | "edit";
   initialData?: IUserCompanyRelation | null;
-  roles: Array<{ role_id: string; role_name: string }>;
+  roles: Array<{ role_id: string; role_name: string; application_id: string }>;
   userId?: string;
   companyId?: string;
   companies?: Array<{ company_id: string; company_name: string }>;
@@ -56,6 +58,10 @@ export const RelationFormModal = ({
 }: RelationFormModalProps) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedAppId, setSelectedAppId] = useState<string | undefined>(
+    initialData?.application_id
+  );
+  const { data: rolesData } = useRolesQuery(selectedAppId);
 
   const { createMutation, updateMutation } = useUserCompanyRelationsMutations(
     initialData?.user_company_id || "",
@@ -105,6 +111,7 @@ export const RelationFormModal = ({
         role_id: initialData.role_id,
         application_id: initialData.application_id,
       });
+      setSelectedAppId(initialData.application_id);
     } else {
       form.resetFields();
       if (userId) {
@@ -115,6 +122,11 @@ export const RelationFormModal = ({
       }
     }
   }, [initialData, mode, form, userId, companyId]);
+
+  const handleAppChange = (value: string) => {
+    setSelectedAppId(value);
+    form.setFieldsValue({ role_id: undefined }); // Сбрасываем выбор роли при изменении приложения
+  };
 
   const handleSubmit = async () => {
     try {
@@ -163,6 +175,10 @@ export const RelationFormModal = ({
   const getSubmitButtonText = () => {
     return mode === "create" ? "Создать связь" : "Сохранить изменения";
   };
+
+  const filteredRoles = selectedAppId
+    ? roles.filter((role) => role.application_id === selectedAppId)
+    : [];
 
   return (
     <Modal
@@ -342,31 +358,6 @@ export const RelationFormModal = ({
             )}
 
             <Form.Item
-              name="role_id"
-              label="Роль"
-              rules={[{ required: true, message: "Пожалуйста, выберите роль" }]}
-            >
-              <Select
-                placeholder="Выберите роль"
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.label as any)?.props?.children?.[1]
-                    ?.toLowerCase()
-                    ?.includes(input.toLowerCase()) ?? false
-                }
-              >
-                {roles.map((role) => (
-                  <Select.Option key={role.role_id} value={role.role_id}>
-                    <Space>
-                      <SafetyCertificateOutlined style={{ color: "#1890ff" }} />
-                      {role.role_name}
-                    </Space>
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item
               name="application_id"
               label="Приложение"
               rules={[
@@ -376,6 +367,7 @@ export const RelationFormModal = ({
               <Select
                 placeholder="Выберите приложение"
                 showSearch
+                onChange={handleAppChange}
                 filterOption={(input, option) =>
                   (option?.label as any)?.props?.children?.[1]
                     ?.toLowerCase()
@@ -390,6 +382,47 @@ export const RelationFormModal = ({
                     <Space>
                       <AppstoreOutlined style={{ color: "#722ed1" }} />
                       <AppNameDisplay applicationId={app.application_id} />
+                    </Space>
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="role_id"
+              label="Роль"
+              rules={[{ required: true, message: "Пожалуйста, выберите роль" }]}
+            >
+              <Select
+                placeholder={
+                  selectedAppId
+                    ? "Выберите роль"
+                    : "Сначала выберите приложение"
+                }
+                showSearch
+                disabled={!selectedAppId}
+                filterOption={(input, option) =>
+                  (option?.label as any)?.props?.children?.[1]
+                    ?.toLowerCase()
+                    ?.includes(input.toLowerCase()) ?? false
+                }
+                notFoundContent={
+                  selectedAppId ? (
+                    "Роли не найдены"
+                  ) : (
+                    <Alert
+                      message="Сначала выберите приложение"
+                      type="info"
+                      showIcon
+                    />
+                  )
+                }
+              >
+                {filteredRoles.map((role) => (
+                  <Select.Option key={role.role_id} value={role.role_id}>
+                    <Space>
+                      <SafetyCertificateOutlined style={{ color: "#1890ff" }} />
+                      {role.role_name}
                     </Space>
                   </Select.Option>
                 ))}

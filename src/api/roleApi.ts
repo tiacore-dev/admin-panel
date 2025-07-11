@@ -13,14 +13,15 @@ export interface CreateRoleRequest {
   application_id: string;
 }
 // Функция для получения списка с параметрами
-export const fetchRoles = async () => {
+export const fetchRoles = async (application_id?: string) => {
   const url = process.env.REACT_APP_AUTH_API_URL;
   const accessToken = localStorage.getItem("access_token");
+  const params: any = { page: 1, page_size: 100 };
+  if (application_id) {
+    params.application_id = application_id;
+  }
   const response = await axiosInstance.get(`${url}/api/roles/all`, {
-    params: {
-      page: 1,
-      page_size: 100,
-    },
+    params,
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",

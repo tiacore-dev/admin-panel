@@ -6,10 +6,10 @@ export interface IRolesResponse {
   roles: IRole[];
 }
 
-export const useRolesQuery = () => {
+export const useRolesQuery = (application_id?: string) => {
   return useQuery<IRolesResponse>({
     queryKey: ["roles"],
-    queryFn: fetchRoles,
+    queryFn: () => fetchRoles(application_id),
   });
 };
 
