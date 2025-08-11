@@ -50,6 +50,7 @@ export const RolesTable: React.FC<RolesTableResponse> = ({
           >
             {/* <Button type="link" onClick={() => handleRoleClick(record.role_id)}> */}
             {text}
+            <span style={{ color: "grey" }}>{record.role_system_name}</span>
             {/* </Button> */}
           </div>
         ),

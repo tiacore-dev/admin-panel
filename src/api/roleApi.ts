@@ -5,6 +5,7 @@ import { axiosInstance } from "../axiosConfig";
 export interface IRole {
   role_id: string;
   role_name: string;
+  role_system_name?: string;
   application_id: string;
 }
 export interface CreateRoleRequest {

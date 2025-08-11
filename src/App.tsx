@@ -36,6 +36,7 @@ import { LegalEntityDetailsPage } from "./pages/legalEntitiesPage/legalEntityDet
 import { NotFoundPage } from "./pages/homePage/notFoundPage";
 import { CitiesPage } from "./pages/citiesPage/citiesPage";
 import { CityDetailsPage } from "./pages/citiesPage/cityDetailsPage";
+import { IncludeRolesPage } from "./pages/includeRolesPage/includeRolesPage";
 
 dayjs.extend(updateLocale);
 dayjs.extend(weekday);
@@ -82,6 +83,7 @@ const ProtectedRoutes: React.FC = () => {
           path="/role_permissions_relations/:role_id"
           element={<RolePermissionsDetailsPage />}
         />
+        <Route path="/include-roles" element={<IncludeRolesPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

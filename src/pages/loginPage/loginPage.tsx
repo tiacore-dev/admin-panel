@@ -1,12 +1,9 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useLocation } from "react-router-dom";
-// import { useMutation } from "@tanstack/react-query";
-// import toast from "react-hot-toast";
-import { Button, Typography, Spin, Space } from "antd";
+import { Button, Typography, Spin, Space, Alert } from "antd";
 import "./loginPage.css";
 import { FloatingInput } from "../../components/floatingInput/floatingInput";
-// import { UserFormModal } from "../usersPage/components/userFormModal";
 import {
   useLoginMutation,
   useVerifyEmailMutation,
@@ -38,10 +35,9 @@ export const LoginPage: React.FC = () => {
   });
 
   const emailValue = watch("email");
-  // const navigate = useNavigate();
   const location = useLocation();
-  // const [isRegisterModalVisible, setIsRegisterModalVisible] = useState(false);
   const [showResendLink, setShowResendLink] = useState(false);
+  // const [showAdminWarning, setShowAdminWarning] = useState(false);
 
   const resendVerificationMutation = useResendVerificationMutation();
   const verifyEmailMutation = useVerifyEmailMutation();
@@ -63,6 +59,12 @@ export const LoginPage: React.FC = () => {
 
   const onSubmit = useCallback(
     (data: FormData) => {
+      // if (!data.email.includes("admin@")) {
+      //   setShowAdminWarning(true);
+      //   return;
+      // }
+
+      // setShowAdminWarning(false);
       loginMutation.mutate(data, {
         onSuccess: () => {
           setShowResendLink(false);
@@ -98,6 +100,15 @@ export const LoginPage: React.FC = () => {
           </div>
         )}
 
+        {/* {showAdminWarning && (
+          <Alert
+            message="Чтобы зайти на сайт у вас должен быть доступ администратора"
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )} */}
+
         <Typography.Title level={3} className="form-title">
           Вход
         </Typography.Title>
@@ -116,7 +127,6 @@ export const LoginPage: React.FC = () => {
                 value={field.value}
                 onChange={field.onChange}
                 disabled={loginMutation.isPending}
-                hint="Введите email"
               />
             )}
           />
@@ -159,26 +169,9 @@ export const LoginPage: React.FC = () => {
             >
               {loginMutation.isPending ? <Spin size="small" /> : "Войти"}
             </Button>
-
-            {/* <Button
-              type="link"
-              onClick={() => setIsRegisterModalVisible(true)}
-              block
-            >
-              Зарегистрироваться
-            </Button> */}
           </Space>
         </form>
       </div>
-
-      {/* <UserFormModal
-        visible={isRegisterModalVisible}
-        onCancel={() => setIsRegisterModalVisible(false)}
-        onSuccess={() => {
-          setIsRegisterModalVisible(false);
-        }}
-        mode="registration"
-      /> */}
     </div>
   );
 };
