@@ -34,8 +34,8 @@ export const fetchRoleIncludeRelations = async (params?: {
   const accessToken = localStorage.getItem("access_token");
 
   const queryParams = {
-    page: params?.page || 1,
-    page_size: params?.page_size || 100,
+    page: 1,
+    page_size: 100,
     ...(params?.parent_role_id && { parent_role_id: params.parent_role_id }),
     ...(params?.child_role_id && { child_role_id: params.child_role_id }),
   };

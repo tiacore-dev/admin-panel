@@ -74,15 +74,6 @@ export const Navbar: React.FC = () => {
     {
       label: (
         <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <SafetyOutlined style={{ fontSize: "16px" }} />
-          include-roles
-        </span>
-      ),
-      key: "/include-roles",
-    },
-    {
-      label: (
-        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <EnvironmentOutlined style={{ fontSize: "16px" }} />
           Города
         </span>
@@ -334,7 +325,7 @@ export const Navbar: React.FC = () => {
           <div className="buttons-container">
             <Dropdown
               menu={{
-                items: userMenuItems,
+                items: mainItems,
                 onClick: handleMenuClick,
               }}
               placement="bottomRight"
@@ -342,6 +333,7 @@ export const Navbar: React.FC = () => {
             >
               <Button
                 className="user-menu-button"
+                style={{ marginLeft: 2 }}
                 // icon={<UserOutlined style={{ fontSize: "16px" }} />}
               >
                 {" "}

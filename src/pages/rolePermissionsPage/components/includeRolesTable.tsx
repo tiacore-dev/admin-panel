@@ -2,13 +2,15 @@
 
 import type React from "react";
 import { useState } from "react";
-import { Table, Button, Space, Popconfirm } from "antd";
+import { Table, Button, Space, Popconfirm, Typography } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { IRoleIncludeRelation } from "../../../api/includeRolesApi";
 import { useIncludeRolesMutations } from "../../../hooks/includeRoles/useIncludeRolesMutations";
 import { useRoleDetailsQuery } from "../../../hooks/role/useRoleQuery";
-import { EditIncludeRoleModal } from "./editIncludeRoleModal";
+// import { EditIncludeRoleModal } from "./editIncludeRoleModal";
+
+const { Text } = Typography;
 
 interface IncludeRolesTableProps {
   data: IRoleIncludeRelation[];
@@ -22,7 +24,7 @@ interface IncludeRolesTableProps {
 
 const RoleNameCell: React.FC<{ roleId: string }> = ({ roleId }) => {
   const { data: role } = useRoleDetailsQuery(roleId);
-  return <span>{role?.role_name || roleId}</span>;
+  return <Text>{role?.role_name || roleId}</Text>;
 };
 
 export const IncludeRolesTable: React.FC<IncludeRolesTableProps> = ({
@@ -60,23 +62,17 @@ export const IncludeRolesTable: React.FC<IncludeRolesTableProps> = ({
       render: (roleId: string) => <RoleNameCell roleId={roleId} />,
     },
     {
-      title: "Дата создания",
-      dataIndex: "created_at",
-      key: "created_at",
-      render: (date: string) => new Date(date).toLocaleString("ru-RU"),
-    },
-    {
-      title: "Действия",
+      title: "",
       key: "actions",
       width: 120,
       render: (_, record) => (
         <Space size="small">
-          <Button
+          {/* <Button
             type="text"
             icon={<EditOutlined />}
             onClick={() => setEditingRelation(record)}
             size="small"
-          />
+          /> */}
           <Popconfirm
             title="Удалить связь ролей?"
             description="Это действие нельзя отменить"
@@ -90,7 +86,9 @@ export const IncludeRolesTable: React.FC<IncludeRolesTableProps> = ({
               icon={<DeleteOutlined />}
               size="small"
               loading={deleteMutation.isPending}
-            />
+            >
+              Удалить
+            </Button>
           </Popconfirm>
         </Space>
       ),
@@ -104,30 +102,38 @@ export const IncludeRolesTable: React.FC<IncludeRolesTableProps> = ({
         dataSource={data}
         loading={loading}
         rowKey="role_include_relation_id"
-        pagination={{
-          current: page,
-          pageSize,
-          total,
-          showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} из ${total} записей`,
-          onChange: onPageChange,
-          onShowSizeChange: (current, size) => {
-            onPageSizeChange(size);
-            onPageChange(1);
-          },
+        pagination={
+          false
+          //   {
+          //   current: page,
+          //   pageSize,
+          //   total,
+          //   showSizeChanger: true,
+          //   showQuickJumper: true,
+          //   showTotal: (total, range) =>
+          //     `${range[0]}-${range[1]} из ${total} записей`,
+          //   onChange: onPageChange,
+          //   onShowSizeChange: (current, size) => {
+          //     onPageSizeChange(size);
+          //     onPageChange(1);
+          //   },
+          // }
+        }
+        style={{
+          backgroundColor: "white",
+          borderRadius: 8,
+          overflow: "hidden",
+          boxShadow:
+            "0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02)",
         }}
       />
 
-      {editingRelation && (
-        <EditIncludeRoleModal
-          open={!!editingRelation}
-          relation={editingRelation}
-          onCancel={() => setEditingRelation(null)}
-          onSuccess={() => setEditingRelation(null)}
-        />
-      )}
+      {/* <EditIncludeRoleModal
+        open={!!editingRelation}
+        relation={editingRelation}
+        onCancel={() => setEditingRelation(null)}
+        onSuccess={() => setEditingRelation(null)}
+      /> */}
     </>
   );
 };

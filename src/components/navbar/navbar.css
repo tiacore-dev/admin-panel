@@ -45,26 +45,23 @@
 }
 
 .navbar-menu-wrapper {
-  flex: 1;
   display: flex;
-  justify-content: center;
-  max-width: 800px;
-  margin: 0 24px;
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .navbar-menu {
-  width: 100% !important;
+  width: auto !important;
   display: flex !important;
-  justify-content: center !important;
+  justify-content: flex-end !important;
   align-items: center !important;
 }
 
 .navbar-menu .ant-menu-item {
   color: #475569 !important;
-  /* border-bottom: 2px solid transparent !important; */
   transition: all 0.3s ease !important;
-  margin: 0 8px !important;
-  padding: 0 16px !important;
+  margin: 0 4px !important;
+  padding: 0 8px !important;
   height: 64px !important;
   line-height: 64px !important;
   display: flex !important;
@@ -85,9 +82,7 @@
     rgba(15, 0, 223, 0.05) 0%,
     rgba(59, 130, 246, 0.05) 100%
   ) !important;
-  /* border-bottom-color: #0f00df !important; */
   transform: translateY(-2px);
-  /* box-shadow: 0 4px 12px rgba(15, 0, 223, 0.15); */
 }
 
 .navbar-menu .ant-menu-item-selected {
@@ -96,12 +91,6 @@
     rgba(15, 0, 223, 0.05) 0%,
     rgba(59, 130, 246, 0.05) 100%
   ) !important;
-  /* background: linear-gradient(
-    135deg,
-    rgba(15, 0, 223, 0.1) 0%,
-    rgba(59, 130, 246, 0.1) 100%
-  ) !important; */
-  border-bottom-color: #ffffff !important;
   font-weight: 600 !important;
 }
 
@@ -287,7 +276,6 @@
     rgba(15, 0, 223, 0.05) 0%,
     rgba(59, 130, 246, 0.05) 100%
   ) !important;
-  /* color: #0f00df !important; */
   transform: translateX(4px);
 }
 
@@ -297,7 +285,6 @@
     rgba(15, 0, 223, 0.1) 0%,
     rgba(59, 130, 246, 0.1) 100%
   ) !important;
-  /* color: #0f00df !important; */
   font-weight: 600 !important;
 }
 
@@ -325,15 +312,15 @@
 /* Responsive Design */
 @media (max-width: 1200px) {
   .navbar-menu .ant-menu-item {
-    margin: 0 4px !important;
-    padding: 0 12px !important;
+    margin: 0 2px !important;
+    padding: 0 6px !important;
   }
 }
 
 @media (max-width: 992px) {
   .navbar-menu .ant-menu-item {
-    margin: 0 2px !important;
-    padding: 0 8px !important;
+    margin: 0 1px !important;
+    padding: 0 4px !important;
     font-size: 14px !important;
   }
 }

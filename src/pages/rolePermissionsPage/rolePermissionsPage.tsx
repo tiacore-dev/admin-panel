@@ -48,13 +48,16 @@ export const RolePermissionsPage: React.FC = () => {
   }, [dispatch]);
 
   // Фильтрация ролей
+  // Фильтрация ролей
   const filteredRoles = useMemo(() => {
     if (!roles_data?.roles) return [];
 
     return roles_data.roles.filter((role) => {
-      const matchesSearch = role.role_name
-        .toLowerCase()
-        .includes(searchText.toLowerCase());
+      const searchLower = searchText.toLowerCase();
+      const matchesSearch =
+        role.role_name.toLowerCase().includes(searchLower) ||
+        (role.role_system_name &&
+          role.role_system_name.toLowerCase().includes(searchLower));
       const matchesApp = !selectedApp || role.application_id === selectedApp;
       return matchesSearch && matchesApp;
     });

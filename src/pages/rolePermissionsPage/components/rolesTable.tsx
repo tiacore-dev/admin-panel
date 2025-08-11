@@ -1,10 +1,11 @@
 import type React from "react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { IRole } from "../../../api/roleApi";
 import { Button, Table, type TableColumnsType, Typography, Tag } from "antd";
 import { useAppsMap } from "../../../hooks/base/useAppHelpers";
 import { getTegColorForString } from "../../../utils/stringToColour";
+import { RoleExpandedContent } from "./roleExpandedContent";
 
 interface RolesTableResponse {
   rolesData: {
@@ -18,6 +19,7 @@ export const RolesTable: React.FC<RolesTableResponse> = ({
 }) => {
   const navigate = useNavigate();
   const appsMap = useAppsMap();
+  const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
 
   const handleRoleClick = useCallback(
     (roleId: string) => {
@@ -25,6 +27,14 @@ export const RolesTable: React.FC<RolesTableResponse> = ({
     },
     [navigate]
   );
+
+  const handleExpand = useCallback((expanded: boolean, record: IRole) => {
+    if (expanded) {
+      setExpandedRowKeys([record.role_id]);
+    } else {
+      setExpandedRowKeys([]);
+    }
+  }, []);
 
   const columns: TableColumnsType<IRole> = useMemo(
     () => [
@@ -48,10 +58,8 @@ export const RolesTable: React.FC<RolesTableResponse> = ({
             }}
             onClick={() => handleRoleClick(record.role_id)}
           >
-            {/* <Button type="link" onClick={() => handleRoleClick(record.role_id)}> */}
             {text}
             <span style={{ color: "grey" }}>{record.role_system_name}</span>
-            {/* </Button> */}
           </div>
         ),
         sorter: (a, b) => a.role_name.localeCompare(b.role_name),
@@ -71,11 +79,6 @@ export const RolesTable: React.FC<RolesTableResponse> = ({
             <Tag color="orange">Неизвестное приложение</Tag>
           );
         },
-        // filters: Array.from(appsMap.entries()).map(([id, name]) => ({
-        //   text: name,
-        //   value: id,
-        // })),
-        // onFilter: (value, record) => record.application_id === value,
         sorter: (a, b) => {
           const appNameA = appsMap.get(a.application_id) || "";
           const appNameB = appsMap.get(b.application_id) || "";
@@ -92,11 +95,9 @@ export const RolesTable: React.FC<RolesTableResponse> = ({
       showSizeChanger: true,
       pageSizeOptions: ["10", "20", "50", "100"],
       showTotal: (total: number, range: [number, number]) => (
-        <Typography.Text type="secondary">
-          Показано {range[0]}-{range[1]} из {total} ролей
-        </Typography.Text>
+        <Typography.Text type="secondary">Всего {total}</Typography.Text>
       ),
-      showQuickJumper: true,
+      // showQuickJumper: true,
     }),
     [rolesData.total]
   );
@@ -109,6 +110,13 @@ export const RolesTable: React.FC<RolesTableResponse> = ({
       pagination={paginationConfig}
       size="middle"
       scroll={{ x: 600 }}
+      expandable={{
+        expandedRowRender: (record) => (
+          <RoleExpandedContent roleId={record.role_id} />
+        ),
+        expandedRowKeys,
+        onExpand: handleExpand,
+      }}
     />
   );
 };

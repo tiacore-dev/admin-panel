@@ -21,15 +21,19 @@ export const useIncludeRolesMutations = (
       toast.success("Связь включения ролей добавлена");
     },
     onError: (error: AxiosError) => {
-      toast.error("Ошибка при добавлении связи включения ролей");
+      toast.error(
+        `Ошибка при добавлении связи включения ролей: ${error.message}`
+      );
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (editedData: any) =>
-      role_include_relation_id
-        ? updateRoleIncludeRelation(role_include_relation_id, editedData)
-        : Promise.reject(),
+    mutationFn: (data: any) => {
+      if (!role_include_relation_id) {
+        return Promise.reject(new Error("ID связи не указан"));
+      }
+      return updateRoleIncludeRelation(role_include_relation_id, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["roleIncludeRelations"] });
       queryClient.invalidateQueries({
@@ -38,8 +42,10 @@ export const useIncludeRolesMutations = (
       setIsEditing && setIsEditing(false);
       toast.success("Связь включения ролей обновлена");
     },
-    onError: () => {
-      toast.error("Ошибка при обновлении связи включения ролей");
+    onError: (error: AxiosError) => {
+      toast.error(
+        `Ошибка при обновлении связи включения ролей: ${error.message}`
+      );
     },
   });
 
@@ -50,8 +56,10 @@ export const useIncludeRolesMutations = (
       queryClient.invalidateQueries({ queryKey: ["roleIncludeRelations"] });
       toast.success("Связь включения ролей удалена");
     },
-    onError: () => {
-      toast.error("Ошибка при удалении связи включения ролей");
+    onError: (error: AxiosError) => {
+      toast.error(
+        `Ошибка при удалении связи включения ролей: ${error.message}`
+      );
     },
   });
 
