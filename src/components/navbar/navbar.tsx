@@ -58,15 +58,15 @@ export const Navbar: React.FC = () => {
       ),
       key: "/company-subscriptions",
     },
-    {
-      label: (
-        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <DollarOutlined style={{ fontSize: "16px" }} />
-          Платежи по подпискам
-        </span>
-      ),
-      key: "/subscription-payments",
-    },
+    // {
+    //   label: (
+    //     <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    //       <DollarOutlined style={{ fontSize: "16px" }} />
+    //       Платежи по подпискам
+    //     </span>
+    //   ),
+    //   key: "/subscription-payments",
+    // },
   ];
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "logout") {
@@ -233,15 +233,15 @@ export const Navbar: React.FC = () => {
       ),
       key: "/company-subscriptions",
     },
-    {
-      label: (
-        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <DollarOutlined style={{ fontSize: "16px" }} />
-          Платежи по подпискам
-        </span>
-      ),
-      key: "/subscription-payments",
-    },
+    // {
+    //   label: (
+    //     <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    //       <DollarOutlined style={{ fontSize: "16px" }} />
+    //       Платежи по подпискам
+    //     </span>
+    //   ),
+    //   key: "/subscription-payments",
+    // },
     {
       type: "divider",
     },
