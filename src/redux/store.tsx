@@ -5,6 +5,8 @@ import breadcrumbsReducer from "./slices/breadcrumbsSlice";
 import { legalEntitiesSellersReducer } from "./slices/legalEntitySellersSlice";
 import { rolesReducer } from "./slices/rolesSlice";
 import { citiesReducer } from "./slices/citiesSlice";
+import subscriptionsReducer from "./slices/subscriptionsSlice";
+import companySubscriptionsReducer from "./slices/companySubscriptionsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +16,8 @@ export const store = configureStore({
     legalEntitiesSellers: legalEntitiesSellersReducer,
     roles: rolesReducer,
     cities: citiesReducer,
+    subscriptions: subscriptionsReducer,
+    companySubscriptions: companySubscriptionsReducer,
   },
 });
 

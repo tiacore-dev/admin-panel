@@ -14,7 +14,12 @@ import {
   UsergroupAddOutlined,
   SafetyOutlined,
   EnvironmentOutlined,
+  CrownOutlined,
+  SettingOutlined,
+  LinkOutlined,
+  DollarOutlined,
   // RocketOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 import "./navbar.css";
 import { useCompanyQuery } from "../../hooks/companies/useCompanyQuery";
@@ -34,6 +39,42 @@ export const Navbar: React.FC = () => {
   const { data: companiesData } = useCompanyQuery();
   const companies = companiesData?.companies || [];
 
+  const subscriptionsItems: MenuProps["items"] = [
+    {
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <CrownOutlined style={{ fontSize: "16px" }} />
+          Подписки
+        </span>
+      ),
+      key: "/subscriptions",
+    },
+    {
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <LinkOutlined style={{ fontSize: "16px" }} />
+          Подписки компаний
+        </span>
+      ),
+      key: "/company-subscriptions",
+    },
+    {
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <DollarOutlined style={{ fontSize: "16px" }} />
+          Платежи по подпискам
+        </span>
+      ),
+      key: "/subscription-payments",
+    },
+  ];
+  const handleMenuClick = ({ key }: { key: string }) => {
+    if (key === "logout") {
+      handleLogout();
+    } else {
+      navigate(key);
+    }
+  };
   const mainItems: MenuProps["items"] = [
     {
       label: (
@@ -80,26 +121,34 @@ export const Navbar: React.FC = () => {
       ),
       key: "/cities",
     },
+    {
+      label: (
+        <Dropdown
+          menu={{
+            items: subscriptionsItems,
+            onClick: handleMenuClick,
+          }}
+          trigger={["click"]}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              cursor: "pointer",
+            }}
+          >
+            <CrownOutlined style={{ fontSize: "16px" }} />
+            <span>Подписки</span>
+            <DownOutlined style={{ fontSize: "12px" }} />
+          </div>
+        </Dropdown>
+      ),
+      key: "subscriptions",
+    },
   ];
 
   const userMenuItems: MenuProps["items"] = [
-    // {
-    //   label: (
-    //     <span
-    //       style={{
-    //         display: "flex",
-    //         alignItems: "center",
-    //         gap: "8px",
-    //         padding: "4px 0",
-    //         fontWeight: 400,
-    //       }}
-    //     >
-    //       <UserOutlined />
-    //       Мой аккаунт
-    //     </span>
-    //   ),
-    //   key: "/account",
-    // },
     {
       label: (
         <span
@@ -158,6 +207,42 @@ export const Navbar: React.FC = () => {
       key: "/role_permissions_relations",
     },
     {
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <EnvironmentOutlined style={{ fontSize: "16px" }} />
+          Города
+        </span>
+      ),
+      key: "/cities",
+    },
+    {
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <CrownOutlined style={{ fontSize: "16px" }} />
+          Подписки
+        </span>
+      ),
+      key: "/subscriptions",
+    },
+    {
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <LinkOutlined style={{ fontSize: "16px" }} />
+          Подписки компаний
+        </span>
+      ),
+      key: "/company-subscriptions",
+    },
+    {
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <DollarOutlined style={{ fontSize: "16px" }} />
+          Платежи по подпискам
+        </span>
+      ),
+      key: "/subscription-payments",
+    },
+    {
       type: "divider",
     },
     {
@@ -183,7 +268,12 @@ export const Navbar: React.FC = () => {
 
   const getSelectedKeys = () => {
     const currentPath = location.pathname;
-    const allItems = isMobile ? mobileMenuItems : mainItems;
+    const allItems = isMobile
+      ? mobileMenuItems
+      : [
+          ...mainItems.filter((item) => item?.key !== "subscriptions"),
+          ...subscriptionsItems,
+        ];
     const matchedItem = allItems?.find(
       (item) =>
         item &&
@@ -208,14 +298,6 @@ export const Navbar: React.FC = () => {
       message.success("Вы успешно вышли из системы");
     } catch (error) {
       message.error("Ошибка при выходе из системы");
-    }
-  };
-
-  const handleMenuClick = ({ key }: { key: string }) => {
-    if (key === "logout") {
-      handleLogout();
-    } else {
-      navigate(key);
     }
   };
 
@@ -311,7 +393,12 @@ export const Navbar: React.FC = () => {
               mode="horizontal"
               items={mainItems}
               selectedKeys={getSelectedKeys()}
-              onClick={({ key }) => navigate(key)}
+              onClick={({ key }) => {
+                // Игнорируем клик по элементу "Подписки", так как у него есть выпадающее меню
+                if (key !== "subscriptions") {
+                  navigate(key);
+                }
+              }}
               style={{
                 background: "transparent",
                 border: "none",
@@ -325,19 +412,14 @@ export const Navbar: React.FC = () => {
           <div className="buttons-container">
             <Dropdown
               menu={{
-                items: mainItems,
+                items: userMenuItems,
                 onClick: handleMenuClick,
               }}
               placement="bottomRight"
               trigger={["click"]}
             >
-              <Button
-                className="user-menu-button"
-                style={{ marginLeft: 2 }}
-                // icon={<UserOutlined style={{ fontSize: "16px" }} />}
-              >
-                {" "}
-                <UserOutlined style={{ fontSize: "16px" }} />{" "}
+              <Button className="user-menu-button" style={{ marginLeft: 2 }}>
+                <UserOutlined style={{ fontSize: "16px" }} />
               </Button>
             </Dropdown>
           </div>

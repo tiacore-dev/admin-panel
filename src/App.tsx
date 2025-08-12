@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import "@ant-design/v5-patch-for-react-19";
 import ProtectedRoute from "./protectedRoute";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -19,6 +19,10 @@ import { UserDetailsPage } from "./pages/usersPage/userDetailsPage";
 import { CompaniesPage } from "./pages/companiesPage/companiesPage";
 import { CompanyDetailsPage } from "./pages/companiesPage/companyDetailsPage";
 import { RolePermissionsPage } from "./pages/rolePermissionsPage/rolePermissionsPage";
+import { SubscriptionsPage } from "./pages/subscriptionsPage/subscriptionsPage";
+// import { SubscriptionDetailsPage } from "./pages/subscriptionDetailsPage/subscriptionDetailsPage";
+// import { CompanySubscriptionsPage } from "./pages/companySubscriptionsPage/companySubscriptionsPage";
+// import { SubscriptionPaymentsPage } from "./pages/subscriptionPaymentsPage/subscriptionPaymentsPage";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
 import updateLocale from "dayjs/plugin/updateLocale";
@@ -36,6 +40,7 @@ import { LegalEntityDetailsPage } from "./pages/legalEntitiesPage/legalEntityDet
 import { NotFoundPage } from "./pages/homePage/notFoundPage";
 import { CitiesPage } from "./pages/citiesPage/citiesPage";
 import { CityDetailsPage } from "./pages/citiesPage/cityDetailsPage";
+import { CompanySubscriptionsPage } from "./pages/companySubscriptionsPage/companySubscriptionsPage";
 
 dayjs.extend(updateLocale);
 dayjs.extend(weekday);
@@ -82,6 +87,19 @@ const ProtectedRoutes: React.FC = () => {
           path="/role_permissions_relations/:role_id"
           element={<RolePermissionsDetailsPage />}
         />
+        <Route path="/subscriptions" element={<SubscriptionsPage />} />
+        {/* <Route
+          path="/subscription-details"
+          element={<SubscriptionDetailsPage />}
+        /> */}
+        <Route
+          path="/company-subscriptions"
+          element={<CompanySubscriptionsPage />}
+        />
+        {/* <Route
+          path="/subscription-payments"
+          element={<SubscriptionPaymentsPage />}
+        /> */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
