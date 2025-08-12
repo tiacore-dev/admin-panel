@@ -8,8 +8,48 @@ import type { ColumnsType } from "antd/es/table";
 import type { ISubscriptionDetail } from "../../../api/subscriptionDetailsApi";
 import { useSubscriptionDetailsMutations } from "../../../hooks/subscriptionDetails/useSubscriptionDetailsMutations";
 import { EditSubscriptionDetailModal } from "./editSubscriptionDetailModal";
+import { useQueryClient } from "@tanstack/react-query";
 
 const { Text } = Typography;
+
+interface DeleteButtonProps {
+  record: ISubscriptionDetail;
+  onSuccess: () => void;
+}
+
+const DeleteButton: React.FC<DeleteButtonProps> = ({ record, onSuccess }) => {
+  const { deleteMutation } = useSubscriptionDetailsMutations(
+    record.subscription_detail_id,
+    undefined,
+    record.subscription_id
+  );
+
+  return (
+    <Popconfirm
+      title="Удалить деталь подписки?"
+      description="Это действие нельзя отменить"
+      onConfirm={async () => {
+        try {
+          await deleteMutation.mutateAsync(record.subscription_detail_id, {
+            onSuccess: () => onSuccess(),
+          });
+        } catch (error) {
+          console.error("Error deleting subscription detail:", error);
+        }
+      }}
+      okText="Да"
+      cancelText="Нет"
+    >
+      <Button
+        type="text"
+        danger
+        icon={<DeleteOutlined />}
+        size="small"
+        loading={deleteMutation.isPending}
+      />
+    </Popconfirm>
+  );
+};
 
 interface SubscriptionDetailsTableProps {
   data: ISubscriptionDetail[];
@@ -34,14 +74,12 @@ export const SubscriptionDetailsTable: React.FC<
 }) => {
   const [editingDetail, setEditingDetail] =
     useState<ISubscriptionDetail | null>(null);
-  const { deleteMutation, updateMutation } = useSubscriptionDetailsMutations();
+  const queryClient = useQueryClient();
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteMutation.mutateAsync(id);
-    } catch (error) {
-      console.error("Error deleting subscription detail:", error);
-    }
+  const handleDeleteSuccess = (subscriptionId: string) => {
+    queryClient.invalidateQueries({
+      queryKey: ["subscriptionDetailsBySubscription", subscriptionId],
+    });
   };
 
   const columns: ColumnsType<ISubscriptionDetail> = [
@@ -83,25 +121,32 @@ export const SubscriptionDetailsTable: React.FC<
             size="small"
             onClick={() => setEditingDetail(record)}
           />
-          <Popconfirm
-            title="Удалить деталь подписки?"
-            description="Это действие нельзя отменить"
-            onConfirm={() => handleDelete(record.subscription_detail_id)}
-            okText="Да"
-            cancelText="Нет"
-          >
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              size="small"
-              loading={deleteMutation.isPending}
-            />
-          </Popconfirm>
+          <DeleteButton
+            record={record}
+            onSuccess={() => handleDeleteSuccess(record.subscription_id)}
+          />
         </Space>
       ),
     },
   ];
+
+  const { updateMutation } = useSubscriptionDetailsMutations(
+    editingDetail?.subscription_detail_id,
+    () => setEditingDetail(null),
+    editingDetail?.subscription_id
+  );
+
+  const handleEditSuccess = () => {
+    setEditingDetail(null);
+    if (editingDetail) {
+      queryClient.invalidateQueries({
+        queryKey: [
+          "subscriptionDetailsBySubscription",
+          editingDetail.subscription_id,
+        ],
+      });
+    }
+  };
 
   return (
     <>
@@ -123,7 +168,7 @@ export const SubscriptionDetailsTable: React.FC<
         <EditSubscriptionDetailModal
           detail={editingDetail}
           onCancel={() => setEditingDetail(null)}
-          onSuccess={() => setEditingDetail(null)}
+          onSuccess={handleEditSuccess}
         />
       )}
     </>

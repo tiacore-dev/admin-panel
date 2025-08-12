@@ -57,7 +57,9 @@ export const SubscriptionPaymentsTable: React.FC<
       title: "Дата платежа",
       dataIndex: "payment_date",
       key: "payment_date",
-      render: (date: string) => <Text>{date}</Text>,
+      render: (date: string) => (
+        <Text> {new Date(date).toLocaleDateString("ru-RU")}</Text>
+      ),
       sorter: (a, b) =>
         new Date(a.payment_date).getTime() - new Date(b.payment_date).getTime(),
     },
@@ -66,7 +68,10 @@ export const SubscriptionPaymentsTable: React.FC<
       key: "period",
       render: (_, record) => (
         <Text>
-          {record.date_from} - {record.date_to}
+          <Typography>
+            {new Date(record.date_from).toLocaleDateString("ru-RU")}-
+            {new Date(record.date_to).toLocaleDateString("ru-RU")}
+          </Typography>
         </Text>
       ),
     },

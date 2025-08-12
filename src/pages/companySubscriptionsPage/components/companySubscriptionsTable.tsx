@@ -20,7 +20,14 @@ import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useCompanySubscriptionsMutations } from "../../../hooks/companySubscriptions/useCompanySubscriptionsMutations";
 import { EditCompanySubscriptionModal } from "./editCompanySubscriptionModal";
 import { createCompaniesMap } from "../../../utils/companiesUtils";
-import { createSubsMap } from "../../../utils/subscriptionUtils";
+import {
+  createSubAppMap,
+  createSubPricesMap,
+  createSubsMap,
+} from "../../../utils/subscriptionUtils";
+import { createUsersMap } from "../../../utils/userUtils";
+import { useUserQueryAll } from "../../../hooks/users/useUserQuery";
+import { useAppsMap } from "../../../hooks/base/useAppHelpers";
 
 interface CompanySubscriptionsTableResponse {
   subscriptionsData: {
@@ -35,6 +42,7 @@ export const CompanySubscriptionsTable: React.FC<
   const navigate = useNavigate();
   const { data: companiesData } = useCompanyQuery();
   const { data: subData } = useSubscriptionsQuery();
+  const { data: usersData } = useUserQueryAll();
 
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
   const [editingSubscription, setEditingSubscription] =
@@ -48,7 +56,17 @@ export const CompanySubscriptionsTable: React.FC<
   const subscriptionsMap = useMemo(() => {
     return createSubsMap(subData?.subscriptions || []);
   }, [subscriptionsData]);
+  const subscriptionsPriceMap = useMemo(() => {
+    return createSubPricesMap(subData?.subscriptions || []);
+  }, [subscriptionsData]);
+  const subscriptionsAppMap = useMemo(() => {
+    return createSubAppMap(subData?.subscriptions || []);
+  }, [subscriptionsData]);
+  const appsMap = useAppsMap();
 
+  const usersMap = useMemo(() => {
+    return createUsersMap(usersData?.users || []);
+  }, [subscriptionsData]);
   const handleSubscriptionClick = useCallback(
     (subscriptionId: string) => {
       navigate(`/company-subscriptions/${subscriptionId}`);
@@ -87,17 +105,17 @@ export const CompanySubscriptionsTable: React.FC<
               display: "flex",
               alignItems: "center",
               gap: 12,
-              cursor: "pointer",
+              // cursor: "pointer",
               fontWeight: 600,
-              color: "#1890ff",
+              // color: "#1890ff",
               marginBottom: 2,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
             }}
-            onClick={() =>
-              handleSubscriptionClick(record.company_subscription_id)
-            }
+            // onClick={() =>
+            //   handleSubscriptionClick(record.company_subscription_id)
+            // }
           >
             {companiesMap.get(text) || text}
           </div>
@@ -114,15 +132,31 @@ export const CompanySubscriptionsTable: React.FC<
         key: "subscription_id",
         render: (text: string, record: ICompanySubscription) => {
           const subscriptionName = subscriptionsMap.get(text);
-          const color = subscriptionName
+          const subscriptionPrice = subscriptionsPriceMap.get(text);
+          const subscriptionApp = subscriptionsAppMap.get(text);
+          const appName = appsMap.get(subscriptionApp);
+          const colorName = subscriptionName
             ? getTegColorForString(subscriptionName)
             : "default";
+          const colorApp = appName ? getTegColorForString(appName) : "default";
+
           return subscriptionName ? (
-            <Tag color={color} style={{ fontSize: 14 }}>
-              {subscriptionName}
-            </Tag>
+            <>
+              <Tag color={colorApp} style={{ fontSize: 14 }}>
+                {appName}
+              </Tag>
+
+              <Tag color={colorName} style={{ fontSize: 14 }}>
+                {subscriptionName}
+              </Tag>
+              {" ("}
+              {subscriptionPrice}
+              {" руб.)"}
+            </>
           ) : (
-            <Tag color="orange">Неизвестная подписка</Tag>
+            <>
+              <Tag color="orange">Неизвестная подписка</Tag> {subscriptionPrice}{" "}
+            </>
           );
         },
       },
@@ -136,6 +170,14 @@ export const CompanySubscriptionsTable: React.FC<
         sorter: (a, b) =>
           new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       },
+      // {
+      //   title: "Пользователь",
+      //   dataIndex: "user_id",
+      //   key: "user_id",
+      //   render: (text: string) => {
+      //     <Typography.Text> {usersMap.get(text)}</Typography.Text>;
+      //   },
+      // },
       {
         title: "",
         key: "actions",

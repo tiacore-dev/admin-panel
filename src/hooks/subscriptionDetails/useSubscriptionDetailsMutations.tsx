@@ -10,14 +10,21 @@ import type { AxiosError } from "axios";
 
 export const useSubscriptionDetailsMutations = (
   detail_id?: string,
-  setIsEditing?: (val: boolean) => void
+  setIsEditing?: (val: boolean) => void,
+  subscription_id?: string
 ) => {
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
     mutationFn: createSubscriptionDetail,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["subscriptionDetails"] });
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptionDetailsBySubscription", data.subscription_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptions"],
+      });
       toast.success("Деталь подписки создана");
     },
     onError: (error: AxiosError) => {
@@ -32,10 +39,16 @@ export const useSubscriptionDetailsMutations = (
       }
       return updateSubscriptionDetail(detail_id, data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["subscriptionDetails"] });
       queryClient.invalidateQueries({
         queryKey: ["subscriptionDetailById", detail_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptionDetailsBySubscription", subscription_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptions"],
       });
       setIsEditing && setIsEditing(false);
       toast.success("Деталь подписки обновлена");
@@ -47,8 +60,14 @@ export const useSubscriptionDetailsMutations = (
 
   const deleteMutation = useMutation({
     mutationFn: (detail_id: string) => deleteSubscriptionDetail(detail_id),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["subscriptionDetails"] });
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptionDetailsBySubscription", subscription_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptions"],
+      });
       toast.success("Деталь подписки удалена");
     },
     onError: (error: AxiosError) => {

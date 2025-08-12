@@ -17,7 +17,10 @@ export const useCompanySubscriptionsMutations = (
   const createMutation = useMutation({
     mutationFn: createCompanySubscription,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companySubscriptions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["companySubscriptions"],
+        refetchType: "active",
+      });
       toast.success("Подписка компании создана");
     },
     onError: (error: AxiosError) => {
@@ -33,7 +36,10 @@ export const useCompanySubscriptionsMutations = (
       return updateCompanySubscription(company_subscription_id, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companySubscriptions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["companySubscriptions"],
+        refetchType: "active",
+      });
       queryClient.invalidateQueries({
         queryKey: ["companySubscriptionDetails", company_subscription_id],
       });
@@ -49,7 +55,10 @@ export const useCompanySubscriptionsMutations = (
     mutationFn: (company_subscription_id: string) =>
       deleteCompanySubscription(company_subscription_id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companySubscriptions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["companySubscriptions"],
+        refetchType: "active",
+      });
       toast.success("Подписка компании удалена");
     },
     onError: (error: AxiosError) => {

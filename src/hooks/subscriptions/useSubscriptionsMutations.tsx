@@ -35,7 +35,10 @@ export const useSubscriptionsMutations = (
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
       queryClient.invalidateQueries({
-        queryKey: ["subscriptionDetails", subscription_id],
+        queryKey: ["subscriptionDetails", { subscription_id }],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptionDetailsBySubscription", subscription_id],
       });
       setIsEditing && setIsEditing(false);
       toast.success("Подписка обновлена");
@@ -50,6 +53,9 @@ export const useSubscriptionsMutations = (
       deleteSubscription(subscription_id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptionDetailsBySubscription", subscription_id],
+      });
       toast.success("Подписка удалена");
     },
     onError: (error: AxiosError) => {

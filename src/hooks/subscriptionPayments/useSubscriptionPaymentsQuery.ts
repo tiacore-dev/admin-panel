@@ -40,10 +40,7 @@ export const useSubscriptionPaymentsByCompanySubscriptionQuery = (
   company_subscription_id?: string
 ) => {
   return useQuery<ISubscriptionPaymentsResponse>({
-    queryKey: [
-      "subscriptionPaymentsByCompanySubscription",
-      company_subscription_id,
-    ],
+    queryKey: ["subscriptionPayments", { company_subscription_id }],
     queryFn: () => fetchSubscriptionPayments({ company_subscription_id }),
     enabled: !!company_subscription_id,
     retry: false,

@@ -33,8 +33,9 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableResponse> = ({
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
   const [editingSubscription, setEditingSubscription] =
     useState<ISubscription | null>(null);
-  const { deleteMutation } = useSubscriptionsMutations();
-
+  const { deleteMutation } = useSubscriptionsMutations(
+    editingSubscription?.subscription_id
+  );
   const handleSubscriptionClick = useCallback(
     (subscriptionId: string) => {
       navigate(`/subscriptions/${subscriptionId}`);
@@ -73,15 +74,15 @@ export const SubscriptionsTable: React.FC<SubscriptionsTableResponse> = ({
               display: "flex",
               alignItems: "center",
               gap: 12,
-              cursor: "pointer",
+              // cursor: "pointer",
               fontWeight: 600,
-              color: "#1890ff",
+              // color: "#1890ff",
               marginBottom: 2,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
             }}
-            onClick={() => handleSubscriptionClick(record.subscription_id)}
+            // onClick={() => handleSubscriptionClick(record.subscription_id)}
           >
             {text}
           </div>

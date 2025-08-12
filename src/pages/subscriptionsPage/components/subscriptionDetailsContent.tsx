@@ -14,8 +14,13 @@ export const SubscriptionDetailsContent: React.FC<
   SubscriptionDetailsContentProps
 > = ({ subscriptionId }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
-  const { data: subscriptionDetails } =
+  const { data: subscriptionDetails, refetch } =
     useSubscriptionDetailsBySubscriptionQuery(subscriptionId);
+
+  const handleSuccess = () => {
+    setIsCreateModalOpen(false);
+    refetch();
+  };
 
   return (
     <div style={{ margin: 0 }}>
@@ -46,7 +51,7 @@ export const SubscriptionDetailsContent: React.FC<
       <CreateSubscriptionDetailModal
         open={isCreateModalOpen}
         onCancel={() => setIsCreateModalOpen(false)}
-        onSuccess={() => setIsCreateModalOpen(false)}
+        onSuccess={handleSuccess}
         subscriptionId={subscriptionId}
       />
     </div>

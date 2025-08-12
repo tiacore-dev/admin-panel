@@ -16,8 +16,19 @@ export const useSubscriptionPaymentsMutations = (
 
   const createMutation = useMutation({
     mutationFn: createSubscriptionPayment,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["subscriptionPayments"] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptionPayments"],
+        refetchType: "active",
+      });
+      queryClient.invalidateQueries({
+        queryKey: [
+          "subscriptionPayments",
+          {
+            company_subscription_id: data.company_subscription_id,
+          },
+        ],
+      });
       toast.success("Платеж подписки создан");
     },
     onError: (error: AxiosError) => {
@@ -43,8 +54,19 @@ export const useSubscriptionPaymentsMutations = (
         date_to: data.date_to,
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["subscriptionPayments"] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptionPayments"],
+        refetchType: "active",
+      });
+      queryClient.invalidateQueries({
+        queryKey: [
+          "subscriptionPayments",
+          {
+            company_subscription_id: data.company_subscription_id,
+          },
+        ],
+      });
       queryClient.invalidateQueries({
         queryKey: ["subscriptionPaymentDetails", subscription_payment_id],
       });
@@ -59,8 +81,19 @@ export const useSubscriptionPaymentsMutations = (
   const deleteMutation = useMutation({
     mutationFn: (subscription_payment_id: string) =>
       deleteSubscriptionPayment(subscription_payment_id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["subscriptionPayments"] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["subscriptionPayments"],
+        refetchType: "active",
+      });
+      queryClient.invalidateQueries({
+        queryKey: [
+          "subscriptionPayments",
+          {
+            company_subscription_id: data.company_subscription_id,
+          },
+        ],
+      });
       toast.success("Платеж подписки удален");
     },
     onError: (error: AxiosError) => {
