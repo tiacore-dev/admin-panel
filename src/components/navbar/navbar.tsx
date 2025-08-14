@@ -20,6 +20,7 @@ import {
   DollarOutlined,
   // RocketOutlined,
   DownOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
 import "./navbar.css";
 import { useCompanyQuery } from "../../hooks/companies/useCompanyQuery";
@@ -76,6 +77,15 @@ export const Navbar: React.FC = () => {
     }
   };
   const mainItems: MenuProps["items"] = [
+    {
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <BarChartOutlined style={{ fontSize: "16px" }} />
+          Отчеты по анализам
+        </span>
+      ),
+      key: "/analysis-reports",
+    },
     {
       label: (
         <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>

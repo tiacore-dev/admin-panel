@@ -41,6 +41,7 @@ import { NotFoundPage } from "./pages/homePage/notFoundPage";
 import { CitiesPage } from "./pages/citiesPage/citiesPage";
 import { CityDetailsPage } from "./pages/citiesPage/cityDetailsPage";
 import { CompanySubscriptionsPage } from "./pages/companySubscriptionsPage/companySubscriptionsPage";
+import { AnalysisReportPage } from "./pages/analysesReportPage/analysesReportPage";
 
 dayjs.extend(updateLocale);
 dayjs.extend(weekday);
@@ -96,10 +97,7 @@ const ProtectedRoutes: React.FC = () => {
           path="/company-subscriptions"
           element={<CompanySubscriptionsPage />}
         />
-        {/* <Route
-          path="/subscription-payments"
-          element={<SubscriptionPaymentsPage />}
-        /> */}
+        <Route path="/analysis-reports" element={<AnalysisReportPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

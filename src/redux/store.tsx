@@ -7,6 +7,7 @@ import { rolesReducer } from "./slices/rolesSlice";
 import { citiesReducer } from "./slices/citiesSlice";
 import subscriptionsReducer from "./slices/subscriptionsSlice";
 import companySubscriptionsReducer from "./slices/companySubscriptionsSlice";
+import analysisReportsReducer from "./slices/analysesReportSlice";
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     cities: citiesReducer,
     subscriptions: subscriptionsReducer,
     companySubscriptions: companySubscriptionsReducer,
+    analysisReports: analysisReportsReducer,
   },
 });
 
