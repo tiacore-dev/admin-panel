@@ -247,7 +247,6 @@ export const AnalysisReportPage: React.FC = () => {
             <Spin size="large" />
           </div>
         )}
-
         {isError && (
           <div style={{ textAlign: "center", padding: "24px" }}>
             <Text type="danger">Произошла ошибка при загрузке данных</Text>
