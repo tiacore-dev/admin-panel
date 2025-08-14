@@ -24,6 +24,7 @@ import {
   BarChartOutlined,
   SearchOutlined,
   ClearOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import { ContextualNavigation } from "../../components/contextualNavigation/contextualNavigation";
 import type { RootState } from "../../redux/store";
@@ -34,10 +35,87 @@ import {
   selectCompanyId,
   selectDateRange,
 } from "../../redux/slices/analysesReportSlice";
+import * as XLSX from "xlsx";
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
+
+const exportToXLSX = (data: any[], totals: any) => {
+  try {
+    // Проверяем, есть ли данные для экспорта
+    if (!data || data.length === 0) {
+      throw new Error("Нет данных для экспорта");
+    }
+
+    // Создаем данные для листа
+    const wsData = [
+      // Заголовки
+      [
+        "Название расписания",
+        "Название промпта",
+        "Дата",
+        "Токены (вход)",
+        "Токены (выход)",
+      ],
+      // Данные
+      ...data.map((item) => [
+        item.schedule_name,
+        item.prompt_name,
+        dayjs(item.date).format("DD.MM.YYYY HH:mm"),
+        item.tokens_input,
+        item.tokens_output,
+      ]),
+      // Итоговая строка
+      ["ИТОГО", "", "", totals.total_tokens_input, totals.total_tokens_output],
+    ];
+
+    // Создаем рабочий лист
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Устанавливаем ширину колонок
+    ws["!cols"] = [
+      { wch: 30 }, // Название расписания
+      { wch: 30 }, // Название промпта
+      { wch: 20 }, // Дата
+      { wch: 15 }, // Токены вход
+      { wch: 15 }, // Токены выход
+    ];
+
+    // Применяем стили через cell objects
+    if (!ws["!merges"]) ws["!merges"] = [];
+
+    // Форматируем заголовки (первая строка)
+    for (let col = 0; col < 5; col++) {
+      const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
+      if (!ws[cellRef]) continue;
+      ws[cellRef].s = { font: { bold: true } };
+    }
+
+    // Форматируем итоговую строку
+    for (let col = 0; col < 5; col++) {
+      const rowIndex = wsData.length - 1;
+      const cellRef = XLSX.utils.encode_cell({ r: rowIndex, c: col });
+      if (!ws[cellRef]) continue;
+      ws[cellRef].s = { font: { bold: true } };
+    }
+
+    // Создаем книгу и добавляем лист
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Отчет");
+
+    // Генерируем имя файла
+    const dateStr = dayjs().format("YYYY-MM-DD_HH-mm-ss");
+    const fileName = `analysis_report_${dateStr}.xlsx`;
+
+    // Экспортируем файл
+    XLSX.writeFile(wb, fileName);
+    return true;
+  } catch (error) {
+    console.error("Ошибка при экспорте в XLSX:", error);
+    return false;
+  }
+};
 
 export const AnalysisReportPage: React.FC = () => {
   const dispatch = useDispatch();
@@ -95,6 +173,28 @@ export const AnalysisReportPage: React.FC = () => {
       );
     } else {
       dispatch(setAnalysisReports({ companyId, dateRange: ["", ""] }));
+    }
+  };
+
+  const handleExport = () => {
+    if (
+      !reportData ||
+      !reportData.analyses ||
+      reportData.analyses.length === 0
+    ) {
+      message.error("Нет данных для экспорта");
+      return;
+    }
+
+    const success = exportToXLSX(reportData.analyses, {
+      total_tokens_input: reportData.total_tokens_input,
+      total_tokens_output: reportData.total_tokens_output,
+    });
+
+    if (success) {
+      message.success("Отчет успешно экспортирован");
+    } else {
+      message.error("Не удалось экспортировать отчет");
     }
   };
 
@@ -162,8 +262,8 @@ export const AnalysisReportPage: React.FC = () => {
 
         {/* Фильтры */}
         <Card className="filters-card" style={{ marginBottom: 0 }}>
-          <Row gutter={16} align="middle">
-            <Col xs={24} sm={12} md={6}>
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} sm={12} md={6} style={{ padding: "8px" }}>
               <Select
                 placeholder="Выберите компанию"
                 style={{ width: "100%" }}
@@ -177,7 +277,8 @@ export const AnalysisReportPage: React.FC = () => {
                 ))}
               </Select>
             </Col>
-            <Col xs={24} sm={12} md={8}>
+
+            <Col xs={24} sm={12} md={8} style={{ padding: "8px" }}>
               <RangePicker
                 showTime
                 style={{ width: "100%" }}
@@ -188,23 +289,37 @@ export const AnalysisReportPage: React.FC = () => {
                 onChange={handleDateChange}
               />
             </Col>
-            <Col xs={24} sm={12} md={4}>
+
+            <Col xs={12} sm={6} md={2} style={{ padding: "8px" }}>
               <Button
-                type="primary"
                 icon={<SearchOutlined />}
                 onClick={handleSearch}
                 disabled={!companyId || !dateRange[0] || !dateRange[1]}
+                style={{ width: "100%" }}
               >
                 Поиск
               </Button>
             </Col>
-            <Col xs={24} sm={12} md={6}>
+
+            <Col xs={12} sm={6} md={2} style={{ padding: "4px" }}>
               <Button
                 icon={<ClearOutlined />}
                 onClick={handleReset}
                 disabled={!companyId && !dateRange[0] && !dateRange[1]}
+                style={{ width: "100%" }}
               >
                 Сбросить
+              </Button>
+            </Col>
+
+            <Col xs={12} sm={6} md={2} style={{ padding: "8px" }}>
+              <Button
+                icon={<DownloadOutlined />}
+                onClick={handleExport}
+                disabled={!companyId || !dateRange[0] || !dateRange[1]}
+                style={{ width: "100%" }}
+              >
+                Экспорт
               </Button>
             </Col>
           </Row>
