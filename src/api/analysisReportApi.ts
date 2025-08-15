@@ -26,7 +26,7 @@ export const fetchAnalysesReport = async (params: {
     const url = process.env.REACT_APP_OBSERVER_API_URL;
     const accessToken = localStorage.getItem("access_token");
 
-    const response = await axiosInstance.get(`${url}api/analysis/report`, {
+    const response = await axiosInstance.get(`${url}/api/analysis/report`, {
       params,
       headers: {
         Authorization: `Bearer ${accessToken}`,

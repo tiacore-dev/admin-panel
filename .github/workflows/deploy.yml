@@ -11,6 +11,10 @@ env:
   API_REFERENCE_URL_DEV: ${{ secrets.API_REFERENCE_URL_DEV }}
   API_REFERENCE_URL_STAGE: ${{ secrets.API_REFERENCE_URL_STAGE }}
   API_REFERENCE_URL_TEST: ${{ secrets.API_REFERENCE_URL_TEST }}
+  APP_OBSERVER_API_URL_PROD: ${{ secrets.APP_OBSERVER_API_URL_PROD }}
+  APP_OBSERVER_API_URL_DEV: ${{ secrets.APP_OBSERVER_API_URL_DEV }}
+  APP_OBSERVER_API_URL_STAGE: ${{ secrets.APP_OBSERVER_API_URL_STAGE }}
+  APP_OBSERVER_API_URL_TEST: ${{ secrets.APP_OBSERVER_API_URL_TEST }}
 
 jobs:
   build-and-push:
@@ -30,15 +34,19 @@ jobs:
           if [ "$branch" = "main" ]; then
             echo "api_auth_url=${API_AUTH_URL_PROD}" >> $GITHUB_OUTPUT
             echo "api_reference_url=${API_REFERENCE_URL_PROD}" >> $GITHUB_OUTPUT
+            echo "api_observer_url=${APP_OBSERVER_API_URL_PROD}" >> $GITHUB_OUTPUT
           elif [ "$branch" = "dev" ]; then
             echo "api_auth_url=${API_AUTH_URL_DEV}" >> $GITHUB_OUTPUT
             echo "api_reference_url=${API_REFERENCE_URL_DEV}" >> $GITHUB_OUTPUT
+            echo "api_observer_url=${APP_OBSERVER_API_URL_DEV}" >> $GITHUB_OUTPUT
           elif [ "$branch" = "stage" ]; then
             echo "api_auth_url=${API_AUTH_URL_STAGE}" >> $GITHUB_OUTPUT
             echo "api_reference_url=${API_REFERENCE_URL_STAGE}" >> $GITHUB_OUTPUT
+            echo "api_observer_url=${API_OBSERVER_URL_STAGE}" >> $GITHUB_OUTPUT
           else
             echo "api_auth_url=${API_AUTH_URL_TEST}" >> $GITHUB_OUTPUT
             echo "api_reference_url=${API_REFERENCE_URL_TEST}" >> $GITHUB_OUTPUT
+            echo "api_observer_url=${API_OBSERVER_URL_TEST}" >> $GITHUB_OUTPUT
           fi
 
       - name: Setup Docker Buildx
@@ -61,6 +69,7 @@ jobs:
           build-args: |
             REACT_APP_AUTH_API_URL=${{ steps.set-urls.outputs.api_auth_url }}
             REACT_APP_REFERENCE_API_URL=${{ steps.set-urls.outputs.api_reference_url }}
+            REACT_APP_OBSERVER_API_URL=${{ steps.set-urls.outputs.api_observer_url }}
             REACT_APP_ID=${{ secrets.APP }}
 
   deploy:
