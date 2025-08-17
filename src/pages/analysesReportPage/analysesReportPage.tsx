@@ -287,6 +287,7 @@ export const AnalysisReportPage: React.FC = () => {
                   dateRange[1] ? dayjs(dateRange[1]) : null,
                 ]}
                 onChange={handleDateChange}
+                format="DD.MM.YYYY HH:mm"
               />
             </Col>
 
