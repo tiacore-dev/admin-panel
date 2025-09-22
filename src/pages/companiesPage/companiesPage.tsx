@@ -103,7 +103,7 @@ export const CompaniesPage: React.FC = () => {
         <Card
           className="gradient-header"
           style={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba1 100%)",
           }}
         >
           <Row align="middle" justify="space-between">
